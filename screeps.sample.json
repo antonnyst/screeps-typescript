@@ -1,6 +1,6 @@
 {
   "main": {
-    "token": "YOUR_TOKEN",
+    "token": "X",
     "protocol": "https",
     "hostname": "screeps.com",
     "port": 443,
@@ -8,7 +8,7 @@
     "branch": "main"
   },
   "sim": {
-    "token": "YOUR_TOKEN",
+    "token": "X",
     "protocol": "https",
     "hostname": "screeps.com",
     "port": 443,
@@ -16,10 +16,28 @@
     "branch": "sim"
   },
   "pserver": {
-    "email": "username",
-    "password": "Password",
+    "email": "X",
+    "password": "X",
     "protocol": "http",
-    "hostname": "1.2.3.4",
+    "hostname": "127.0.0.1",
+    "port": 21025,
+    "path": "/",
+    "branch": "main"
+  },
+  "sp": {
+    "email": "X",
+    "password": "X",
+    "protocol": "http",
+    "hostname": "server1.screepspl.us",
+    "port": 21025,
+    "path": "/",
+    "branch": "main"
+  },
+  "sps": {
+    "email": "X",
+    "password": "X",
+    "protocol": "http",
+    "hostname": "server2.screepspl.us",
     "port": 21025,
     "path": "/",
     "branch": "main"
