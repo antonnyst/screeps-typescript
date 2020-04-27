@@ -94,7 +94,7 @@ export const rolePatterns:{[roleName: string] : string} = {
     filler:"[mcc]8",
     foot:"[mcw]*",
     hauler:"[mcc]8",
-    labrador:"[mcc]5",
+    labrador:"[mcc]8",
     miner:"mw6cw4m",
     mineralHauler:"[mcc]8",
     mineralMiner:"[mwwww]10",
