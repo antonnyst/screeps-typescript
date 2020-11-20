@@ -2,7 +2,7 @@ import { Manager } from "./manager";
 import { CreepRole } from "./../roles/creepRole";
 import { roleList } from "./../roles/roleList";
 
-const cpuArr:{[name:string]:{c:number,cpu:number}} = {};
+const cpuArr: { [name: string]: { c: number; cpu: number } } = {};
 
 export class CreepManager implements Manager {
     public run() {
@@ -17,12 +17,12 @@ export class CreepManager implements Manager {
         }
 
         for (const i in Game.creeps) {
-            const creep:Creep = Game.creeps[i];
+            const creep: Creep = Game.creeps[i];
             if (creep === undefined) {
                 continue;
             }
-            
-            const role:CreepRole = roleList[creep.memory.role];
+
+            const role: CreepRole = roleList[creep.memory.role];
             if (role === undefined) {
                 continue;
             }
@@ -36,23 +36,23 @@ export class CreepManager implements Manager {
 
             if (cpuArr[creep.memory.role] === undefined) {
                 cpuArr[creep.memory.role] = {
-                    c:0,
-                    cpu:0
+                    c: 0,
+                    cpu: 0
                 };
             }
             cpuArr[creep.memory.role].c += 1;
             cpuArr[creep.memory.role].cpu += uCpu;
         }
         if (Game.time % 10 === 0) {
-            const nCpuArr:{[name:string]:{c:number,cpu:number,pc:number}} = {}
+            const nCpuArr: { [name: string]: { c: number; cpu: number; pc: number } } = {};
             for (const ca in cpuArr) {
                 nCpuArr[ca] = {
-                    c:cpuArr[ca].c,
-                    cpu:cpuArr[ca].cpu,
-                    pc:cpuArr[ca].cpu/cpuArr[ca].c,
+                    c: cpuArr[ca].c,
+                    cpu: cpuArr[ca].cpu,
+                    pc: cpuArr[ca].cpu / cpuArr[ca].c
                 };
-                
-                console.log(ca + " = " + nCpuArr[ca].pc.toFixed(3) + " per creep");
+
+                console.log(ca + " = " + nCpuArr[ca].c.toFixed(3) + " per creep");
             }
         }
     }

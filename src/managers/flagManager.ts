@@ -7,16 +7,15 @@ export class FlagManager implements Manager {
     }
 }
 
-function HandleFlag(flag: Flag):void {
-    const primaryColor :ColorConstant = flag.color;
-    const secondaryColor :ColorConstant = flag.secondaryColor;
+function HandleFlag(flag: Flag): void {
+    const primaryColor: ColorConstant = flag.color;
+    const secondaryColor: ColorConstant = flag.secondaryColor;
 
     if (flag.room === undefined) {
         return;
     }
 
     if (primaryColor === COLOR_RED && secondaryColor === COLOR_RED) {
-        
         flag.remove();
     }
 }
