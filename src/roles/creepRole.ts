@@ -2,22 +2,22 @@ import { unpackPosition } from "../utils/RoomPositionPacker";
 import { getFromCache, saveToCache } from "../utils/Cache";
 
 export interface CreepRoleInterface {
-    creep: Creep|null;
+    creep: Creep | null;
     setCreep(creep: Creep): void;
 
     runLogic(): void;
 
     getEnergy(): void;
-    smartMove(target:RoomPosition): number;
+    smartMove(target: RoomPosition | { pos: RoomPosition }, range?: number): number;
     checkIdle(): void;
 }
 
-export abstract class CreepRole implements CreepRoleInterface{
-    public creep: Creep|null = null;
+export abstract class CreepRole implements CreepRoleInterface {
+    public creep: Creep | null = null;
     public setCreep(creep: Creep) {
         this.creep = creep;
     }
-    
+
     public runLogic() {
         if (this.creep == null) {
             return;
@@ -42,17 +42,17 @@ export abstract class CreepRole implements CreepRoleInterface{
     }
 
     runBoost() {
-        console.log("ruun");
         if (this.creep == null) {
             return;
         }
 
-        let resource:MineralBoostConstant|null = null;
-        let boostCountNeeded:number = 0;
+        let resource: MineralBoostConstant | null = null;
+        let boostCountNeeded: number = 0;
 
         for (const r of Object.keys(this.creep.memory.boost!)) {
-            const tBoost:number = (this.creep.memory.boost! as any)[r] as number;
-            const cBoost = _.filter(this.creep.body, (b:BodyPartDefinition)=>(b.boost === r as MineralBoostConstant)).length;
+            const tBoost: number = (this.creep.memory.boost! as any)[r] as number;
+            const cBoost = _.filter(this.creep.body, (b: BodyPartDefinition) => b.boost === (r as MineralBoostConstant))
+                .length;
 
             const delta = tBoost - cBoost;
             if (delta > 0) {
@@ -69,7 +69,12 @@ export abstract class CreepRole implements CreepRoleInterface{
             return;
         }
 
-        const lab:StructureLab = this.creep.pos.findClosestByRange(FIND_MY_STRUCTURES,{filter:(s)=>(s.structureType === STRUCTURE_LAB && s.mineralType == resource as MineralBoostConstant && s.store.getUsedCapacity(s.mineralType) as number >= 30)}) as StructureLab;
+        const lab: StructureLab = this.creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
+            filter: (s) =>
+                s.structureType === STRUCTURE_LAB &&
+                s.mineralType == (resource as MineralBoostConstant) &&
+                (s.store.getUsedCapacity(s.mineralType) as number) >= 30
+        }) as StructureLab;
 
         if (lab == undefined) {
             return;
@@ -78,7 +83,7 @@ export abstract class CreepRole implements CreepRoleInterface{
         if (!this.creep.pos.isNearTo(lab.pos)) {
             this.smartMove(lab.pos);
         } else {
-            lab.boostCreep(this.creep,boostCountNeeded);
+            lab.boostCreep(this.creep, boostCountNeeded);
         }
     }
 
@@ -88,25 +93,22 @@ export abstract class CreepRole implements CreepRoleInterface{
         }
 
         if (this.creep.pos.roomName != this.creep.memory.home) {
-            this.smartMove(unpackPosition(
-                Memory.rooms[this.creep.memory.home].layout.baseCenter
-            ));
+            this.smartMove(unpackPosition(Memory.rooms[this.creep.memory.home].layout.baseCenter));
             return;
         }
 
-
         if (this.creep.memory.getEnergy === undefined) {
             this.creep.memory.getEnergy = {
-                target:undefined
-            }
+                target: undefined
+            };
         }
 
-        let target:Structure|Resource|Tombstone|Ruin|Source|null = null; 
+        let target: Structure | Resource | Tombstone | Ruin | Source | null = null;
 
         if (this.creep.memory.getEnergy.target != undefined) {
             target = Game.getObjectById(this.creep.memory.getEnergy.target);
         }
-        
+
         if (target === null) {
             target = this.getEnergyTarget();
         }
@@ -114,16 +116,15 @@ export abstract class CreepRole implements CreepRoleInterface{
             //console.log("B");
             this.creep.memory.getEnergy.target = target.id;
 
-
             if (target instanceof Resource) {
                 if (this.creep.pickup(target) == ERR_NOT_IN_RANGE) {
-                    this.smartMove(target.pos,1)
+                    this.smartMove(target.pos, 1);
                 } else {
                     this.creep.memory.getEnergy.target = undefined;
                 }
             } else if (target instanceof Source) {
                 if (this.creep.harvest(target) == ERR_NOT_IN_RANGE) {
-                    this.smartMove(target.pos,1)
+                    this.smartMove(target.pos, 1);
                 } else {
                     this.creep.memory.getEnergy.target = undefined;
                 }
@@ -131,7 +132,6 @@ export abstract class CreepRole implements CreepRoleInterface{
                 if (this.creep.memory.checkIdle != undefined && this.creep.memory.checkIdle.idleCount >= 4) {
                     this.creep.memory.getEnergy.target = undefined;
                 }
-
             } else if (target instanceof Ruin || target instanceof Tombstone || target instanceof Structure) {
                 if (target instanceof Structure) {
                     if (target instanceof StructureLink) {
@@ -145,59 +145,64 @@ export abstract class CreepRole implements CreepRoleInterface{
                     }
                 }
 
-
                 if (this.creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    this.smartMove(target.pos,1)
+                    this.smartMove(target.pos, 1);
                 } else {
                     this.creep.memory.getEnergy.target = undefined;
                 }
             }
         }
     }
-    private getEnergyTarget ():Structure|Resource|Tombstone|Ruin|Source|null {
+    private getEnergyTarget(): Structure | Resource | Tombstone | Ruin | Source | null {
         if (this.creep === null) {
             return null;
-        }        
-        const requiredAmount:number = 50; 
+        }
+        const requiredAmount: number = 50;
         const creep = this.creep;
 
-        let targets:(Structure|Resource|Tombstone|Ruin)[] = getFromCache("creepRole.energyTargets."+this.creep.memory.home,1) as (Structure|Resource|Tombstone|Ruin)[];
+        let targets: (Structure | Resource | Tombstone | Ruin)[] = getFromCache(
+            "creepRole.energyTargets." + this.creep.memory.home,
+            1
+        ) as (Structure | Resource | Tombstone | Ruin)[];
         let usedCache = true;
         if (targets === null || targets.length === 0) {
             usedCache = false;
             targets = [];
             targets = targets.concat(
                 this.creep.room.find(FIND_RUINS, {
-                    filter: (r) => (r.store.getUsedCapacity(RESOURCE_ENERGY) >= requiredAmount)
+                    filter: (r) => r.store.getUsedCapacity(RESOURCE_ENERGY) >= requiredAmount
                 }),
                 this.creep.room.find(FIND_TOMBSTONES, {
-                    filter: (tb) => (tb.store.getUsedCapacity(RESOURCE_ENERGY) >= requiredAmount)
+                    filter: (tb) => tb.store.getUsedCapacity(RESOURCE_ENERGY) >= requiredAmount
                 }),
                 this.creep.room.find(FIND_DROPPED_RESOURCES, {
-                    filter: (dr) => (dr.resourceType === RESOURCE_ENERGY && dr.amount >= requiredAmount)
+                    filter: (dr) => dr.resourceType === RESOURCE_ENERGY && dr.amount >= requiredAmount
                 }),
-                this.creep.room.find(FIND_STRUCTURES,{
-                    filter: function(s) {
+                this.creep.room.find(FIND_STRUCTURES, {
+                    filter: function (s) {
                         if (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) {
                             if (s.store.getUsedCapacity(RESOURCE_ENERGY) >= requiredAmount) {
                                 return true;
                             } else {
                                 return false;
                             }
-                        } if (s.structureType === STRUCTURE_LINK) {
-
+                        }
+                        if (s.structureType === STRUCTURE_LINK) {
                             if (s.pos.isEqualTo(unpackPosition(creep.room.memory.layout.controllerStore))) {
-                                if (s.store.getUsedCapacity(RESOURCE_ENERGY) as number >= requiredAmount) {
+                                if ((s.store.getUsedCapacity(RESOURCE_ENERGY) as number) >= requiredAmount) {
                                     return true;
                                 } else {
                                     return false;
                                 }
                             } else {
                                 const cpos = unpackPosition(creep.room.memory.layout.baseCenter);
-                                const lpos = new RoomPosition(cpos.x,cpos.y-1,cpos.roomName);
+                                const lpos = new RoomPosition(cpos.x, cpos.y - 1, cpos.roomName);
                                 if (s.pos.isEqualTo(lpos)) {
                                     //if controller is full
-                                    if (s.room.memory.linkStatus === "empty" && s.store.getUsedCapacity(RESOURCE_ENERGY) as number >= requiredAmount) {
+                                    if (
+                                        s.room.memory.linkStatus === "empty" &&
+                                        (s.store.getUsedCapacity(RESOURCE_ENERGY) as number) >= requiredAmount
+                                    ) {
                                         return true;
                                     }
                                 }
@@ -211,16 +216,15 @@ export abstract class CreepRole implements CreepRoleInterface{
             );
         }
 
-        targets = _.reject(targets,(t:(Structure|Resource|Tombstone|Ruin))=>(t === null));
+        targets = _.reject(targets, (t: Structure | Resource | Tombstone | Ruin) => t === null);
 
         if (targets.length > 0 && !usedCache) {
-            saveToCache("creepRole.energyTargets."+this.creep.memory.home,targets);
+            saveToCache("creepRole.energyTargets." + this.creep.memory.home, targets);
         }
-
 
         if (targets.length > 0) {
             const creep = this.creep;
-            targets.sort(function (a,b) {
+            targets.sort(function (a, b) {
                 if (a === null && b != null) {
                     return 1;
                 }
@@ -240,7 +244,7 @@ export abstract class CreepRole implements CreepRoleInterface{
 
                 let arange = creep.pos.getRangeTo(a.pos);
                 let brange = creep.pos.getRangeTo(b.pos);
-    
+
                 if (a instanceof StructureLink) {
                     arange -= 2;
                 }
@@ -248,10 +252,9 @@ export abstract class CreepRole implements CreepRoleInterface{
                     brange -= 2;
                 }
 
-
-                return arange-brange;
+                return arange - brange;
             });
-    
+
             return targets[0];
         } else {
             if (this.creep.getActiveBodyparts(WORK) > 0) {
@@ -261,7 +264,7 @@ export abstract class CreepRole implements CreepRoleInterface{
             }
         }
     }
-    public smartMove(target:(RoomPosition|{pos:RoomPosition}),range?:number) {
+    public smartMove(target: RoomPosition | { pos: RoomPosition }, range?: number) {
         if (this.creep == null) {
             return ERR_INVALID_ARGS;
         }
@@ -278,41 +281,52 @@ export abstract class CreepRole implements CreepRoleInterface{
         if (this.creep.memory._move != undefined && this.creep.memory._move.path != undefined) {
             const nextMove: PathStep = Room.deserializePath(this.creep.memory._move.path)[0];
             if (nextMove != undefined) {
-                const nextPos: RoomPosition = new RoomPosition(nextMove.x,nextMove.y,this.creep.room.name);
+                const nextPos: RoomPosition = new RoomPosition(nextMove.x, nextMove.y, this.creep.room.name);
                 //this.creep.room.visual.circle(nextPos.x,nextPos.y);
                 const bCreep: Creep = nextPos.lookFor(LOOK_CREEPS)[0];
                 if (bCreep != undefined && bCreep.name != this.creep.name && bCreep.fatigue === 0) {
-                    if (bCreep.memory != undefined && bCreep.memory.checkIdle != undefined && bCreep.memory.checkIdle.idleCount > 2) {
+                    if (
+                        bCreep.memory != undefined &&
+                        bCreep.memory.checkIdle != undefined &&
+                        bCreep.memory.checkIdle.idleCount > 2
+                    ) {
                         bCreep.move(bCreep.pos.getDirectionTo(this.creep.pos));
                     }
                 }
             }
             const sMove: PathStep = Room.deserializePath(this.creep.memory._move.path)[1];
             if (sMove != undefined) {
-                const nextPos: RoomPosition = new RoomPosition(sMove.x,sMove.y,this.creep.room.name);
+                const nextPos: RoomPosition = new RoomPosition(sMove.x, sMove.y, this.creep.room.name);
                 //this.creep.room.visual.circle(sMove.x,sMove.y);
                 const bCreep: Creep = nextPos.lookFor(LOOK_CREEPS)[0];
                 if (bCreep != undefined && bCreep.name != this.creep.name && bCreep.fatigue === 0) {
-                    if (bCreep.memory != undefined && bCreep.memory.checkIdle != undefined && bCreep.memory.checkIdle.idleCount > 2) {
+                    if (
+                        bCreep.memory != undefined &&
+                        bCreep.memory.checkIdle != undefined &&
+                        bCreep.memory.checkIdle.idleCount > 2
+                    ) {
                         bCreep.move(bCreep.pos.getDirectionTo(this.creep.pos));
                     }
                 }
             }
         }
         return this.creep.moveTo(target, {
-            costCallback:function(roomName,costMatrix):boolean|CostMatrix {
+            costCallback: function (roomName, costMatrix): boolean | CostMatrix {
                 if (Game.rooms[roomName] != undefined) {
-                    Game.rooms[roomName].find(FIND_MY_CREEPS).forEach(function(creep) {
-                        if (creep.memory.checkIdle && (creep.memory.checkIdle.idleCount > 2 || creep.memory.checkIdle.idleCount === 0)) {
+                    Game.rooms[roomName].find(FIND_MY_CREEPS).forEach(function (creep) {
+                        if (
+                            creep.memory.checkIdle &&
+                            (creep.memory.checkIdle.idleCount > 2 || creep.memory.checkIdle.idleCount === 0)
+                        ) {
                             costMatrix.set(creep.pos.x, creep.pos.y, 0);
                         }
                     });
                 }
                 return true;
             },
-            maxOps:5000,
-            reusePath:25,
-            range:range
+            maxOps: 5000,
+            reusePath: 25,
+            range: range
         });
     }
     public checkIdle() {
@@ -322,16 +336,23 @@ export abstract class CreepRole implements CreepRoleInterface{
 
         if (this.creep.memory.checkIdle === undefined) {
             this.creep.memory.checkIdle = {
-                idleCount:0,
-                lastPos:this.creep.pos
-            }
+                idleCount: 0,
+                lastPos: this.creep.pos
+            };
         }
-        if (this.creep.pos.isEqualTo(new RoomPosition(this.creep.memory.checkIdle.lastPos.x,this.creep.memory.checkIdle.lastPos.y,this.creep.memory.checkIdle.lastPos.roomName))) {
+        if (
+            this.creep.pos.isEqualTo(
+                new RoomPosition(
+                    this.creep.memory.checkIdle.lastPos.x,
+                    this.creep.memory.checkIdle.lastPos.y,
+                    this.creep.memory.checkIdle.lastPos.roomName
+                )
+            )
+        ) {
             this.creep.memory.checkIdle.idleCount += 1;
         } else {
             this.creep.memory.checkIdle.idleCount = 0;
         }
         this.creep.memory.checkIdle.lastPos = this.creep.pos;
     }
-
 }

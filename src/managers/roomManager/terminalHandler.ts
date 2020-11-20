@@ -1,11 +1,10 @@
 import * as C from "../../config/constants";
 
-export function TerminalHandler(room:Room):void {
+export function TerminalHandler(room: Room): void {
     if (Game.time % 10 === 0) {
         //TerminalNeeds(room);
     }
 }
-
 
 /*function TerminalNeeds(room:Room):void {
     if (room.controller === undefined || room.controller.level < 6 || room.terminal === undefined || room.memory.resources === undefined) {
@@ -14,7 +13,7 @@ export function TerminalHandler(room:Room):void {
     }
 
     const terminalNeeds:{[resourcetype in ResourceConstant]?: number} = {};
-    
+
     for (const resource of RESOURCES_ALL) {
         const amt:number = room.memory.resources.total[resource];
         let need:number = 0;

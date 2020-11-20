@@ -1,3 +1,3 @@
 export interface RoadData {
-    positions:number[];
+    positions: number[];
 }
