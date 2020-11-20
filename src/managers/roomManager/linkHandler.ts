@@ -2,7 +2,7 @@ import { unpackPosition } from "../../utils/RoomPositionPacker";
 import * as C from "../../config/constants";
 
 export function LinkHandler(room: Room): void {
-    if (Game.time % 2 === 0 && room.controller != undefined && room.controller.my && room.memory.roomLevel === 2) {
+    if (Game.time % 2 === 0 && room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
         if (room.controller.level < 5) {
             return;
         }
@@ -28,7 +28,7 @@ export function LinkHandler(room: Room): void {
         const minerLinks: StructureLink[] = _.filter(
             room.find(FIND_MY_STRUCTURES),
             (s: Structure) =>
-                s.structureType == STRUCTURE_LINK &&
+                s.structureType === STRUCTURE_LINK &&
                 !s.pos.isEqualTo(lPos) &&
                 !s.pos.isEqualTo(unpackPosition(room.memory.layout.controllerStore))
         ) as StructureLink[];
@@ -39,7 +39,7 @@ export function LinkHandler(room: Room): void {
             room.memory.linkStatus = "empty";
         } else if (
             storage.store.getUsedCapacity(RESOURCE_ENERGY) > C.BASE_LINK_GREEDY_LIMIT &&
-            controllerLink != undefined &&
+            controllerLink !== undefined &&
             (controllerLink.store.getFreeCapacity(RESOURCE_ENERGY) as number) >= 25
         ) {
             room.memory.linkStatus = "fill";
@@ -78,8 +78,8 @@ export function LinkHandler(room: Room): void {
                 }
             }
         } else {
-            //its "empty" so send to baseLink if possible
-            if (baseLink != undefined) {
+            // its "empty" so send to baseLink if possible
+            if (baseLink !== undefined) {
                 const eNeeded = baseLink.store.getFreeCapacity(RESOURCE_ENERGY) as number;
 
                 if (eNeeded >= 25) {
