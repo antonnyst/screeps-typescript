@@ -1,2 +1,3 @@
-export const cpuLog = true;
+export const cpuLog = false;
+export const mainLog = true;
 export const burnForPixels = true;

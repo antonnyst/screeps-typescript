@@ -84,7 +84,7 @@ function getLayout(room: Room): LayoutData | null {
         labDirection = centerLocation.dir;
         centerLocation = centerLocation.pos;
     }
-    if (labDirection === null && (room.memory.layout as AutoLayoutData).labDirection !== undefined) {
+    if (labDirection === null && room.memory.layout &&(room.memory.layout as AutoLayoutData).labDirection !== undefined) {
         labDirection = (room.memory.layout as AutoLayoutData).labDirection;
     }
 

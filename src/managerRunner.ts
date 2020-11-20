@@ -1,5 +1,5 @@
+import * as Config from "./config/config";
 import { Manager } from "./managers/manager";
-
 import { CreepManager } from "./managers/creepManager";
 import { DefenseManager } from "./managers/defenseManager";
 import { FlagManager } from "./managers/flagManager";
@@ -22,7 +22,10 @@ export const runAllManagers = (): void => {
         const a = Game.cpu.getUsed();
         manager.run();
         const b = Game.cpu.getUsed() - a;
-        console.log(i + " => " + b);
+
+        if (Config.cpuLog) {
+            console.log(i + " => " + b);
+        }
         i++;
     }
 };
