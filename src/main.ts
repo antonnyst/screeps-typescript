@@ -18,7 +18,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     if (Game.time % 10 === 0) {
         if (
             Config.burnForPixels &&
-            Game.shard.name === "shard3" && //Hardcode please fix
+            Game.shard.name === "shard3" && // Hardcode please fix
             Memory.cpuAvg < Game.cpu.limit &&
             Game.cpu.bucket > 9000
         ) {

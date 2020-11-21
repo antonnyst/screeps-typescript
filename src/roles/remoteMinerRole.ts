@@ -19,7 +19,7 @@ export class RemoteMinerRole extends CreepRole {
             return;
         }
         const sourceData: RemoteSourceData =
-            Memory.rooms[this.creep.memory.roleData.target].remoteLayout.sources[parseInt(sourceIndex)];
+            Memory.rooms[this.creep.memory.roleData.target].remoteLayout.sources[parseInt(sourceIndex, 10)];
         if (sourceData === undefined) {
             console.log("invalid sourceData");
             return;
@@ -39,17 +39,17 @@ export class RemoteMinerRole extends CreepRole {
             )[0] as StructureContainer;
 
             if (
-                container == undefined ||
+                container === undefined ||
                 this.creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0 ||
                 container.store.getFreeCapacity(RESOURCE_ENERGY) >= this.creep.getActiveBodyparts(WORK) * 5
             ) {
                 this.creep.harvest(source);
             }
-            if (this.creep.memory.checkIdle != undefined) {
+            if (this.creep.memory.checkIdle !== undefined) {
                 this.creep.memory.checkIdle.idleCount = 1;
             }
             if (this.creep.getActiveBodyparts(CARRY) > 0 && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-                if (container != undefined && container.hits < container.hitsMax) {
+                if (container !== undefined && container.hits < container.hitsMax) {
                     this.creep.repair(container);
                     if (this.creep.store.getUsedCapacity(RESOURCE_ENERGY) < 20) {
                         this.creep.withdraw(container, RESOURCE_ENERGY);
@@ -58,11 +58,11 @@ export class RemoteMinerRole extends CreepRole {
                 if (container === undefined) {
                     minerPos.createConstructionSite(STRUCTURE_CONTAINER);
 
-                    let site = _.filter(
+                    const site = _.filter(
                         minerPos.lookFor(LOOK_CONSTRUCTION_SITES),
                         (s: Structure) => s.structureType === STRUCTURE_CONTAINER
                     )[0];
-                    if (site != undefined) {
+                    if (site !== undefined) {
                         this.creep.build(site);
                     }
                 }

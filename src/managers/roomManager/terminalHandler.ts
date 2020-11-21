@@ -2,7 +2,7 @@ import * as C from "../../config/constants";
 
 export function TerminalHandler(room: Room): void {
     if (Game.time % 10 === 0) {
-        //TerminalNeeds(room);
+        // TerminalNeeds(room);
     }
 }
 

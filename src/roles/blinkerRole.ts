@@ -14,10 +14,10 @@ export class BlinkerRole extends CreepRole {
             this.creep.heal(this.creep);
         }
 
-        if (this.creep.room.name != this.creep.memory.roleData.target) {
+        if (this.creep.room.name !== this.creep.memory.roleData.target) {
             const exit: ExitConstant = this.creep.room.findExitTo(this.creep.memory.roleData.target) as ExitConstant;
             const e = this.creep.pos.findClosestByRange(this.creep.room.find(exit));
-            if (e != null) {
+            if (e !== null) {
                 this.smartMove(e);
             }
         } else {

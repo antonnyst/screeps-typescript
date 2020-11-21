@@ -10,7 +10,7 @@ export class ArmedDismantlerRole extends CreepRole {
             return;
         }
 
-        if (this.creep.room.name != this.creep.memory.roleData.target) {
+        if (this.creep.room.name !== this.creep.memory.roleData.target) {
             const exit: ExitConstant = this.creep.room.findExitTo(this.creep.memory.roleData.target) as ExitConstant;
             const e = this.creep.pos.findClosestByRange(this.creep.room.find(exit));
             if (e != null) {
@@ -26,7 +26,7 @@ export class ArmedDismantlerRole extends CreepRole {
             }
 
             if (target != null) {
-                let a = this.creep.pos.isNearTo(target.pos);
+                const a = this.creep.pos.isNearTo(target.pos);
                 if (!b && !a && this.creep.getActiveBodyparts(HEAL) > 0) {
                     this.creep.heal(this.creep);
                     b = true;

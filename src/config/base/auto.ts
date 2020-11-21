@@ -50,7 +50,7 @@ export const autoLabsLayout: BuildInstruction[][] = [
         { x: 1, y: -3, type: STRUCTURE_RAMPART }
     ]
 ];
-export const autoLabsRotationGuide: Array<{ mx: number; my: number }> = [
+export const autoLabsRotationGuide: { mx: number; my: number }[] = [
     {
         mx: 1,
         my: 1

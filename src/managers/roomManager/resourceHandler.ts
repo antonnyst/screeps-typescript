@@ -12,8 +12,8 @@ function ResourceData(room: Room): void {
         room.memory.resources = undefined;
         return;
     }
-    let total: { [resourceType in ResourceConstant]: number } = {} as { [resourceType in ResourceConstant]: number };
-    let delta: { [resourceType in ResourceConstant]: number } = {} as { [resourceType in ResourceConstant]: number };
+    const total: { [resourceType in ResourceConstant]: number } = {} as { [resourceType in ResourceConstant]: number };
+    const delta: { [resourceType in ResourceConstant]: number } = {} as { [resourceType in ResourceConstant]: number };
 
     for (const resource of RESOURCES_ALL) {
         const storage = room.storage === undefined ? 0 : room.storage.store.getUsedCapacity(resource);
@@ -30,7 +30,7 @@ function ResourceData(room: Room): void {
         const labs: number =
             resource === RESOURCE_ENERGY
                 ? 0
-                : _.sum(l, function (lab: StructureLab) {
+                : _.sum(l, (lab: StructureLab) => {
                       const amt: number | null = lab.store.getUsedCapacity(resource);
 
                       if (amt === null) {

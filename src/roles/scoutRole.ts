@@ -28,8 +28,8 @@ export class ScoutRole extends CreepRole {
         }
 
         if (
-            this.creep.memory.roleData.target != undefined &&
-            this.creep.room.name != this.creep.memory.roleData.target
+            this.creep.memory.roleData.target !== undefined &&
+            this.creep.room.name !== this.creep.memory.roleData.target
         ) {
             let e: RoomPosition | null = null;
 
@@ -44,12 +44,12 @@ export class ScoutRole extends CreepRole {
                 e = this.creep.pos.findClosestByRange(this.creep.room.find(exit));
             }
 
-            if (e != null) {
+            if (e !== null) {
                 const r = this.smartMove(e);
 
                 this.creep.memory.roleData.anyStore.targetPos = packPosition(e);
 
-                if (r != 0 && r != ERR_TIRED) {
+                if (r !== 0 && r !== ERR_TIRED) {
                     this.creep.memory.roleData.target = undefined;
                     this.creep.memory.roleData.anyStore.targetPos = undefined;
                 }
@@ -58,21 +58,21 @@ export class ScoutRole extends CreepRole {
             }
         } else {
             if (
-                this.creep.room.controller != undefined &&
+                this.creep.room.controller !== undefined &&
                 (this.creep.room.controller.my ||
-                    (this.creep.room.controller.reservation != undefined &&
+                    (this.creep.room.controller.reservation !== undefined &&
                         this.creep.room.controller.reservation.username ===
                             Game.spawns[Object.keys(Game.spawns)[0]].owner.username)) &&
-                this.creep.room.controller.sign != undefined
+                this.creep.room.controller.sign !== undefined
             ) {
                 if (this.creep.signController(this.creep.room.controller, "") === ERR_NOT_IN_RANGE) {
                     this.smartMove(this.creep.room.controller.pos);
                 }
             } else {
                 const exits: any = Game.map.describeExits(this.creep.room.name);
-                let newTarget: string | undefined = undefined;
+                let newTarget: string | undefined;
 
-                for (let e in exits) {
+                for (const e in exits) {
                     if (Memory.rooms[exits[e]] === undefined) {
                         newTarget = exits[e];
                         break;
@@ -80,11 +80,11 @@ export class ScoutRole extends CreepRole {
                 }
 
                 if (newTarget === undefined) {
-                    newTarget = exits[Object.keys(exits)[(Object.keys(exits).length * Math.random()) << 0]];
+                    newTarget = exits[Object.keys(exits)[Object.keys(exits).length * Math.random()]];
                 }
 
                 this.creep.memory.roleData.target = newTarget;
-                if (this.creep.memory.roleData.target != undefined) {
+                if (this.creep.memory.roleData.target !== undefined) {
                     this.smartMove(new RoomPosition(25, 25, this.creep.memory.roleData.target));
                 }
             }

@@ -7,7 +7,7 @@ import { roomTotalStoredEnergy } from "../../utils/RoomCalc";
 import { SpawnData } from "../../dataInterfaces/spawnData";
 
 export function SpawnHandler(room: Room): void {
-    if (Game.time % 2 === 0 && room.controller != undefined && room.controller.my && room.memory.roomLevel === 2) {
+    if (Game.time % 2 === 0 && room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
         const spawns = room.find(FIND_MY_STRUCTURES, {
             filter: (s) => s.structureType === STRUCTURE_SPAWN && s.spawning === null
         });
@@ -25,7 +25,7 @@ function updateSpawnQueue(room: Room): void {
 
     if (room.memory.spawnQueue.length > 0) {
         if (
-            room.memory.spawnQueue[0].energy != undefined &&
+            room.memory.spawnQueue[0].energy !== undefined &&
             room.memory.spawnQueue[0].energy! > room.energyCapacityAvailable
         ) {
             room.memory.spawnQueue.shift();
@@ -39,27 +39,29 @@ function updateSpawnQueue(room: Room): void {
 
         if (potentialEnergy >= 700) {
             room.memory.spawnQueue = [];
+            const role = "filler";
             room.memory.spawnQueue.push({
-                role: "filler",
-                pattern: rolePatterns["filler"],
+                role,
+                pattern: rolePatterns[role],
                 energy: Math.max(300, room.energyAvailable)
             });
         } else {
             room.memory.spawnQueue = [];
+            const role = "foot";
             room.memory.spawnQueue.push({
-                role: "foot",
-                pattern: rolePatterns["foot"],
+                role,
+                pattern: rolePatterns[role],
                 energy: Math.max(300, room.energyAvailable)
             });
         }
     } else {
-        let roleCount: { [roleName: string]: number } = {};
-        let roleNeeds: { [roleName: string]: number } = {};
-        let roleDelta: { [roleName: string]: number } = {};
+        const roleCount: { [roleName: string]: number } = {};
+        const roleNeeds: { [roleName: string]: number } = {};
+        const roleDelta: { [roleName: string]: number } = {};
 
         const roles: string[] = Object.keys(roleCountFunctions);
 
-        for (let i in roles) {
+        for (const i in roles) {
             const r = roles[i];
             roleCount[r] = roleCountFunctions[r](room, creeps);
             roleNeeds[r] = roleNeedsFunctions[r](room);
@@ -77,12 +79,13 @@ function updateSpawnQueue(room: Room): void {
                     ).length;
 
                 if (fAmt < 2) {
+                    const role = "foot";
                     room.memory.spawnQueue.push({
-                        role: "foot",
-                        pattern: rolePatterns["foot"],
+                        role,
+                        pattern: rolePatterns[role],
                         energy: room.energyCapacityAvailable,
                         memory: {
-                            role: "foot",
+                            role,
                             home: r
                         }
                     });
@@ -93,19 +96,19 @@ function updateSpawnQueue(room: Room): void {
 }
 
 const roleCountFunctions: { [role: string]: RoleCountFunction } = {
-    foot: function (room: Room, creeps: Creep[]): number {
+    foot: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(creeps, (c: Creep) => c.memory.role === "foot").length +
             _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "foot").length
         );
     },
-    upgrader: function (room: Room, creeps: Creep[]): number {
+    upgrader: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(creeps, (c: Creep) => c.memory.role === "upgrader").length +
             _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "upgrader").length
         );
     },
-    miner: function (room: Room, creeps: Creep[]): number {
+    miner: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(
                 creeps,
@@ -113,25 +116,25 @@ const roleCountFunctions: { [role: string]: RoleCountFunction } = {
             ).length + _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "miner").length
         );
     },
-    builder: function (room: Room, creeps: Creep[]): number {
+    builder: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(creeps, (c: Creep) => c.memory.role === "builder").length +
             _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "builder").length
         );
     },
-    filler: function (room: Room, creeps: Creep[]): number {
+    filler: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(creeps, (c: Creep) => c.memory.role === "filler").length +
             _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "filler").length
         );
     },
-    hauler: function (room: Room, creeps: Creep[]): number {
+    hauler: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(creeps, (c: Creep) => c.memory.role === "hauler").length +
             _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "hauler").length
         );
     },
-    remoteMiner: function (room: Room, creeps: Creep[]): number {
+    remoteMiner: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(
                 creeps,
@@ -139,43 +142,43 @@ const roleCountFunctions: { [role: string]: RoleCountFunction } = {
             ).length + _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "remoteMiner").length
         );
     },
-    remoteHauler: function (room: Room, creeps: Creep[]): number {
+    remoteHauler: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(creeps, (c: Creep) => c.memory.role === "remoteHauler").length +
             _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "remoteHauler").length
         );
     },
-    reserver: function (room: Room, creeps: Creep[]): number {
+    reserver: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(creeps, (c: Creep) => c.memory.role === "reserver").length +
             _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "reserver").length
         );
     },
-    peacekeeper: function (room: Room, creeps: Creep[]): number {
+    peacekeeper: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(creeps, (c: Creep) => c.memory.role === "peacekeeper").length +
             _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "peacekeeper").length
         );
     },
-    scout: function (room: Room, creeps: Creep[]): number {
+    scout: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(creeps, (c: Creep) => c.memory.role === "scout").length +
             _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "scout").length
         );
     },
-    mineralMiner: function (room: Room, creeps: Creep[]): number {
+    mineralMiner: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(creeps, (c: Creep) => c.memory.role === "mineralMiner").length +
             _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "mineralMiner").length
         );
     },
-    mineralHauler: function (room: Room, creeps: Creep[]): number {
+    mineralHauler: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(creeps, (c: Creep) => c.memory.role === "mineralHauler").length +
             _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "mineralHauler").length
         );
     },
-    labrador: function (room: Room, creeps: Creep[]): number {
+    labrador: (room: Room, creeps: Creep[]): number => {
         return (
             _.filter(creeps, (c: Creep) => c.memory.role === "labrador").length +
             _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "labrador").length
@@ -184,15 +187,15 @@ const roleCountFunctions: { [role: string]: RoleCountFunction } = {
 };
 
 const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
-    foot: function (room: Room): number {
+    foot: (room: Room): number => {
         if (room.controller && room.controller.level === 1) {
             return 2;
         } else {
             return 0;
         }
     },
-    upgrader: function (room: Room): number {
-        if (room.controller != undefined && room.controller.level >= 7) {
+    upgrader: (room: Room): number => {
+        if (room.controller !== undefined && room.controller.level >= 7) {
             return 1;
         }
 
@@ -202,15 +205,15 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
             return (
                 1 +
                 Math.floor(
-                    (room.memory.resources != undefined ? room.memory.resources.total[RESOURCE_ENERGY] : 0) / 100000
+                    (room.memory.resources !== undefined ? room.memory.resources.total[RESOURCE_ENERGY] : 0) / 100000
                 )
             );
         }
     },
-    miner: function (room: Room): number {
+    miner: (room: Room): number => {
         return room.memory.layout.sources.length;
     },
-    builder: function (room: Room): number {
+    builder: (room: Room): number => {
         if (
             room.memory.constructionSites === undefined ||
             room.memory.repairTargets === undefined ||
@@ -226,18 +229,18 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
 
         return Math.min(num, 12 - room.controller.level);
     },
-    filler: function (room: Room): number {
+    filler: (room: Room): number => {
         return 2;
     },
-    hauler: function (room: Room): number {
+    hauler: (room: Room): number => {
         const cPos = unpackPosition(room.memory.layout.controllerStore);
         const container: StructureContainer = _.filter(
             cPos.lookFor(LOOK_STRUCTURES),
             (s: Structure) => s.structureType === STRUCTURE_CONTAINER
         )[0] as StructureContainer;
 
-        if (room.storage != undefined || container != undefined) {
-            if (room.controller != undefined && room.controller.level > 5) {
+        if (room.storage !== undefined || container !== undefined) {
+            if (room.controller !== undefined && room.controller.level > 5) {
                 if (room.controller.level > 6) {
                     return 0;
                 } else {
@@ -249,14 +252,14 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
             return 0;
         }
     },
-    remoteMiner: function (room: Room): number {
+    remoteMiner: (room: Room): number => {
         let i: number = 0;
 
-        for (let r of room.memory.remotes) {
+        for (const r of room.memory.remotes) {
             if (
-                Memory.rooms[r] != undefined &&
-                Memory.rooms[r].remoteLayout != undefined &&
-                Memory.rooms[r].remoteLayout.sources != undefined
+                Memory.rooms[r] !== undefined &&
+                Memory.rooms[r].remoteLayout !== undefined &&
+                Memory.rooms[r].remoteLayout.sources !== undefined
             ) {
                 i += Memory.rooms[r].remoteLayout.sources.length;
             }
@@ -264,14 +267,14 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
 
         return i;
     },
-    remoteHauler: function (room: Room): number {
+    remoteHauler: (room: Room): number => {
         let i: number = 0;
 
-        for (let r of room.memory.remotes) {
+        for (const r of room.memory.remotes) {
             if (
-                Memory.rooms[r] != undefined &&
-                Memory.rooms[r].remoteLayout != undefined &&
-                Memory.rooms[r].remoteLayout.sources != undefined
+                Memory.rooms[r] !== undefined &&
+                Memory.rooms[r].remoteLayout !== undefined &&
+                Memory.rooms[r].remoteLayout.sources !== undefined
             ) {
                 i += Memory.rooms[r].remoteLayout.sources.length;
             }
@@ -279,24 +282,24 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
 
         return i;
     },
-    reserver: function (room: Room): number {
+    reserver: (room: Room): number => {
         return room.memory.remotes.length;
     },
-    peacekeeper: function (room: Room): number {
+    peacekeeper: (room: Room): number => {
         return room.memory.remotes.length > 0 ? 1 : 0;
     },
-    scout: function (room: Room): number {
+    scout: (room: Room): number => {
         if (room.controller?.level === 8) {
             return 0;
         }
         return Game.time % 10000 < 5000 ? 1 : 0;
     },
-    mineralMiner: function (room: Room): number {
+    mineralMiner: (room: Room): number => {
         if (room.controller && room.controller.level < 6) {
             return 0;
         }
         if (
-            room.memory.resources != undefined &&
+            room.memory.resources !== undefined &&
             room.memory.resources.total[RESOURCE_ENERGY] < C.MINERAL_MINING_ENERGY_NEEDED
         ) {
             return 0;
@@ -308,12 +311,12 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
             return 0;
         }
     },
-    mineralHauler: function (room: Room): number {
+    mineralHauler: (room: Room): number => {
         if (room.controller && room.controller.level < 6) {
             return 0;
         }
         if (
-            room.memory.resources != undefined &&
+            room.memory.resources !== undefined &&
             room.memory.resources.total[RESOURCE_ENERGY] < C.MINERAL_MINING_ENERGY_NEEDED
         ) {
             return 0;
@@ -325,8 +328,8 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
             return 0;
         }
     },
-    labrador: function (room: Room): number {
-        if (room.controller != undefined && room.controller.level >= 6) {
+    labrador: (room: Room): number => {
+        if (room.controller !== undefined && room.controller.level >= 6) {
             return 1;
         } else {
             return 0;
@@ -335,29 +338,30 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
 };
 
 const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
-    foot: function (room: Room, delta: number): void {
+    foot: (room: Room, delta: number): void => {
         if (delta < 0) {
             const sqAmt = _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "foot").length;
             if (sqAmt > 0) {
                 return;
             }
-
+            const role = "foot";
             room.memory.spawnQueue.push({
-                role: "foot",
-                pattern: rolePatterns["foot"],
+                role,
+                pattern: rolePatterns[role],
                 energy: room.energyCapacityAvailable
             });
         }
     },
-    upgrader: function (room: Room, delta: number): void {
+    upgrader: (room: Room, delta: number): void => {
         if (delta < 0) {
+            const role = "upgrader";
             const sqAmt = _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "upgrader").length;
             if (sqAmt > 0) {
                 return;
             }
             if (room.controller && room.controller.level === 8) {
                 room.memory.spawnQueue.push({
-                    role: "upgrader",
+                    role,
                     pattern: "[mwcwmw]5",
                     energy: room.energyCapacityAvailable
                 });
@@ -368,33 +372,33 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
                 room.memory.resources.total[RESOURCE_ENERGY] >= C.FULL_UPGRADER_ENERGY_NEEDED
             ) {
                 room.memory.spawnQueue.push({
-                    role: "upgrader",
+                    role,
                     pattern: "w40m5c5",
                     energy: room.energyCapacityAvailable
                 });
             } else {
                 room.memory.spawnQueue.push({
-                    role: "upgrader",
-                    pattern: rolePatterns["upgrader"],
+                    role,
+                    pattern: rolePatterns[role],
                     energy: Math.min(room.energyCapacityAvailable, 3000)
                 });
             }
         }
     },
-    miner: function (room: Room, delta: number): void {
-        //const mCount:number = _.filter(creeps, (c)=>(c.memory.role === "miner")).length;
+    miner: (room: Room, delta: number): void => {
+        // const mCount:number = _.filter(creeps, (c)=>(c.memory.role === "miner")).length;
 
         if (delta < 0) {
-            for (let s in room.memory.layout.sources) {
+            for (const s in room.memory.layout.sources) {
                 const source: SourceData = room.memory.layout.sources[s];
-                //console.log(s);
+                // console.log(s);
                 const creeps: Creep[] = _.filter(Game.creeps, (c: Creep) => c.memory.home === room.name);
                 const minerCount: number =
                     _.filter(
                         creeps,
                         (c: Creep) =>
                             c.memory.role === "miner" &&
-                            c.memory.roleData != undefined &&
+                            c.memory.roleData !== undefined &&
                             c.memory.roleData.targetId === s &&
                             (c.ticksToLive === undefined || c.ticksToLive > 25 + source.dist * 3)
                     ).length +
@@ -402,19 +406,21 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
                         room.memory.spawnQueue,
                         (sd: SpawnData) =>
                             sd.role === "miner" &&
-                            sd.memory != null &&
-                            sd.memory.roleData != undefined &&
+                            sd.memory !== null &&
+                            sd.memory !== undefined &&
+                            sd.memory.roleData !== undefined &&
                             sd.memory.roleData.targetId === s
                     ).length;
                 if (minerCount === 0) {
                     const sqAmt = _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "foot").length;
                     if (sqAmt > 0) {
+                        const role = "miner";
                         room.memory.spawnQueue.push({
-                            role: "miner",
-                            pattern: rolePatterns["miner"],
+                            role,
+                            pattern: rolePatterns[role],
                             energy: room.energyCapacityAvailable,
                             memory: {
-                                role: "miner",
+                                role,
                                 home: room.name,
                                 roleData: {
                                     targetId: s
@@ -423,13 +429,13 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
                         });
                     } else {
                         const famt = _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "filler").length;
-
+                        const role = "miner";
                         room.memory.spawnQueue.unshift({
-                            role: "miner",
-                            pattern: rolePatterns["miner"],
+                            role,
+                            pattern: rolePatterns[role],
                             energy: famt === 0 ? Math.max(300, room.energyAvailable) : room.energyCapacityAvailable,
                             memory: {
-                                role: "miner",
+                                role,
                                 home: room.name,
                                 roleData: {
                                     targetId: s
@@ -441,25 +447,26 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
             }
         }
     },
-    builder: function (room: Room, delta: number): void {
+    builder: (room: Room, delta: number): void => {
         if (delta < 0) {
             const sqAmt = _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "builder").length;
             if (sqAmt > 0) {
                 return;
             }
+            const role = "builder";
             room.memory.spawnQueue.push({
-                role: "builder",
-                pattern: rolePatterns["builder"],
+                role,
+                pattern: rolePatterns[role],
                 energy: room.energyCapacityAvailable
             });
         }
     },
-    filler: function (room: Room, delta: number): void {
+    filler: (room: Room, delta: number): void => {
         const creeps: Creep[] = _.filter(Game.creeps, (c: Creep) => c.memory.home === room.name);
         const fillerCount: number = _.filter(creeps, (c: Creep) => c.memory.role === "filler").length;
 
         if (fillerCount === 0 && creeps.length > 0) {
-            //const sqAmt = room.memory.spawnQueue, (c)=>(c.role === "filler")).length;
+            // const sqAmt = room.memory.spawnQueue, (c)=>(c.role === "filler")).length;
             if (
                 room.memory.spawnQueue[0] !== undefined &&
                 room.memory.spawnQueue[0].role === "filler" &&
@@ -467,9 +474,10 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
             ) {
                 return;
             }
+            const role = "filler";
             room.memory.spawnQueue.unshift({
-                role: "filler",
-                pattern: rolePatterns["filler"],
+                role,
+                pattern: rolePatterns[role],
                 energy: Math.max(room.energyAvailable, 300)
             });
         } else if (delta < 0) {
@@ -477,16 +485,17 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
             if (sqAmt > 0) {
                 return;
             }
+            const role = "filler";
             room.memory.spawnQueue.push({
-                role: "filler",
-                pattern: rolePatterns["filler"],
+                role,
+                pattern: rolePatterns[role],
                 energy: room.energyCapacityAvailable
             });
         }
     },
-    hauler: function (room: Room, delta: number): void {
+    hauler: (room: Room, delta: number): void => {
         if (delta < 0) {
-            for (let s in room.memory.layout.sources) {
+            for (const s in room.memory.layout.sources) {
                 const sourceData: SourceData = room.memory.layout.sources[s];
 
                 const link = _.filter(
@@ -494,7 +503,7 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
                         offsetPositionByDirection(unpackPosition(sourceData.pos), sourceData.container),
                         sourceData.link
                     ).lookFor(LOOK_STRUCTURES),
-                    (s: Structure) => s.structureType === STRUCTURE_LINK
+                    (st: Structure) => st.structureType === STRUCTURE_LINK
                 )[0];
 
                 const creeps: Creep[] = _.filter(Game.creeps, (c: Creep) => c.memory.home === room.name);
@@ -503,18 +512,19 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
                         creeps,
                         (c: Creep) =>
                             c.memory.role === "hauler" &&
-                            c.memory.roleData != undefined &&
+                            c.memory.roleData !== undefined &&
                             c.memory.roleData.targetId === s
                     ).length +
                     _.filter(
                         room.memory.spawnQueue,
                         (sd: SpawnData) =>
                             sd.role === "hauler" &&
-                            sd.memory != null &&
-                            sd.memory.roleData != undefined &&
+                            sd.memory !== null &&
+                            sd.memory !== undefined &&
+                            sd.memory.roleData !== undefined &&
                             sd.memory.roleData.targetId === s
                     ).length;
-                if (link == undefined && haulerCount === 0) {
+                if (link === undefined && haulerCount === 0) {
                     const tdist = sourceData.dist * 2;
 
                     const capacityNeeded = (SOURCE_ENERGY_CAPACITY / ENERGY_REGEN_TIME) * tdist;
@@ -536,22 +546,22 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
             }
         }
     },
-    remoteMiner: function (room: Room, delta: number): void {
+    remoteMiner: (room: Room, delta: number): void => {
         if (delta < 0) {
             const sqAmt = _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "remoteMiner").length;
             if (sqAmt > 0) {
                 return;
             }
             const creeps: Creep[] = _.filter(Game.creeps, (c: Creep) => c.memory.home === room.name);
-            for (let remote of room.memory.remotes) {
-                for (let source in Memory.rooms[remote].remoteLayout.sources) {
+            for (const remote of room.memory.remotes) {
+                for (const source in Memory.rooms[remote].remoteLayout.sources) {
                     const s: RemoteSourceData = Memory.rooms[remote].remoteLayout.sources[source];
                     const remoteMinerCount: number =
                         _.filter(
                             creeps,
                             (c: Creep) =>
                                 c.memory.role === "remoteMiner" &&
-                                c.memory.roleData != undefined &&
+                                c.memory.roleData !== undefined &&
                                 c.memory.roleData.target === remote &&
                                 c.memory.roleData.targetId === source &&
                                 (c.ticksToLive === undefined || c.ticksToLive > 34 + s.dist * 2)
@@ -560,18 +570,19 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
                             room.memory.spawnQueue,
                             (sd: SpawnData) =>
                                 sd.role === "remoteMiner" &&
-                                sd.memory != null &&
-                                sd.memory.roleData != undefined &&
+                                sd.memory !== undefined &&
+                                sd.memory.roleData !== undefined &&
                                 sd.memory.roleData.target === remote &&
                                 sd.memory.roleData.targetId === source
                         ).length;
                     if (remoteMinerCount === 0) {
+                        const role = "remoteMiner";
                         room.memory.spawnQueue.push({
-                            role: "remoteMiner",
-                            pattern: rolePatterns["remoteMiner"],
+                            role,
+                            pattern: rolePatterns[role],
                             energy: room.energyCapacityAvailable,
                             memory: {
-                                role: "remoteMiner",
+                                role,
                                 home: room.name,
                                 roleData: {
                                     targetId: source,
@@ -584,22 +595,22 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
             }
         }
     },
-    remoteHauler: function (room: Room, delta: number): void {
+    remoteHauler: (room: Room, delta: number): void => {
         if (delta < 0 || true) {
             const sqAmt = _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "remoteHauler").length;
             if (sqAmt > 0) {
                 return;
             }
             const creeps: Creep[] = _.filter(Game.creeps, (c: Creep) => c.memory.home === room.name);
-            for (let remote of room.memory.remotes) {
-                for (let source in Memory.rooms[remote].remoteLayout.sources) {
+            for (const remote of room.memory.remotes) {
+                for (const source in Memory.rooms[remote].remoteLayout.sources) {
                     const sourceData: RemoteSourceData = Memory.rooms[remote].remoteLayout.sources[source];
                     const remoteHaulerCount: number =
                         _.filter(
                             creeps,
                             (c: Creep) =>
                                 c.memory.role === "remoteHauler" &&
-                                c.memory.roleData != undefined &&
+                                c.memory.roleData !== undefined &&
                                 c.memory.roleData.target === remote &&
                                 c.memory.roleData.targetId === source
                         ).length +
@@ -607,8 +618,8 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
                             room.memory.spawnQueue,
                             (sd: SpawnData) =>
                                 sd.role === "remoteHauler" &&
-                                sd.memory != null &&
-                                sd.memory.roleData != undefined &&
+                                sd.memory !== undefined &&
+                                sd.memory.roleData !== undefined &&
                                 sd.memory.roleData.target === remote &&
                                 sd.memory.roleData.targetId === source
                         ).length;
@@ -616,7 +627,7 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
 
                     const capacityNeeded = (SOURCE_ENERGY_CAPACITY / ENERGY_REGEN_TIME) * tdist;
                     const carryNeeded = capacityNeeded / 50;
-                    let creepsNeeded = Math.ceil(carryNeeded / 33);
+                    const creepsNeeded = Math.ceil(carryNeeded / 33);
                     const patternValue = Math.ceil(carryNeeded / creepsNeeded / 2) + 1;
 
                     if (remoteHaulerCount < creepsNeeded) {
@@ -638,28 +649,28 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
             }
         }
     },
-    reserver: function (room: Room, delta: number): void {
+    reserver: (room: Room, delta: number): void => {
         if (delta < 0) {
             const sqAmt = _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "reserver").length;
             if (sqAmt > 0) {
                 return;
             }
             const creeps: Creep[] = _.filter(Game.creeps, (c: Creep) => c.memory.home === room.name);
-            for (let remote of room.memory.remotes) {
+            for (const remote of room.memory.remotes) {
                 const reserverCount: number =
                     _.filter(
                         creeps,
                         (c: Creep) =>
                             c.memory.role === "reserver" &&
-                            c.memory.roleData != undefined &&
+                            c.memory.roleData !== undefined &&
                             c.memory.roleData.target === remote
                     ).length +
                     _.filter(
                         room.memory.spawnQueue,
                         (sd: SpawnData) =>
                             sd.role === "remoteHauler" &&
-                            sd.memory != null &&
-                            sd.memory.roleData != undefined &&
+                            sd.memory !== undefined &&
+                            sd.memory.roleData !== undefined &&
                             sd.memory.roleData.target === remote
                     ).length;
                 const reservation = Memory.rooms[remote].reservation;
@@ -667,15 +678,16 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
                 if (
                     reserverCount === 0 &&
                     (reservation === undefined ||
-                        reservation.username != "Awesomeadda" ||
+                        reservation.username !== "Awesomeadda" ||
                         reservation.ticksToEnd < 3000)
                 ) {
+                    const role = "reserver";
                     room.memory.spawnQueue.push({
-                        role: "reserver",
-                        pattern: rolePatterns["reserver"],
+                        role,
+                        pattern: rolePatterns[role],
                         energy: room.energyCapacityAvailable,
                         memory: {
-                            role: "reserver",
+                            role,
                             home: room.name,
                             roleData: {
                                 target: remote
@@ -686,46 +698,49 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
             }
         }
     },
-    peacekeeper: function (room: Room, delta: number): void {
+    peacekeeper: (room: Room, delta: number): void => {
         if (delta < 0) {
             const sqAmt = _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "peacekeeper").length;
             if (sqAmt > 0) {
                 return;
             }
+            const role = "peacekeeper";
             room.memory.spawnQueue.push({
-                role: "peacekeeper",
-                pattern: rolePatterns["peacekeeper"],
+                role,
+                pattern: rolePatterns[role],
                 energy: room.energyCapacityAvailable
             });
         }
     },
-    scout: function (room: Room, delta: number): void {
+    scout: (room: Room, delta: number): void => {
         if (delta < 0) {
             const sqAmt = _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "scout").length;
             if (sqAmt > 0) {
                 return;
             }
+            const role = "scout";
             room.memory.spawnQueue.push({
-                role: "scout",
-                pattern: rolePatterns["scout"],
+                role,
+                pattern: rolePatterns[role],
                 energy: 50
             });
         }
     },
-    mineralMiner: function (room: Room, delta: number): void {
+    mineralMiner: (room: Room, delta: number): void => {
         if (delta < 0) {
             const sqAmt = _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "mineralMiner").length;
             if (sqAmt > 0) {
                 return;
             }
+            const role = "mineralMiner";
             room.memory.spawnQueue.push({
-                role: "mineralMiner",
-                pattern: rolePatterns["mineralMiner"],
+                role,
+                pattern: rolePatterns[role],
                 energy: room.energyCapacityAvailable
             });
         }
     },
-    mineralHauler: function (room: Room, delta: number): void {
+    mineralHauler: (room: Room, delta: number): void => {
         if (delta < 0) {
             const sqAmt = _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "mineralHauler").length;
             if (sqAmt > 0) {
@@ -747,15 +762,16 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
             });
         }
     },
-    labrador: function (room: Room, delta: number): void {
+    labrador: (room: Room, delta: number): void => {
         if (delta < 0) {
             const sqAmt = _.filter(room.memory.spawnQueue, (sd: SpawnData) => sd.role === "labrador").length;
             if (sqAmt > 0) {
                 return;
             }
+            const role = "labrador";
             room.memory.spawnQueue.push({
-                role: "labrador",
-                pattern: rolePatterns["labrador"],
+                role,
+                pattern: rolePatterns[role],
                 energy: room.energyCapacityAvailable
             });
         }

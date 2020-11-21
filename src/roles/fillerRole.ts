@@ -12,11 +12,11 @@ export class FillerRole extends CreepRole {
             this.creep.memory.roleData = { hasEnergy: false };
         }
 
-        if (this.creep.memory.roleData.hasEnergy == false && this.creep.store.getFreeCapacity() == 0) {
+        if (this.creep.memory.roleData.hasEnergy === false && this.creep.store.getFreeCapacity() === 0) {
             this.creep.memory.roleData.hasEnergy = true;
         }
 
-        if (this.creep.memory.roleData.hasEnergy == true && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
+        if (this.creep.memory.roleData.hasEnergy === true && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
             this.creep.memory.roleData.hasEnergy = false;
         }
 
@@ -25,7 +25,7 @@ export class FillerRole extends CreepRole {
         } else {
             let target: Structure | null = null;
 
-            if (this.creep.memory.roleData.targetId != undefined) {
+            if (this.creep.memory.roleData.targetId !== undefined) {
                 target = Game.getObjectById(this.creep.memory.roleData.targetId);
             }
 
@@ -61,8 +61,8 @@ export class FillerRole extends CreepRole {
                         })[0] as StructureLink;
 
                         if (
-                            this.creep.room.storage != undefined &&
-                            link != undefined &&
+                            this.creep.room.storage !== undefined &&
+                            link !== undefined &&
                             (link.store.getUsedCapacity(RESOURCE_ENERGY) as number) > 0
                         ) {
                             targets.push(this.creep.room.storage);
@@ -84,7 +84,7 @@ export class FillerRole extends CreepRole {
 
             if (target != null) {
                 this.creep.memory.roleData.targetId = target.id;
-                if (this.creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                if (this.creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
                     this.smartMove(target.pos, 1);
                 } else {
                     this.creep.memory.roleData.targetId = undefined;

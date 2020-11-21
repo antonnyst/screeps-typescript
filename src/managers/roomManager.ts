@@ -10,7 +10,7 @@ import { ResourceHandler } from "./roomManager/resourceHandler";
 
 export class RoomManager implements Manager {
     run() {
-        for (let room in Game.rooms) {
+        for (const room in Game.rooms) {
             roomLogic(room);
         }
     }
@@ -26,7 +26,7 @@ function roomLogic(roomName: string): void {
         updateRoomHostiles(room);
     }
     if (
-        (room.memory.reservation != undefined || room.memory.roomLevel === -1 || room.memory.roomLevel === 1) &&
+        (room.memory.reservation !== undefined || room.memory.roomLevel === -1 || room.memory.roomLevel === 1) &&
         Game.time % 5 === 0
     ) {
         updateRoomReservation(room);
@@ -65,13 +65,13 @@ function getRoomLevel(room: Room): number {
     if (room.controller.my) {
         return 2;
     }
-    const hasOwnStructures: Boolean = room.find(FIND_MY_STRUCTURES).length > 0 ? true : false;
+    const hasOwnStructures: boolean = room.find(FIND_MY_STRUCTURES).length > 0 ? true : false;
     if (hasOwnStructures) {
         return 2;
     }
     if (
-        room.controller.owner != undefined &&
-        room.controller.owner.username != Game.spawns[Object.keys(Game.spawns)[0]].owner.username
+        room.controller.owner !== undefined &&
+        room.controller.owner.username !== Game.spawns[Object.keys(Game.spawns)[0]].owner.username
     ) {
         return -2;
     }
@@ -94,10 +94,9 @@ function updateRoomHostiles(room: Room): void {
     if (room.memory.hostiles === undefined) {
         room.memory.hostiles = {};
     }
-    let newHostiles: { [key: string]: import("../dataInterfaces/hostileData").HostileData } = {};
-    for (let i = 0; i < hostiles.length; i++) {
-        const creep = hostiles[i];
-        if (room.memory.hostiles[creep.id] != undefined) {
+    const newHostiles: { [key: string]: import("../dataInterfaces/hostileData").HostileData } = {};
+    for (const creep of hostiles) {
+        if (room.memory.hostiles[creep.id] !== undefined) {
             newHostiles[creep.id] = room.memory.hostiles[creep.id];
         } else {
             newHostiles[creep.id] = {

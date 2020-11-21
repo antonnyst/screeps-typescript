@@ -14,7 +14,7 @@ export class HaulerRole extends CreepRole {
             console.log("invalid sourceIndex");
             return;
         }
-        const sourceData: SourceData = Memory.rooms[this.creep.memory.home].layout.sources[parseInt(sourceIndex)];
+        const sourceData: SourceData = Memory.rooms[this.creep.memory.home].layout.sources[parseInt(sourceIndex, 10)];
         if (sourceData === undefined) {
             console.log("invalid sourceData");
             return;
@@ -25,20 +25,20 @@ export class HaulerRole extends CreepRole {
             this.creep.memory.roleData.hasEnergy = false;
         }
 
-        if (this.creep.memory.roleData.hasEnergy == false && this.creep.store.getFreeCapacity() == 0) {
+        if (this.creep.memory.roleData.hasEnergy === false && this.creep.store.getFreeCapacity() === 0) {
             this.creep.memory.roleData.hasEnergy = true;
         }
 
-        if (this.creep.memory.roleData.hasEnergy == true && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
+        if (this.creep.memory.roleData.hasEnergy === true && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
             this.creep.memory.roleData.hasEnergy = false;
         }
 
         if (this.creep.memory.roleData.hasEnergy === false) {
-            //get from designated source
+            // get from designated source
             if (this.creep.pos.isNearTo(minerPos)) {
                 let container: StructureContainer | null = null;
 
-                if (this.creep.memory.roleData.target != undefined) {
+                if (this.creep.memory.roleData.target !== undefined) {
                     container = Game.getObjectById(this.creep.memory.roleData.target) as StructureContainer;
                 }
 
@@ -50,7 +50,7 @@ export class HaulerRole extends CreepRole {
                 }
 
                 if (
-                    container != undefined &&
+                    container !== undefined &&
                     container.store.getUsedCapacity(RESOURCE_ENERGY) >= this.creep.store.getFreeCapacity()
                 ) {
                     this.creep.memory.roleData.target = container.id;
@@ -70,7 +70,7 @@ export class HaulerRole extends CreepRole {
                 target = container;
             }
 
-            if (target === null && this.creep.room.storage != undefined) {
+            if (target === null && this.creep.room.storage !== undefined) {
                 if (this.creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 100000) {
                     const cpos = unpackPosition(Memory.rooms[this.creep.memory.home].layout.baseCenter);
                     const link: StructureLink = _.filter(
@@ -88,7 +88,7 @@ export class HaulerRole extends CreepRole {
             }
 
             if (target != null) {
-                if (this.creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                if (this.creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
                     this.smartMove(target.pos, 1);
                 }
             }

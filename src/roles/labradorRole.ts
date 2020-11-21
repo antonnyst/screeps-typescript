@@ -1,6 +1,7 @@
 import { CreepRole } from "./creepRole";
 import * as C from "../config/constants";
 
+/*
 export class OldLabradorRole extends CreepRole {
     runRole() {
         if (this.creep === null) {
@@ -32,85 +33,85 @@ export class OldLabradorRole extends CreepRole {
             } else {
             }
         } else if (this.creep.memory.roleData.anyStore.state === "fillTerminal") {
-            if (this.creep.memory.roleData.hasEnergy == undefined) {
+            if (this.creep.memory.roleData.hasEnergy === undefined) {
                 this.creep.memory.roleData.hasEnergy = false;
             }
 
-            if (this.creep.memory.roleData.hasEnergy == false && this.creep.store.getFreeCapacity() == 0) {
+            if (this.creep.memory.roleData.hasEnergy === false && this.creep.store.getFreeCapacity() === 0) {
                 this.creep.memory.roleData.hasEnergy = true;
             }
 
             if (
-                this.creep.memory.roleData.hasEnergy == true &&
-                this.creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0
+                this.creep.memory.roleData.hasEnergy === true &&
+                this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0
             ) {
                 this.creep.memory.roleData.hasEnergy = false;
             }
 
-            if (this.creep.memory.roleData.hasEnergy == false) {
+            if (this.creep.memory.roleData.hasEnergy === false) {
                 this.getEnergy();
             } else {
-                let target: Structure | undefined = homeRoom.terminal;
+                const target: Structure | undefined = homeRoom.terminal;
 
-                if (target != undefined) {
-                    if (this.creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                if (target !== undefined) {
+                    if (this.creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
                         this.smartMove(target.pos, 1);
                     }
                 }
             }
         } else if (this.creep.memory.roleData.anyStore.state === "emptyTerminal") {
-            if (this.creep.memory.roleData.hasEnergy == undefined) {
+            if (this.creep.memory.roleData.hasEnergy === undefined) {
                 this.creep.memory.roleData.hasEnergy = false;
             }
 
-            if (this.creep.memory.roleData.hasEnergy == false && this.creep.store.getFreeCapacity() == 0) {
+            if (this.creep.memory.roleData.hasEnergy === false && this.creep.store.getFreeCapacity() === 0) {
                 this.creep.memory.roleData.hasEnergy = true;
             }
 
             if (
-                this.creep.memory.roleData.hasEnergy == true &&
-                this.creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0
+                this.creep.memory.roleData.hasEnergy === true &&
+                this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0
             ) {
                 this.creep.memory.roleData.hasEnergy = false;
             }
 
-            if (this.creep.memory.roleData.hasEnergy == false) {
-                let target: Structure | undefined = homeRoom.terminal;
+            if (this.creep.memory.roleData.hasEnergy === false) {
+                const target: Structure | undefined = homeRoom.terminal;
 
-                if (target != undefined) {
-                    if (this.creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                if (target !== undefined) {
+                    if (this.creep.withdraw(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
                         this.smartMove(target.pos, 1);
                     }
                 }
             } else {
-                let target: Structure | undefined = homeRoom.storage;
+                const target: Structure | undefined = homeRoom.storage;
 
-                if (target != undefined) {
-                    if (this.creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                if (target !== undefined) {
+                    if (this.creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
                         this.smartMove(target.pos, 1);
                     }
                 }
             }
         } else if (this.creep.memory.roleData.anyStore.state === "fillLabs") {
-            if (this.creep.memory.roleData.hasEnergy == undefined) {
+            if (this.creep.memory.roleData.hasEnergy === undefined) {
                 this.creep.memory.roleData.hasEnergy = false;
             }
 
-            if (this.creep.memory.roleData.hasEnergy == false && this.creep.store.getFreeCapacity() == 0) {
+            if (this.creep.memory.roleData.hasEnergy === false && this.creep.store.getFreeCapacity() === 0) {
                 this.creep.memory.roleData.hasEnergy = true;
             }
 
             if (
-                this.creep.memory.roleData.hasEnergy == true &&
-                this.creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0
+                this.creep.memory.roleData.hasEnergy === true &&
+                this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0
             ) {
                 this.creep.memory.roleData.hasEnergy = false;
             }
 
-            if (this.creep.memory.roleData.hasEnergy == false) {
+            if (this.creep.memory.roleData.hasEnergy === false) {
                 this.getEnergy();
             } else {
-                let target: Structure | null = this.creep.pos.findClosestByRange(
+                const target: Structure | null = this.creep.pos.findClosestByRange(
                     homeRoom.find(FIND_MY_STRUCTURES, {
                         filter: (s) =>
                             s.structureType === STRUCTURE_LAB &&
@@ -119,7 +120,7 @@ export class OldLabradorRole extends CreepRole {
                 );
 
                 if (target != null) {
-                    if (this.creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                    if (this.creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
                         this.smartMove(target.pos, 1);
                     }
                 }
@@ -127,8 +128,8 @@ export class OldLabradorRole extends CreepRole {
         } else if (this.creep.memory.roleData.anyStore.state === "pickup") {
             if (this.creep.memory.roleData.anyStore.target === null) {
                 const target: Structure | undefined = homeRoom.terminal;
-                if (target != undefined) {
-                    if (this.creep.transfer(target, this.creep.memory.roleData.anyStore.resType) == ERR_NOT_IN_RANGE) {
+                if (target !== undefined) {
+                    if (this.creep.transfer(target, this.creep.memory.roleData.anyStore.resType) === ERR_NOT_IN_RANGE) {
                         this.smartMove(target.pos, 1);
                     }
                 }
@@ -153,9 +154,10 @@ export class OldLabradorRole extends CreepRole {
         } else if (this.creep.memory.roleData.anyStore.state === "takeTombstone") {
             if (this.creep.memory.roleData.anyStore.target === null) {
                 const target: Structure | undefined = homeRoom.terminal;
-                if (target != undefined) {
+                if (target !== undefined) {
                     if (
-                        this.creep.transfer(target, _.findKey(this.creep.store) as ResourceConstant) == ERR_NOT_IN_RANGE
+                        this.creep.transfer(target, _.findKey(this.creep.store) as ResourceConstant) ===
+                        ERR_NOT_IN_RANGE
                     ) {
                         this.smartMove(target.pos, 1);
                     }
@@ -187,15 +189,15 @@ export class OldLabradorRole extends CreepRole {
 
                 const lab: StructureLab | null = Game.getObjectById(tLab.id) as StructureLab;
 
-                if (lab != null && tRes != null) {
+                if (lab !== null && tRes !== null) {
                     if (this.creep.store.getUsedCapacity(tRes) > 0) {
-                        //put in lab
+                        // put in lab
 
                         if (lab.store.getFreeCapacity(tRes) === 0) {
                             this.creep.memory.roleData.anyStore.state = "pickup";
                             this.creep.memory.roleData.anyStore.target = null;
                             this.creep.memory.roleData.anyStore.resType = tRes;
-                        } else if (this.creep.transfer(lab, tRes) == ERR_NOT_IN_RANGE) {
+                        } else if (this.creep.transfer(lab, tRes) === ERR_NOT_IN_RANGE) {
                             this.smartMove(lab.pos, 1);
                         }
                     } else {
@@ -205,11 +207,11 @@ export class OldLabradorRole extends CreepRole {
                         }
 
                         const target: StructureTerminal | undefined = homeRoom.terminal;
-                        if (target != undefined) {
+                        if (target !== undefined) {
                             if (target.store.getUsedCapacity(tRes) === 0) {
                                 this.creep.memory.roleData.anyStore.state = "idle";
                                 this.creep.memory.roleData.anyStore.target = undefined;
-                            } else if (this.creep.withdraw(target, tRes) == ERR_NOT_IN_RANGE) {
+                            } else if (this.creep.withdraw(target, tRes) === ERR_NOT_IN_RANGE) {
                                 this.smartMove(target.pos, 1);
                             }
                         } else {
@@ -231,13 +233,13 @@ export class OldLabradorRole extends CreepRole {
                 const lab: StructureLab | null = Game.getObjectById(tLab.id) as StructureLab;
                 if (lab != null) {
                     const tRes = lab.mineralType;
-                    if (tRes != undefined) {
+                    if (tRes !== undefined && tRes !== null) {
                         if (this.creep.store.getUsedCapacity(tRes) > 0) {
-                            //take to terminal
+                            // take to terminal
                             const target: Structure | undefined = homeRoom.terminal;
-                            if (target != undefined) {
+                            if (target !== undefined) {
                                 if (
-                                    this.creep.transfer(target, _.findKey(this.creep.store) as ResourceConstant) ==
+                                    this.creep.transfer(target, _.findKey(this.creep.store) as ResourceConstant) ===
                                     ERR_NOT_IN_RANGE
                                 ) {
                                     this.smartMove(target.pos, 1);
@@ -245,12 +247,11 @@ export class OldLabradorRole extends CreepRole {
                             }
                         } else {
                             const amt: number | null = lab.store.getUsedCapacity(tRes);
-                            if (amt != null && amt > 0) {
-                                //empty lab
+                            if (amt !== null && amt > 0) {
+                                // empty lab
                                 if (this.creep.withdraw(lab, tRes) === ERR_NOT_IN_RANGE) {
                                     this.smartMove(lab.pos);
                                 }
-                            } else {
                             }
                         }
                     } else {
@@ -286,14 +287,14 @@ export class OldLabradorRole extends CreepRole {
         }
 
         if (
-            homeRoom.terminal != undefined &&
+            homeRoom.terminal !== undefined &&
             homeRoom.terminal.store.getUsedCapacity(RESOURCE_ENERGY) < C.TERMINAL_ENERGY_MIN
         ) {
             this.creep.memory.roleData.anyStore.state = "fillTerminal";
             return;
         }
         if (
-            homeRoom.terminal != undefined &&
+            homeRoom.terminal !== undefined &&
             homeRoom.terminal.store.getUsedCapacity(RESOURCE_ENERGY) > C.TERMINAL_ENERGY_MAX
         ) {
             this.creep.memory.roleData.anyStore.state = "emptyTerminal";
@@ -302,7 +303,7 @@ export class OldLabradorRole extends CreepRole {
         if (
             homeRoom.controller &&
             homeRoom.controller.level > 6 &&
-            homeRoom.memory.labs != undefined &&
+            homeRoom.memory.labs !== undefined &&
             homeRoom.memory.labs.status !== "react"
         ) {
             for (const l in homeRoom.memory.labs.labs) {
@@ -315,25 +316,25 @@ export class OldLabradorRole extends CreepRole {
                             labObj.mineralType === lab.targetResource &&
                             (labObj.store.getFreeCapacity(labObj.mineralType) as number) > 0)
                     ) {
-                        //we need to fill;
+                        // we need to fill;
                         if (
-                            homeRoom.terminal != undefined &&
+                            homeRoom.terminal !== undefined &&
                             homeRoom.terminal.store.getUsedCapacity(lab.targetResource) > 0
                         ) {
-                            //we can fill it;
+                            // we can fill it;
                             this.creep.memory.roleData.anyStore.state = "moveLab";
-                            this.creep.memory.roleData.anyStore.target = parseInt(l);
+                            this.creep.memory.roleData.anyStore.target = parseInt(l, 10);
                             return;
                         }
                     } else if (
-                        (lab.targetResource === null && labObj.mineralType != null) ||
+                        (lab.targetResource === null && labObj.mineralType !== null) ||
                         (lab.targetResource !== null &&
-                            labObj.mineralType != null &&
-                            labObj.mineralType != lab.targetResource)
+                            labObj.mineralType !== null &&
+                            labObj.mineralType !== lab.targetResource)
                     ) {
-                        //we need to empty
+                        // we need to empty
                         this.creep.memory.roleData.anyStore.state = "emptyLab";
-                        this.creep.memory.roleData.anyStore.target = parseInt(l);
+                        this.creep.memory.roleData.anyStore.target = parseInt(l, 10);
                         return;
                     }
                 }
@@ -351,10 +352,10 @@ export class OldLabradorRole extends CreepRole {
                 return;
             }
 
-            let rooms: Room[] = [homeRoom];
+            const rooms: Room[] = [homeRoom];
 
             for (const r of homeRoom.memory.remotes) {
-                if (Game.rooms[r] != undefined) {
+                if (Game.rooms[r] !== undefined) {
                     rooms.push(Game.rooms[r]);
                 }
             }
@@ -406,7 +407,7 @@ export class OldLabradorRole extends CreepRole {
         }
         if (this.creep.memory.roleData.anyStore.state === "fillTerminal") {
             if (
-                homeRoom.terminal != undefined &&
+                homeRoom.terminal !== undefined &&
                 homeRoom.terminal.store.getUsedCapacity(RESOURCE_ENERGY) >= C.TERMINAL_ENERGY_MIN
             ) {
                 this.creep.memory.roleData.anyStore.state = "idle";
@@ -416,7 +417,7 @@ export class OldLabradorRole extends CreepRole {
         if (this.creep.memory.roleData.anyStore.state === "emptyTerminal") {
             if (
                 this.creep.store.energy === 0 &&
-                homeRoom.terminal != undefined &&
+                homeRoom.terminal !== undefined &&
                 homeRoom.terminal.store.getUsedCapacity(RESOURCE_ENERGY) <= C.TERMINAL_ENERGY_MAX
             ) {
                 this.creep.memory.roleData.anyStore.state = "idle";
@@ -484,16 +485,16 @@ export class OldLabradorRole extends CreepRole {
             }
         }
     }
-}
+}*/
 
-//possible states
-//idle
-//fill terminal (energy)
-//empty terminal (energy)
-//fill labs (energy)
-//move lab
-//empty lab
-//pickup
+// possible states
+// idle
+// fill terminal (energy)
+// empty terminal (energy)
+// fill labs (energy)
+// move lab
+// empty lab
+// pickup
 
 // REWORK
 
@@ -574,16 +575,16 @@ export class LabradorRole extends CreepRole {
             amount:200,
             type:"transfer" | "withdraw" | "pickup"
         }*/
-        //get the object
-        //get object position
-        //if not adjacent to object move there
-        //if adjacent to object, withdraw/transfer/pickup object
-        //and assign new task if it works
+        // get the object
+        // get object position
+        // if not adjacent to object move there
+        // if adjacent to object, withdraw/transfer/pickup object
+        // and assign new task if it works
         const target: AnyStoreStructure | Tombstone | Resource | null = Game.getObjectById(
             this.creep.memory.labrador.task.id
         );
         if (target === null) {
-            //object is gone.
+            // object is gone.
             this.creep.memory.labrador.task = undefined;
             return;
         }
@@ -598,7 +599,7 @@ export class LabradorRole extends CreepRole {
             switch (this.creep.memory.labrador.task.type) {
                 case "transfer":
                     if (!(target instanceof Resource) && !(target instanceof Tombstone)) {
-                        //filter out Resource and Tombstone
+                        // filter out Resource and Tombstone
                         result = this.creep.transfer(
                             target,
                             this.creep.memory.labrador.task.resourceType,
@@ -610,7 +611,7 @@ export class LabradorRole extends CreepRole {
                     break;
                 case "withdraw":
                     if (!(target instanceof Resource)) {
-                        //filter out Resource
+                        // filter out Resource
                         result = this.creep.withdraw(
                             target,
                             this.creep.memory.labrador.task.resourceType,
@@ -622,7 +623,7 @@ export class LabradorRole extends CreepRole {
                     break;
                 case "pickup":
                     if (target instanceof Resource) {
-                        //only Resource
+                        // only Resource
                         result = this.creep.pickup(target);
                     } else {
                         console.log("pickup type while target is not resource");
@@ -641,19 +642,19 @@ export class LabradorRole extends CreepRole {
             if (this.creep.memory.labrador.qtask.length > 0) {
                 this.creep.memory.labrador.task = this.creep.memory.labrador.qtask.shift();
                 if (this.creep.memory.labrador.task !== undefined) {
-                    const target: AnyStoreStructure | Tombstone | Resource | null = Game.getObjectById(
+                    const ttarget: AnyStoreStructure | Tombstone | Resource | null = Game.getObjectById(
                         this.creep.memory.labrador.task.id
                     );
-                    if (target === null) {
-                        //object is gone.
+                    if (ttarget === null) {
+                        // object is gone.
                         this.creep.memory.labrador.task = undefined;
                         return;
                     }
 
-                    const range: number = this.creep.pos.getRangeTo(target.pos);
+                    const rrange: number = this.creep.pos.getRangeTo(ttarget.pos);
 
-                    if (range > 1) {
-                        this.smartMove(target, 1);
+                    if (rrange > 1) {
+                        this.smartMove(ttarget, 1);
                     }
                 }
             } else {
@@ -810,10 +811,10 @@ export class LabradorRole extends CreepRole {
             }
         }
 
-        //TODO lab filling
+        // TODO lab filling
 
-        //TODO factory transport
+        // TODO factory transport
 
-        //TODO pickup tombstones/resources
+        // TODO pickup tombstones/resources
     }
 }

@@ -12,13 +12,13 @@ export class SpawnManager implements Manager {
                     filter: (s) => s.spawning === null
                 })[0];
 
-                if (spawn != undefined) {
+                if (spawn !== undefined) {
                     const spawnData: SpawnData | undefined = room.memory.spawnQueue.shift();
 
-                    if (spawnData != undefined) {
-                        let body: BodyPartConstant[] | undefined = undefined;
+                    if (spawnData !== undefined) {
+                        let body: BodyPartConstant[] | undefined;
                         if (spawnData.body === undefined) {
-                            if (spawnData.pattern != undefined && spawnData.energy != undefined) {
+                            if (spawnData.pattern !== undefined && spawnData.energy !== undefined) {
                                 body = GenerateBodyFromPattern(spawnData.pattern, spawnData.energy).sort(
                                     (a, b) => bodySortingValues[a] - bodySortingValues[b]
                                 );
@@ -28,9 +28,9 @@ export class SpawnManager implements Manager {
                         } else {
                             body = spawnData.body;
                         }
-                        let memory: CreepMemory | undefined = undefined;
+                        let memory: CreepMemory | undefined;
                         if (spawnData.memory === undefined) {
-                            if (spawnData.role != undefined) {
+                            if (spawnData.role !== undefined) {
                                 memory = { role: spawnData.role, home: room.name };
                             } else {
                                 console.log("SpawnData error");
@@ -47,9 +47,9 @@ export class SpawnManager implements Manager {
                         if (body === undefined || memory === undefined || name === undefined) {
                             continue;
                         } else {
-                            const result = spawn.spawnCreep(body, name, { memory: memory });
+                            const result = spawn.spawnCreep(body, name, { memory });
 
-                            if (result != 0) {
+                            if (result !== 0) {
                                 room.memory.spawnQueue.unshift(spawnData);
                             }
                         }

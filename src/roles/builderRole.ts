@@ -21,11 +21,11 @@ export class BuilderRole extends CreepRole {
             this.creep.memory.roleData.hasEnergy = false;
         }
 
-        if (this.creep.memory.roleData.hasEnergy == false && this.creep.store.getFreeCapacity() == 0) {
+        if (this.creep.memory.roleData.hasEnergy === false && this.creep.store.getFreeCapacity() === 0) {
             this.creep.memory.roleData.hasEnergy = true;
         }
 
-        if (this.creep.memory.roleData.hasEnergy == true && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
+        if (this.creep.memory.roleData.hasEnergy === true && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
             this.creep.memory.roleData.hasEnergy = false;
         }
 
@@ -40,7 +40,7 @@ export class BuilderRole extends CreepRole {
                 target = findTarget(this.creep);
             }
 
-            if (target != null) {
+            if (target !== null) {
                 if (target instanceof ConstructionSite) {
                     if (this.creep.build(target) === ERR_NOT_IN_RANGE) {
                         this.smartMove(target.pos, 2);
@@ -49,7 +49,7 @@ export class BuilderRole extends CreepRole {
                     const res = this.creep.repair(target);
                     if (res === ERR_NOT_IN_RANGE) {
                         this.smartMove(target.pos, 2);
-                    } else if (res != OK || Game.time % 20 === 0) {
+                    } else if (res !== OK || Game.time % 20 === 0) {
                         this.creep.memory.roleData.targetId = undefined;
                     }
                 }
@@ -108,7 +108,7 @@ function findTarget(creep: Creep): Structure | ConstructionSite | null {
         target = Game.getObjectById(tid);
     }
 
-    if (target != null && creep.memory.roleData != undefined) {
+    if (target !== null && creep.memory.roleData !== undefined) {
         creep.memory.roleData.targetId = target.id;
         return target;
     }
