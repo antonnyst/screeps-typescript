@@ -17,24 +17,24 @@ export class RaiderRole extends CreepRole {
             this.creep.memory.roleData.hasEnergy = false;
         }
 
-        if (this.creep.memory.roleData.hasEnergy == false && this.creep.store.getFreeCapacity() === 0) {
+        if (this.creep.memory.roleData.hasEnergy === false && this.creep.store.getFreeCapacity() === 0) {
             this.creep.memory.roleData.hasEnergy = true;
         }
 
-        if (this.creep.memory.roleData.hasEnergy == true && this.creep.store.getUsedCapacity() === 0) {
+        if (this.creep.memory.roleData.hasEnergy === true && this.creep.store.getUsedCapacity() === 0) {
             this.creep.memory.roleData.hasEnergy = false;
         }
 
         if (this.creep.memory.roleData.hasEnergy === false) {
-            if (this.creep.room.name != this.creep.memory.roleData.target) {
+            if (this.creep.room.name !== this.creep.memory.roleData.target) {
                 this.smartMove(new RoomPosition(25, 25, this.creep.memory.roleData.target), 20);
             } else {
                 const target: StructureStorage = this.creep.room.find(FIND_STRUCTURES, {
                     filter: (s) => s.structureType === STRUCTURE_STORAGE
                 })[0] as StructureStorage;
 
-                if (target != undefined) {
-                    if (this.creep.withdraw(target, _.findKey(target.store) as ResourceConstant) == ERR_NOT_IN_RANGE) {
+                if (target !== undefined) {
+                    if (this.creep.withdraw(target, _.findKey(target.store) as ResourceConstant) === ERR_NOT_IN_RANGE) {
                         this.smartMove(target.pos, 1);
                     }
                 }
@@ -42,8 +42,8 @@ export class RaiderRole extends CreepRole {
         } else {
             const target: StructureStorage | undefined = Game.rooms[this.creep.memory.home].storage;
 
-            if (target != undefined) {
-                if (this.creep.transfer(target, _.findKey(this.creep.store) as ResourceConstant) == ERR_NOT_IN_RANGE) {
+            if (target !== undefined) {
+                if (this.creep.transfer(target, _.findKey(this.creep.store) as ResourceConstant) === ERR_NOT_IN_RANGE) {
                     this.smartMove(target.pos, 1);
                 }
             }

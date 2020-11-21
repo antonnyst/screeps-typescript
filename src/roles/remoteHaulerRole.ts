@@ -17,11 +17,11 @@ export class RemoteHaulerRole extends CreepRole {
             this.creep.memory.roleData.hasEnergy = false;
         }
 
-        if (this.creep.memory.roleData.hasEnergy == false && this.creep.store.getFreeCapacity() == 0) {
+        if (this.creep.memory.roleData.hasEnergy === false && this.creep.store.getFreeCapacity() === 0) {
             this.creep.memory.roleData.hasEnergy = true;
         }
 
-        if (this.creep.memory.roleData.hasEnergy == true && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
+        if (this.creep.memory.roleData.hasEnergy === true && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
             this.creep.memory.roleData.hasEnergy = false;
         }
 
@@ -31,7 +31,7 @@ export class RemoteHaulerRole extends CreepRole {
             return;
         }
         const sourceData: RemoteSourceData =
-            Memory.rooms[this.creep.memory.roleData.target].remoteLayout.sources[parseInt(sourceIndex)];
+            Memory.rooms[this.creep.memory.roleData.target].remoteLayout.sources[parseInt(sourceIndex, 10)];
         if (sourceData === undefined) {
             console.log("invalid sourceData");
             return;
@@ -50,7 +50,7 @@ export class RemoteHaulerRole extends CreepRole {
                 }
 
                 if (
-                    container != undefined &&
+                    container !== undefined &&
                     container.store.getUsedCapacity(RESOURCE_ENERGY) >= this.creep.store.getFreeCapacity()
                 ) {
                     this.creep.withdraw(container, RESOURCE_ENERGY);
@@ -65,25 +65,25 @@ export class RemoteHaulerRole extends CreepRole {
                 ),
                 (s: Structure) => s.structureType === STRUCTURE_CONTAINER
             )[0] as StructureContainer;
-            let target: StructureContainer | StructureStorage | StructureLink | undefined = undefined;
+            let target: StructureContainer | StructureStorage | StructureLink | undefined;
 
             if (
-                container != undefined &&
+                container !== undefined &&
                 container.store.getFreeCapacity(RESOURCE_ENERGY) > CONTAINER_CAPACITY * 0.25
             ) {
                 target = container;
             }
 
-            if (target === undefined && Game.rooms[this.creep.memory.home].storage != undefined) {
+            if (target === undefined && Game.rooms[this.creep.memory.home].storage !== undefined) {
                 const storage: StructureStorage | undefined = Game.rooms[this.creep.memory.home].storage;
-                if (storage != undefined && storage.store.getUsedCapacity(RESOURCE_ENERGY) > 100000) {
+                if (storage !== undefined && storage.store.getUsedCapacity(RESOURCE_ENERGY) > 100000) {
                     const cpos = unpackPosition(Memory.rooms[this.creep.memory.home].layout.baseCenter);
                     const link: StructureLink = _.filter(
                         new RoomPosition(cpos.x, cpos.y - 1, cpos.roomName).lookFor(LOOK_STRUCTURES),
                         (s: Structure) => s.structureType === STRUCTURE_LINK
                     )[0] as StructureLink;
 
-                    if (link != null && (link.store.getFreeCapacity(RESOURCE_ENERGY) as number) > 0) {
+                    if (link !== null && (link.store.getFreeCapacity(RESOURCE_ENERGY) as number) > 0) {
                         target = link;
                     }
                 }
@@ -92,8 +92,8 @@ export class RemoteHaulerRole extends CreepRole {
                 }
             }
 
-            if (target != undefined) {
-                if (this.creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            if (target !== undefined) {
+                if (this.creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
                     this.smartMove(target.pos, 1);
                 }
             }

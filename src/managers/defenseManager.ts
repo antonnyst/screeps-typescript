@@ -3,7 +3,7 @@ import { unpackPosition } from "../utils/RoomPositionPacker";
 
 export class DefenseManager implements Manager {
     public run() {
-        for (let room in Game.rooms) {
+        for (const room in Game.rooms) {
             RunTowers(Game.rooms[room]);
         }
     }
@@ -25,7 +25,7 @@ function RunTowers(room: Room): void {
                     h.getActiveBodyparts(RANGED_ATTACK) ||
                     h.getActiveBodyparts(HEAL) ||
                     h.getActiveBodyparts(CARRY) ||
-                    (room.memory.hostiles[h.id] != undefined && room.memory.hostiles[h.id].firstSeen < Game.time - 50)
+                    (room.memory.hostiles[h.id] !== undefined && room.memory.hostiles[h.id].firstSeen < Game.time - 50)
             );
             const basePos: RoomPosition = unpackPosition(room.memory.layout.baseCenter);
 

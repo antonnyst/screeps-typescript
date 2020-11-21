@@ -19,7 +19,7 @@ export class MinerRole extends CreepRole {
             return;
         }
 
-        const sourceData: SourceData = Memory.rooms[this.creep.memory.home].layout.sources[parseInt(sourceIndex)];
+        const sourceData: SourceData = Memory.rooms[this.creep.memory.home].layout.sources[parseInt(sourceIndex, 10)];
         if (sourceData === undefined) {
             console.log("invalid sourceData");
             return;
@@ -36,7 +36,7 @@ export class MinerRole extends CreepRole {
         if (this.creep.pos.isEqualTo(minerPos)) {
             this.creep.harvest(source);
 
-            if (this.creep.memory.checkIdle != undefined) {
+            if (this.creep.memory.checkIdle !== undefined) {
                 this.creep.memory.checkIdle.idleCount = 1;
             }
 

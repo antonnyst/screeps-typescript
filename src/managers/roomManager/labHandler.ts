@@ -31,7 +31,7 @@ function LabData(room: Room): void {
             for (const lab of room.memory.labs.labs) {
                 const labObj = Game.getObjectById(lab.id) as StructureLab;
                 if (lab.targetResource === null && labObj != null && labObj.mineralType == null) {
-                    //lab is ready
+                    // lab is ready
                     continue;
                 }
 
@@ -41,7 +41,7 @@ function LabData(room: Room): void {
                     labObj.mineralType === lab.targetResource &&
                     labObj.store.getFreeCapacity(labObj.mineralType) === 0
                 ) {
-                    //lab is ready
+                    // lab is ready
                     continue;
                 }
 
@@ -57,17 +57,17 @@ function LabData(room: Room): void {
 }
 function RunLabs(room: Room): void {
     if (room.memory.labs && room.memory.labs.status === "react") {
-        let inLabs: StructureLab[] = [];
-        let outLabs: StructureLab[] = [];
+        const inLabs: StructureLab[] = [];
+        const outLabs: StructureLab[] = [];
 
         for (const i of room.memory.labs.inLabs) {
-            let r: StructureLab | null = Game.getObjectById(room.memory.labs.labs[i].id);
+            const r: StructureLab | null = Game.getObjectById(room.memory.labs.labs[i].id);
             if (r !== null) {
                 inLabs.push(r);
             }
         }
         for (const i of room.memory.labs.outLabs) {
-            let r: StructureLab | null = Game.getObjectById(room.memory.labs.labs[i].id);
+            const r: StructureLab | null = Game.getObjectById(room.memory.labs.labs[i].id);
             if (r !== null) {
                 outLabs.push(r);
             }
@@ -84,17 +84,17 @@ function RunLabs(room: Room): void {
 }
 
 function GenerateLabsData(room: Room): LabsData {
-    let labs: LabData[] = room
+    const labs: LabData[] = room
         .find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === STRUCTURE_LAB })
-        .map(function (l) {
+        .map((l) => {
             return {
                 id: l.id,
                 targetResource: null
             };
         });
 
-    let inLabs: number[] = [];
-    let outLabs: number[] = [];
+    const inLabs: number[] = [];
+    const outLabs: number[] = [];
 
     const cpos = unpackPosition(room.memory.layout.baseCenter);
     const ipos: RoomPosition[] = [
@@ -106,27 +106,27 @@ function GenerateLabsData(room: Room): LabsData {
         const l = Game.getObjectById(labs[la].id) as StructureLab;
         if (l != null) {
             if (l.pos.isEqualTo(ipos[0]) || l.pos.isEqualTo(ipos[1])) {
-                inLabs.push(parseInt(la));
+                inLabs.push(parseInt(la, 10));
             } else {
-                outLabs.push(parseInt(la));
+                outLabs.push(parseInt(la, 10));
             }
         }
     }
 
     return {
         status: "idle",
-        labs: labs,
-        inLabs: inLabs,
-        outLabs: outLabs
+        labs,
+        inLabs,
+        outLabs
     };
 }
 function UpdateLabData(room: Room) {
     if (room.memory.labs === undefined || room.memory.layout === undefined) {
         return;
     }
-    let oldLabs = room.memory.labs.labs;
-    let newLabs: LabData[] = _.compact(
-        room.find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === STRUCTURE_LAB }).map(function (l) {
+    const oldLabs = room.memory.labs.labs;
+    const newLabs: LabData[] = _.compact(
+        room.find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === STRUCTURE_LAB }).map((l) => {
             for (const la of oldLabs) {
                 if (la.id === l.id) {
                     return undefined;
@@ -139,10 +139,10 @@ function UpdateLabData(room: Room) {
         })
     ) as LabData[];
 
-    let labs = oldLabs.concat(newLabs);
+    const labs = oldLabs.concat(newLabs);
 
-    let inLabs: number[] = [];
-    let outLabs: number[] = [];
+    const inLabs: number[] = [];
+    const outLabs: number[] = [];
 
     const cpos = unpackPosition(room.memory.layout.baseCenter);
     const ipos: RoomPosition[] = [
@@ -154,17 +154,17 @@ function UpdateLabData(room: Room) {
         const l = Game.getObjectById(labs[la].id) as StructureLab;
         if (l != null) {
             if (l.pos.isEqualTo(ipos[0]) || l.pos.isEqualTo(ipos[1])) {
-                inLabs.push(parseInt(la));
+                inLabs.push(parseInt(la, 10));
             } else {
-                outLabs.push(parseInt(la));
+                outLabs.push(parseInt(la, 10));
             }
         }
     }
 
     room.memory.labs = {
         status: room.memory.labs.status,
-        labs: labs,
-        inLabs: inLabs,
-        outLabs: outLabs
+        labs,
+        inLabs,
+        outLabs
     };
 }

@@ -72,11 +72,11 @@ export abstract class CreepRole implements CreepRoleInterface {
         const lab: StructureLab = this.creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
             filter: (s) =>
                 s.structureType === STRUCTURE_LAB &&
-                s.mineralType == (resource as MineralBoostConstant) &&
+                s.mineralType === (resource as MineralBoostConstant) &&
                 (s.store.getUsedCapacity(s.mineralType) as number) >= 30
         }) as StructureLab;
 
-        if (lab == undefined) {
+        if (lab === undefined) {
             return;
         }
 
@@ -92,7 +92,7 @@ export abstract class CreepRole implements CreepRoleInterface {
             return;
         }
 
-        if (this.creep.pos.roomName != this.creep.memory.home) {
+        if (this.creep.pos.roomName !== this.creep.memory.home) {
             this.smartMove(unpackPosition(Memory.rooms[this.creep.memory.home].layout.baseCenter));
             return;
         }
@@ -105,31 +105,31 @@ export abstract class CreepRole implements CreepRoleInterface {
 
         let target: Structure | Resource | Tombstone | Ruin | Source | null = null;
 
-        if (this.creep.memory.getEnergy.target != undefined) {
+        if (this.creep.memory.getEnergy.target !== undefined) {
             target = Game.getObjectById(this.creep.memory.getEnergy.target);
         }
 
         if (target === null) {
             target = this.getEnergyTarget();
         }
-        if (target != null) {
-            //console.log("B");
+        if (target !== null) {
+            // console.log("B");
             this.creep.memory.getEnergy.target = target.id;
 
             if (target instanceof Resource) {
-                if (this.creep.pickup(target) == ERR_NOT_IN_RANGE) {
+                if (this.creep.pickup(target) === ERR_NOT_IN_RANGE) {
                     this.smartMove(target.pos, 1);
                 } else {
                     this.creep.memory.getEnergy.target = undefined;
                 }
             } else if (target instanceof Source) {
-                if (this.creep.harvest(target) == ERR_NOT_IN_RANGE) {
+                if (this.creep.harvest(target) === ERR_NOT_IN_RANGE) {
                     this.smartMove(target.pos, 1);
                 } else {
                     this.creep.memory.getEnergy.target = undefined;
                 }
 
-                if (this.creep.memory.checkIdle != undefined && this.creep.memory.checkIdle.idleCount >= 4) {
+                if (this.creep.memory.checkIdle !== undefined && this.creep.memory.checkIdle.idleCount >= 4) {
                     this.creep.memory.getEnergy.target = undefined;
                 }
             } else if (target instanceof Ruin || target instanceof Tombstone || target instanceof Structure) {
@@ -145,7 +145,7 @@ export abstract class CreepRole implements CreepRoleInterface {
                     }
                 }
 
-                if (this.creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                if (this.creep.withdraw(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
                     this.smartMove(target.pos, 1);
                 } else {
                     this.creep.memory.getEnergy.target = undefined;
@@ -179,7 +179,7 @@ export abstract class CreepRole implements CreepRoleInterface {
                     filter: (dr) => dr.resourceType === RESOURCE_ENERGY && dr.amount >= requiredAmount
                 }),
                 this.creep.room.find(FIND_STRUCTURES, {
-                    filter: function (s) {
+                    filter: (s) => {
                         if (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) {
                             if (s.store.getUsedCapacity(RESOURCE_ENERGY) >= requiredAmount) {
                                 return true;
@@ -198,7 +198,7 @@ export abstract class CreepRole implements CreepRoleInterface {
                                 const cpos = unpackPosition(creep.room.memory.layout.baseCenter);
                                 const lpos = new RoomPosition(cpos.x, cpos.y - 1, cpos.roomName);
                                 if (s.pos.isEqualTo(lpos)) {
-                                    //if controller is full
+                                    // if controller is full
                                     if (
                                         s.room.memory.linkStatus === "empty" &&
                                         (s.store.getUsedCapacity(RESOURCE_ENERGY) as number) >= requiredAmount
@@ -223,8 +223,8 @@ export abstract class CreepRole implements CreepRoleInterface {
         }
 
         if (targets.length > 0) {
-            const creep = this.creep;
-            targets.sort(function (a, b) {
+            const tcreep = this.creep;
+            targets.sort((a, b) => {
                 if (a === null && b != null) {
                     return 1;
                 }
@@ -242,8 +242,8 @@ export abstract class CreepRole implements CreepRoleInterface {
                     return -1;
                 }
 
-                let arange = creep.pos.getRangeTo(a.pos);
-                let brange = creep.pos.getRangeTo(b.pos);
+                let arange = tcreep.pos.getRangeTo(a.pos);
+                let brange = tcreep.pos.getRangeTo(b.pos);
 
                 if (a instanceof StructureLink) {
                     arange -= 2;
@@ -278,16 +278,16 @@ export abstract class CreepRole implements CreepRoleInterface {
             range = 0;
         }
 
-        if (this.creep.memory._move != undefined && this.creep.memory._move.path != undefined) {
+        if (this.creep.memory._move !== undefined && this.creep.memory._move.path !== undefined) {
             const nextMove: PathStep = Room.deserializePath(this.creep.memory._move.path)[0];
-            if (nextMove != undefined) {
+            if (nextMove !== undefined) {
                 const nextPos: RoomPosition = new RoomPosition(nextMove.x, nextMove.y, this.creep.room.name);
-                //this.creep.room.visual.circle(nextPos.x,nextPos.y);
+                // this.creep.room.visual.circle(nextPos.x,nextPos.y);
                 const bCreep: Creep = nextPos.lookFor(LOOK_CREEPS)[0];
-                if (bCreep != undefined && bCreep.name != this.creep.name && bCreep.fatigue === 0) {
+                if (bCreep !== undefined && bCreep.name !== this.creep.name && bCreep.fatigue === 0) {
                     if (
-                        bCreep.memory != undefined &&
-                        bCreep.memory.checkIdle != undefined &&
+                        bCreep.memory !== undefined &&
+                        bCreep.memory.checkIdle !== undefined &&
                         bCreep.memory.checkIdle.idleCount > 2
                     ) {
                         bCreep.move(bCreep.pos.getDirectionTo(this.creep.pos));
@@ -295,14 +295,14 @@ export abstract class CreepRole implements CreepRoleInterface {
                 }
             }
             const sMove: PathStep = Room.deserializePath(this.creep.memory._move.path)[1];
-            if (sMove != undefined) {
+            if (sMove !== undefined) {
                 const nextPos: RoomPosition = new RoomPosition(sMove.x, sMove.y, this.creep.room.name);
-                //this.creep.room.visual.circle(sMove.x,sMove.y);
+                // this.creep.room.visual.circle(sMove.x,sMove.y);
                 const bCreep: Creep = nextPos.lookFor(LOOK_CREEPS)[0];
-                if (bCreep != undefined && bCreep.name != this.creep.name && bCreep.fatigue === 0) {
+                if (bCreep !== undefined && bCreep.name !== this.creep.name && bCreep.fatigue === 0) {
                     if (
-                        bCreep.memory != undefined &&
-                        bCreep.memory.checkIdle != undefined &&
+                        bCreep.memory !== undefined &&
+                        bCreep.memory.checkIdle !== undefined &&
                         bCreep.memory.checkIdle.idleCount > 2
                     ) {
                         bCreep.move(bCreep.pos.getDirectionTo(this.creep.pos));
@@ -311,9 +311,9 @@ export abstract class CreepRole implements CreepRoleInterface {
             }
         }
         return this.creep.moveTo(target, {
-            costCallback: function (roomName, costMatrix): void | CostMatrix {
-                if (Game.rooms[roomName] != undefined) {
-                    Game.rooms[roomName].find(FIND_MY_CREEPS).forEach(function (creep) {
+            costCallback: (roomName, costMatrix): void | CostMatrix => {
+                if (Game.rooms[roomName] !== undefined) {
+                    Game.rooms[roomName].find(FIND_MY_CREEPS).forEach((creep) => {
                         if (
                             creep.memory.checkIdle &&
                             (creep.memory.checkIdle.idleCount > 2 || creep.memory.checkIdle.idleCount === 0)
@@ -326,7 +326,7 @@ export abstract class CreepRole implements CreepRoleInterface {
             },
             maxOps: 5000,
             reusePath: 25,
-            range: range
+            range
         });
     }
     public checkIdle() {

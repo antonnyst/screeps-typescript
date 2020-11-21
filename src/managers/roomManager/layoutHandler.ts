@@ -31,21 +31,23 @@ export function LayoutHandler(room: Room): void {
     }
 }
 
-//newlayout
-//create basic layout
-//create base layout using basic layout
+// newlayout
+// create basic layout
+// create base layout using basic layout
 
 function getBasicLayout(room: Room): BasicLayoutData {
     const sources: Source[] = room.find(FIND_SOURCES);
     const controller: StructureController | undefined = room.controller;
     const mineral: Mineral = room.find(FIND_MINERALS)[0];
 
-    const basicSources: BasicSourceData[] = sources.map(function (s): BasicSourceData {
-        return {
-            id: s.id,
-            pos: packPosition(s.pos)
-        };
-    });
+    const basicSources: BasicSourceData[] = sources.map(
+        (s): BasicSourceData => {
+            return {
+                id: s.id,
+                pos: packPosition(s.pos)
+            };
+        }
+    );
 
     const basicMineral: BasicMineralData | undefined =
         mineral !== undefined ? { id: mineral.id as string, pos: packPosition(mineral.pos) } : undefined;
@@ -128,9 +130,9 @@ function getLayout(room: Room): LayoutData | null {
         return {
             baseCenter: packPosition(centerLocation),
             controllerStore: packPosition(controllerStore),
-            sources: sources,
-            mineral: mineral,
-            roads: roads,
+            sources,
+            mineral,
+            roads,
             baseType: "bunker"
         };
     } else if (labDirection != null) {
@@ -155,13 +157,13 @@ function getLayout(room: Room): LayoutData | null {
         return {
             baseCenter: packPosition(centerLocation),
             controllerStore: packPosition(controllerStore),
-            sources: sources,
-            mineral: mineral,
-            roads: roads,
+            sources,
+            mineral,
+            roads,
             baseType: "auto",
-            extensions: extensions,
-            ramparts: ramparts,
-            labDirection: labDirection
+            extensions,
+            ramparts,
+            labDirection
         } as AutoLayoutData;
     }
     return null;
@@ -190,7 +192,7 @@ function getCenterLocation(
     return null;
 }
 function getBunkerCenterLocation(roomName: string, basicLayout: BasicLayoutData): RoomPosition | null {
-    if (Game.rooms[roomName] != undefined) {
+    if (Game.rooms[roomName] !== undefined) {
         if (Game.rooms[roomName].find(FIND_MY_SPAWNS).length === 1) {
             return Game.rooms[roomName].find(FIND_MY_SPAWNS)[0].pos;
         }
@@ -203,16 +205,16 @@ function getBunkerCenterLocation(roomName: string, basicLayout: BasicLayoutData)
         return null;
     }
 
-    const locationValues: { pos: RoomPosition; value: number }[] = potentialLocations.map(function (pos) {
+    const locationValues: { pos: RoomPosition; value: number }[] = potentialLocations.map((pos) => {
         const controllerRange = pos.getRangeTo(unpackPosition(basicLayout.controller));
         const sourcesRange = _.sum(
-            basicLayout.sources.map(function (source) {
+            basicLayout.sources.map((source) => {
                 return pos.getRangeTo(unpackPosition(source.pos));
             })
         );
 
         return {
-            pos: pos,
+            pos,
             value: controllerRange + sourcesRange
         };
     });
@@ -271,10 +273,10 @@ function getAutoRamparts(
     extensions: number[]
 ): number[] {
     const terrain = new Room.Terrain(roomName);
-    let minX = center.pos.x,
-        minY = center.pos.y,
-        maxX = center.pos.x,
-        maxY = center.pos.y;
+    let minX = center.pos.x;
+    let minY = center.pos.y;
+    let maxX = center.pos.x;
+    let maxY = center.pos.y;
 
     const centerBounds = getAutoCenterBounds()[center.dir];
     const nodeBounds = getAutoExtensionNodeBounds();
@@ -324,27 +326,27 @@ function getAutoRamparts(
         }
     }
 
-    //lets flood fill to remove useless ramparts
-    let layout: CostMatrix = new PathFinder.CostMatrix();
-    //0 = empty
-    //1 = flood
-    //2 = rampart
-    //3 = foundRampart
-    //255 = wall
+    // lets flood fill to remove useless ramparts
+    const layout: CostMatrix = new PathFinder.CostMatrix();
+    // 0 = empty
+    // 1 = flood
+    // 2 = rampart
+    // 3 = foundRampart
+    // 255 = wall
 
     const floodQueue: { x: number; y: number }[] = [];
 
     for (let x = 0; x < 50; x++) {
         for (let y = 0; y < 50; y++) {
-            if (terrain.get(x, y) == TERRAIN_MASK_WALL) {
+            if (terrain.get(x, y) === TERRAIN_MASK_WALL) {
                 layout.set(x, y, 255);
                 continue;
             }
             if (x === 0 || x === 49 || y === 0 || y === 49) {
                 layout.set(x, y, 1);
                 floodQueue.push({
-                    x: x,
-                    y: y
+                    x,
+                    y
                 });
             }
         }
@@ -360,11 +362,11 @@ function getAutoRamparts(
         if (n === undefined) {
             break;
         }
-        //check for neighboring empties
+        // check for neighboring empties
         for (let mx = -1; mx <= 1; mx++) {
             for (let my = -1; my <= 1; my++) {
-                const nx = n.x + mx,
-                    ny = n.y + my;
+                const nx = n.x + mx;
+                const ny = n.y + my;
                 if (nx < 0 || nx > 49 || ny < 0 || ny > 49) {
                     continue;
                 }
@@ -377,11 +379,11 @@ function getAutoRamparts(
                 }
             }
         }
-        //check for nearby ramparts
+        // check for nearby ramparts
         for (let mx = -3; mx <= 3; mx++) {
             for (let my = -3; my <= 3; my++) {
-                const nx = n.x + mx,
-                    ny = n.y + my;
+                const nx = n.x + mx;
+                const ny = n.y + my;
                 if (nx < 0 || nx > 49 || ny < 0 || ny > 49) {
                     continue;
                 }
@@ -392,7 +394,7 @@ function getAutoRamparts(
         }
     }
 
-    //remove not-found ramparts
+    // remove not-found ramparts
     const newPositions: number[] = [];
 
     for (const p of positions) {
@@ -414,7 +416,7 @@ function getPotentialBunkerCenters(roomName: string): RoomPosition[] {
             if (terrain.get(x, y) === TERRAIN_MASK_WALL) {
                 continue;
             }
-            let close: Boolean = false;
+            let close: boolean = false;
             for (let i = -6; i <= 6; i++) {
                 for (let j = -6; j <= 6; j++) {
                     if (terrain.get(x + i, y + j) === TERRAIN_MASK_WALL) {
@@ -447,8 +449,7 @@ function getPotentialAutoCenters(roomName: string): { pos: RoomPosition; dir: La
             }
             for (let dir = 0; dir < 4; dir++) {
                 let close = false;
-                for (let i = 0; i < baseCenterLabBounds[dir].length; i++) {
-                    const offset = baseCenterLabBounds[dir][i];
+                for (const offset of baseCenterLabBounds[dir]) {
                     const pos = {
                         x: x + offset.x,
                         y: y + offset.y
@@ -465,13 +466,13 @@ function getPotentialAutoCenters(roomName: string): { pos: RoomPosition; dir: La
                     }
                 }
                 if (close === false) {
-                    //this pos + dir works
+                    // this pos + dir works
                     console.log("potentialAutoLocations");
                     potentialLocations.push({
                         pos: new RoomPosition(x, y, roomName),
                         dir: dir as LabDirection
                     });
-                    break; //do not bother checking other directions of this position;!
+                    break; // do not bother checking other directions of this position;!
                 }
             }
         }
@@ -488,9 +489,9 @@ function getAutoExtensionLayout(
     const nodeBounds = getAutoExtensionNodeBounds(true);
 
     let layout = new PathFinder.CostMatrix();
-    //0 = free
-    //1 = neighboring obstacle
-    //255 = obstacle
+    // 0 = free
+    // 1 = neighboring obstacle
+    // 255 = obstacle
 
     const spos: RoomPosition[] = basicLayout.sources.map((s) => unpackPosition(s.pos));
     for (let x = 0; x < 50; x++) {
@@ -514,7 +515,7 @@ function getAutoExtensionLayout(
         }
     }
     for (const pos of centerBounds) {
-        //set centerbounds to 255 && neighbors to 1
+        // set centerbounds to 255 && neighbors to 1
         layout = _extLayoutSet255(layout, center.pos.x + pos.x, center.pos.y + pos.y);
         Game.rooms[roomName].visual.circle(center.pos.x + pos.x, center.pos.y + pos.y, { fill: "#ffff00" });
     }
@@ -523,26 +524,26 @@ function getAutoExtensionLayout(
         // set walls to 255 && neighbors to 1
         for (let y = 0; y < 50; y++) {
             const r = layout.get(x, y);
-            //Game.rooms[roomName].visual.text(r.toString(),x,y,{font:0.5,});
+            // Game.rooms[roomName].visual.text(r.toString(),x,y,{font:0.5,});
         }
     }
 
-    //to find extension locations
-    //find closest location with 0 value
-    //pick it and make it 255 + neighbors(node bounds(no roads))
-    //repeat until 12 are found
+    // to find extension locations
+    // find closest location with 0 value
+    // pick it and make it 255 + neighbors(node bounds(no roads))
+    // repeat until 12 are found
     const extensionNodes: number[] = [];
     let repeat = 50;
     while (extensionNodes.length < 12) {
-        let x: number = -1,
-            y: number = -1;
+        let x: number = -1;
+        let y: number = -1;
         let width: number = 1;
         while (x === -1) {
-            //console.log("in while loop + " + width);
+            // console.log("in while loop + " + width);
             for (let sx = -width; sx <= width; sx++) {
                 for (let sy = -width; sy <= width; sy++) {
                     if (Math.abs(sx) + Math.abs(sy) === width) {
-                        //lets search here
+                        // lets search here
 
                         if (
                             center.pos.x + sx > 0 &&
@@ -551,34 +552,34 @@ function getAutoExtensionLayout(
                             center.pos.y + sy < 49 &&
                             layout.get(center.pos.x + sx, center.pos.y + sy) === 0
                         ) {
-                            //found a spot
+                            // found a spot
                             x = center.pos.x + sx;
                             y = center.pos.y + sy;
-                            //console.log("found a spot " + x + "|"+ y);
-                            //console.log(center.pos.x + " " + center.pos.y);
+                            // console.log("found a spot " + x + "|"+ y);
+                            // console.log(center.pos.x + " " + center.pos.y);
                             for (const node of nodeBounds) {
                                 layout = _extLayoutSet255(layout, x + node.x, y + node.y);
                             }
                         }
                     }
                 }
-                if (x != -1) {
+                if (x !== -1) {
                     break;
                 }
             }
             width++;
             if (width > 30) {
-                //console.log("width 24");
+                // console.log("width 24");
                 break;
             }
         }
 
         if (repeat === 0 || width > 30) {
-            //console.log("stuck searching for extensionNodes");
+            // console.log("stuck searching for extensionNodes");
             return null;
         }
 
-        //console.log("extensionNodes " + x + "-"+ y);
+        // console.log("extensionNodes " + x + "-"+ y);
         Game.rooms[roomName].visual.circle(x, y);
         extensionNodes.push(packPosition(new RoomPosition(x, y, roomName)));
         repeat--;
@@ -601,22 +602,22 @@ function _extLayoutSet255(layout: CostMatrix, x: number, y: number): CostMatrix 
 let _autoCenterLabBounds: { x: number; y: number }[][];
 let _autoCenterLabBoundsNoRoads: { x: number; y: number }[][];
 
-function getAutoCenterBounds(noRoads: Boolean = false): { x: number; y: number }[][] {
+function getAutoCenterBounds(noRoads: boolean = false): { x: number; y: number }[][] {
     if (noRoads && _autoCenterLabBoundsNoRoads !== undefined) {
         return _autoCenterLabBoundsNoRoads;
     }
     if (_autoCenterLabBounds !== undefined) {
         return _autoCenterLabBounds;
     }
-    let tBaseCenterLabBounds: { x: number; y: number }[][] = [[], [], [], []];
+    const tBaseCenterLabBounds: { x: number; y: number }[][] = [[], [], [], []];
     for (let i = 0; i <= 8; i++) {
-        for (let j = 0; j < baseCenterLayout[i].length; j++) {
-            if (noRoads && baseCenterLayout[i][j].type === STRUCTURE_ROAD) {
+        for (const baseCenter of baseCenterLayout[i]) {
+            if (noRoads && baseCenter.type === STRUCTURE_ROAD) {
                 continue;
             }
             const o = {
-                x: baseCenterLayout[i][j].x,
-                y: baseCenterLayout[i][j].y
+                x: baseCenter.x,
+                y: baseCenter.y
             };
             tBaseCenterLabBounds[0].push(o);
             tBaseCenterLabBounds[1].push(o);
@@ -626,26 +627,27 @@ function getAutoCenterBounds(noRoads: Boolean = false): { x: number; y: number }
     }
     for (let dir = 0; dir < 4; dir++) {
         for (let i = 0; i <= 8; i++) {
-            for (let j = 0; j < autoLabsLayout[i].length; j++) {
-                if (noRoads && autoLabsLayout[i][j].type === STRUCTURE_ROAD) {
+            for (const autoLab of autoLabsLayout[i]) {
+                if (noRoads && autoLab.type === STRUCTURE_ROAD) {
                     continue;
                 }
                 const o: { x: number; y: number } = {
-                    x: (autoLabsLayout[i][j].x * autoLabsRotationGuide[dir].mx) as number,
-                    y: (autoLabsLayout[i][j].y * autoLabsRotationGuide[dir].my) as number
+                    x: (autoLab.x * autoLabsRotationGuide[dir].mx) as number,
+                    y: (autoLab.y * autoLabsRotationGuide[dir].my) as number
                 };
                 tBaseCenterLabBounds[dir].push(o);
             }
         }
     }
 
-    let baseCenterLabBounds: { x: number; y: number }[][] = [[], [], [], []];
+    const baseCenterLabBounds: { x: number; y: number }[][] = [[], [], [], []];
     for (let dir = 0; dir < 4; dir++) {
-        for (let i = 0; i < tBaseCenterLabBounds[dir].length; i++) {
-            const e = tBaseCenterLabBounds[dir][i];
-            if (!baseCenterLabBounds[dir].some((s) => s !== undefined && s.x === e.x && s.y === e.y)) {
-                //is a unique;
-                baseCenterLabBounds[dir].push(e);
+        for (const tBaseCenter of tBaseCenterLabBounds[dir]) {
+            if (
+                !baseCenterLabBounds[dir].some((s) => s !== undefined && s.x === tBaseCenter.x && s.y === tBaseCenter.y)
+            ) {
+                // is a unique;
+                baseCenterLabBounds[dir].push(tBaseCenter);
             }
         }
     }
@@ -661,32 +663,31 @@ function getAutoCenterBounds(noRoads: Boolean = false): { x: number; y: number }
 let _autoExtensionNodeBounds: { x: number; y: number }[];
 let _autoExtensionNodeBoundsNoRoads: { x: number; y: number }[];
 
-function getAutoExtensionNodeBounds(noRoads: Boolean = false): { x: number; y: number }[] {
+function getAutoExtensionNodeBounds(noRoads: boolean = false): { x: number; y: number }[] {
     if (noRoads && _autoExtensionNodeBoundsNoRoads !== undefined) {
         return _autoExtensionNodeBoundsNoRoads;
     }
     if (_autoExtensionNodeBounds !== undefined) {
         return _autoExtensionNodeBounds;
     }
-    let tBaseCenterLabBounds: { x: number; y: number }[] = [];
+    const tBaseCenterLabBounds: { x: number; y: number }[] = [];
 
-    for (let j = 0; j < autoExtensionNode.length; j++) {
-        if (noRoads && autoExtensionNode[j].type === STRUCTURE_ROAD) {
+    for (const autoExtension of autoExtensionNode) {
+        if (noRoads && autoExtension.type === STRUCTURE_ROAD) {
             continue;
         }
         const o = {
-            x: autoExtensionNode[j].x,
-            y: autoExtensionNode[j].y
+            x: autoExtension.x,
+            y: autoExtension.y
         };
         tBaseCenterLabBounds.push(o);
     }
 
-    let baseCenterLabBounds: { x: number; y: number }[] = [];
+    const baseCenterLabBounds: { x: number; y: number }[] = [];
 
-    for (let i = 0; i < tBaseCenterLabBounds.length; i++) {
-        const e = tBaseCenterLabBounds[i];
+    for (const e of tBaseCenterLabBounds) {
         if (!baseCenterLabBounds.some((s) => s.x === e.x && s.y === e.y)) {
-            //is a unique;
+            // is a unique;
             baseCenterLabBounds.push(e);
         }
     }
@@ -739,7 +740,7 @@ function getSources(basicLayout: BasicLayoutData, centerLocation: RoomPosition):
                 continue;
             }
             const p = offsetPositionByDirection(containerPos, i as DirectionConstant);
-            if (terrain.get(p.x, p.y) != TERRAIN_MASK_WALL) {
+            if (terrain.get(p.x, p.y) !== TERRAIN_MASK_WALL) {
                 linkDir = i as DirectionConstant;
                 break;
             }
@@ -807,8 +808,8 @@ function getRoads(
 ): RoadData[] | null {
     const roads: RoadData[] = [];
 
-    const roadCostMatrix = function (roomName: string): boolean | CostMatrix {
-        let room = Game.rooms[roomName];
+    const roadCostMatrix = (roomName: string): boolean | CostMatrix => {
+        const room = Game.rooms[roomName];
 
         if (roomName !== centerLocation.roomName) {
             if (Memory.rooms[centerLocation.roomName].remotes === undefined) {
@@ -827,7 +828,7 @@ function getRoads(
             }
         }
 
-        let costs = new PathFinder.CostMatrix();
+        const costs = new PathFinder.CostMatrix();
 
         for (const roadData of roads) {
             for (const road of roadData.positions) {
@@ -839,7 +840,7 @@ function getRoads(
         }
 
         if (room !== undefined) {
-            room.find(FIND_STRUCTURES).forEach(function (struct) {
+            room.find(FIND_STRUCTURES).forEach((struct) => {
                 if (
                     struct.structureType !== STRUCTURE_CONTAINER &&
                     (struct.structureType !== STRUCTURE_RAMPART || !struct.my) &&
@@ -851,7 +852,7 @@ function getRoads(
                     costs.set(struct.pos.x, struct.pos.y, 1);
                 }
             });
-            room.find(FIND_MY_CONSTRUCTION_SITES).forEach(function (struct) {
+            room.find(FIND_MY_CONSTRUCTION_SITES).forEach((struct) => {
                 if (
                     struct.structureType !== STRUCTURE_CONTAINER &&
                     (struct.structureType !== STRUCTURE_RAMPART || !struct.my) &&
@@ -895,8 +896,8 @@ function getRoads(
                 costs.set(mineralPos.x, mineralPos.y, 0xff);
             }
         }
-        if (Memory.rooms[roomName] != undefined) {
-            if (Memory.rooms[roomName].remoteLayout != undefined) {
+        if (Memory.rooms[roomName] !== undefined) {
+            if (Memory.rooms[roomName].remoteLayout !== undefined) {
                 for (const s of Memory.rooms[roomName].remoteLayout.sources) {
                     const p = offsetPositionByDirection(unpackPosition(s.pos), s.container);
                     costs.set(p.x, p.y, 0xff);
@@ -922,7 +923,7 @@ function getRoads(
 
     roads.push({
         positions: _.compact(
-            controllerPath.map(function (pos) {
+            controllerPath.map((pos) => {
                 if (pos.roomName === centerLocation.roomName) {
                     if (
                         baseType === "bunker"
@@ -955,7 +956,7 @@ function getRoads(
 
     roads.push({
         positions: _.compact(
-            mineralPath.map(function (pos) {
+            mineralPath.map((pos) => {
                 if (pos.roomName === centerLocation.roomName) {
                     if (
                         baseType === "bunker"
@@ -989,7 +990,7 @@ function getRoads(
 
         roads.push({
             positions: _.compact(
-                sourcePath.map(function (pos) {
+                sourcePath.map((pos) => {
                     if (pos.roomName === centerLocation.roomName) {
                         if (
                             baseType === "bunker"
@@ -1026,7 +1027,7 @@ function getRoads(
                 ).path;
                 roads.push({
                     positions: _.compact(
-                        sourcePath.map(function (pos) {
+                        sourcePath.map((pos) => {
                             if (pos.roomName === centerLocation.roomName) {
                                 if (
                                     baseType === "bunker"
@@ -1051,7 +1052,7 @@ function getRoads(
 function getRemoteLayout(roomName: string, centerLocation: RoomPosition): RemoteLayoutData | null {
     const basicLayout: BasicLayoutData = Memory.rooms[roomName].basicLayout;
     if (basicLayout === undefined) {
-        if (Game.rooms[roomName] != undefined) {
+        if (Game.rooms[roomName] !== undefined) {
             Memory.rooms[roomName].basicLayout = getBasicLayout(Game.rooms[roomName]);
         } else {
             return null;
@@ -1083,7 +1084,7 @@ function getRemoteLayout(roomName: string, centerLocation: RoomPosition): Remote
         });
     }
     return {
-        sources: sources
+        sources
     };
 }
 
@@ -1176,10 +1177,10 @@ function buildAuto(room: Room) {
     }
     const bpos = unpackPosition(room.memory.layout.baseCenter);
     const layout: AutoLayoutData = room.memory.layout as AutoLayoutData;
-    //build labs
+    // build labs
     followBuildInstructions(room, bpos, autoLabsLayout, autoLabsRotationGuide, layout.labDirection);
 
-    //build extensions
+    // build extensions
     for (
         let index = 0;
         index < Math.min(autoExtensionNodeCount[room.controller.level], layout.extensions.length);
@@ -1189,7 +1190,7 @@ function buildAuto(room: Room) {
         followBuildInstructions(room, pos, index <= 1 ? [autoExtensionSpawnNode] : [autoExtensionNode]);
     }
 
-    //build ramparts
+    // build ramparts
     if (room.controller.level >= 3) {
         for (const pos of layout.ramparts) {
             const p = unpackPosition(pos);
@@ -1208,8 +1209,7 @@ function followBuildInstructions(
         return;
     }
     for (let i = 0; i <= Math.min(room.controller.level, bis.length - 1); i++) {
-        for (let j = 0; j < bis[i].length; j++) {
-            const element = bis[i][j];
+        for (const element of bis[i]) {
             let x: number = element.x;
             let y: number = element.y;
             if (rotationGuide !== undefined && direction !== undefined) {
@@ -1218,8 +1218,8 @@ function followBuildInstructions(
             }
 
             followBuildInstruction(room, cpos, {
-                x: x,
-                y: y,
+                x,
+                y,
                 type: element.type,
                 name: element.name
             });
@@ -1232,7 +1232,7 @@ function followBuildInstruction(room: Room, cpos: RoomPosition, bi: BuildInstruc
         name = name.replace("_rn_", room.name);
 
         let i = 1;
-        let done: boolean = false;
+        const done: boolean = false;
         while (!done) {
             const potentialName = name.replace("_i_", i.toString());
 
@@ -1264,7 +1264,7 @@ function buildRoads(room: Room) {
         for (const pos of element.positions) {
             const p = unpackPosition(pos);
             const r = Game.rooms[p.roomName];
-            if (r != undefined) {
+            if (r !== undefined) {
                 p.createConstructionSite(STRUCTURE_ROAD);
             }
         }
@@ -1283,11 +1283,11 @@ function buildContainers(room: Room) {
         const c: Structure = unpackPosition(room.memory.layout.controllerStore)
             .lookFor(LOOK_STRUCTURES)
             .filter((s) => s.structureType === STRUCTURE_CONTAINER)[0];
-        if (c != undefined) {
+        if (c !== undefined) {
             c.destroy();
         }
     }
-    for (let s in room.memory.layout.sources) {
+    for (const s in room.memory.layout.sources) {
         const source: SourceData = room.memory.layout.sources[s];
         offsetPositionByDirection(unpackPosition(source.pos), source.container).createConstructionSite(
             STRUCTURE_CONTAINER

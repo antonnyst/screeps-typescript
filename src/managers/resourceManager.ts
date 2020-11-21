@@ -7,9 +7,9 @@ export class ResourceManager implements Manager {
             const TerminalRooms: string[] = [];
             for (const r in Game.rooms) {
                 if (
-                    Memory.rooms[r] != undefined &&
-                    Memory.rooms[r].resources != undefined &&
-                    Game.rooms[r].terminal != undefined
+                    Memory.rooms[r] !== undefined &&
+                    Memory.rooms[r].resources !== undefined &&
+                    Game.rooms[r].terminal !== undefined
                 ) {
                     TerminalRooms.push(r);
                 }
@@ -35,9 +35,9 @@ export class ResourceManager implements Manager {
                 }
 
                 if (haveRooms.length > 0 && needRooms.length > 0) {
-                    //We can redistrubute this resource
+                    // We can redistrubute this resource
                     for (const nr of needRooms) {
-                        //Find the closest room that can supply this resource
+                        // Find the closest room that can supply this resource
                         const sr = _.sortBy(haveRooms, (hr: { roomName: string; amt: number }) =>
                             Game.map.getRoomLinearDistance(nr.roomName, hr.roomName)
                         )[0];
@@ -53,7 +53,7 @@ export class ResourceManager implements Manager {
                         let possibleAmount = Math.min(-nr.amt, amt);
 
                         if (resource === RESOURCE_ENERGY) {
-                            //Special calculation due to energy fees
+                            // Special calculation due to energy fees
                             const fee = Game.market.calcTransactionCost(1, nr.roomName, sr.roomName);
 
                             const maxAmt = Math.floor(amt / (1 + fee));
@@ -65,11 +65,11 @@ export class ResourceManager implements Manager {
                 } else if (
                     haveRooms.length > 0 &&
                     needRooms.length === 0 &&
-                    (C.TERMINAL_MINERALS.includes(resource) || resource == RESOURCE_ENERGY)
+                    (C.TERMINAL_MINERALS.includes(resource) || resource === RESOURCE_ENERGY)
                 ) {
-                    //We have too much of this resource
+                    // We have too much of this resource
                     for (const hr of haveRooms) {
-                        //This room has this much excess we can sell
+                        // This room has this much excess we can sell
                         const amt: number | undefined = Game.rooms[hr.roomName].terminal?.store.getUsedCapacity(
                             resource
                         );
@@ -88,7 +88,7 @@ export class ResourceManager implements Manager {
                             let possibleAmount = Math.min(amt, order.remainingAmount);
 
                             if (resource === RESOURCE_ENERGY) {
-                                //Special calculation due to energy fees
+                                // Special calculation due to energy fees
                                 const fee = Game.market.calcTransactionCost(1, order.roomName!, hr.roomName);
                                 const maxAmt = Math.floor(amt / (1 + fee));
                                 possibleAmount = Math.min(maxAmt, order.remainingAmount);

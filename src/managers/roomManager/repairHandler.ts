@@ -1,12 +1,12 @@
 import * as C from "../../config/constants";
 
 export function RepairHandler(room: Room): void {
-    if (Game.time % 5 === 0 && room.controller != undefined && room.controller.my && room.memory.roomLevel === 2) {
+    if (Game.time % 5 === 0 && room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
         if (room.memory.repairTargets === undefined) {
             room.memory.repairTargets = {};
         }
 
-        for (let s in room.memory.repairTargets) {
+        for (const s in room.memory.repairTargets) {
             if (Game.getObjectById(s) === null) {
                 delete room.memory.repairTargets[s];
             }
@@ -14,22 +14,22 @@ export function RepairHandler(room: Room): void {
 
         let remoteStructures: Structure[] = [];
 
-        for (let r in room.memory.remotes) {
+        for (const r in room.memory.remotes) {
             const remote: string = room.memory.remotes[r];
-            if (Game.rooms[remote] != undefined) {
+            if (Game.rooms[remote] !== undefined) {
                 remoteStructures = remoteStructures.concat(
                     Game.rooms[remote].find(FIND_STRUCTURES, {
-                        filter: (s) => s.hits != undefined && s.structureType != STRUCTURE_WALL
+                        filter: (s) => s.hits !== undefined && s.structureType !== STRUCTURE_WALL
                     })
                 );
             }
         }
 
         const structures: Structure[] = room.find(FIND_STRUCTURES, {
-            filter: (s) => s.hits != undefined
+            filter: (s) => s.hits !== undefined
         });
 
-        for (let structure of structures) {
+        for (const structure of structures) {
             if (structure instanceof StructureWall || structure instanceof StructureRampart) {
                 if (
                     structure.hits < 2000 ||

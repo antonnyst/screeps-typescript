@@ -14,10 +14,10 @@ export class ReserverRole extends CreepRole {
         const cPos = unpackPosition(Memory.rooms[this.creep.memory.roleData.target].basicLayout.controller);
 
         if (this.creep.pos.isNearTo(cPos)) {
-            if (this.creep.room.controller != undefined) {
+            if (this.creep.room.controller !== undefined) {
                 if (
-                    this.creep.room.controller.reservation != undefined &&
-                    this.creep.room.controller.reservation.username !=
+                    this.creep.room.controller.reservation !== undefined &&
+                    this.creep.room.controller.reservation.username !==
                         Game.spawns[Object.keys(Game.spawns)[0]].owner.username
                 ) {
                     this.creep.attackController(this.creep.room.controller);

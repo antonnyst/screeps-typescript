@@ -18,16 +18,15 @@ export class PeacekeeperRole extends CreepRole {
         }) as StructureInvaderCore[];
 
         if (hostiles.length === 0 && cores.length === 0 && this.creep.room.name === this.creep.memory.roleData.target) {
-            //we are done here
-            //retarget
+            // we are done here
+            // retarget
 
-            let foundRoom: Boolean = false;
+            let foundRoom: boolean = false;
 
-            for (let i = 0; i < Memory.rooms[this.creep.memory.home].remotes.length; i++) {
-                let remote = Memory.rooms[this.creep.memory.home].remotes[i];
+            for (const remote of Memory.rooms[this.creep.memory.home].remotes) {
                 if (
                     Object.keys(Memory.rooms[remote].hostiles).length > 0 ||
-                    (Game.rooms[remote] != undefined && Game.rooms[remote].find(FIND_HOSTILE_STRUCTURES).length > 0)
+                    (Game.rooms[remote] !== undefined && Game.rooms[remote].find(FIND_HOSTILE_STRUCTURES).length > 0)
                 ) {
                     this.creep.memory.roleData.target = remote;
                     foundRoom = true;
@@ -41,14 +40,14 @@ export class PeacekeeperRole extends CreepRole {
             }
         } else if (
             hostiles.length === 0 &&
-            this.creep.memory.roleData.target != undefined &&
-            this.creep.memory.roleData.target != this.creep.room.name
+            this.creep.memory.roleData.target !== undefined &&
+            this.creep.memory.roleData.target !== this.creep.room.name
         ) {
             this.smartMove(new RoomPosition(25, 25, this.creep.memory.roleData.target));
         }
 
         if (hostiles.length > 0) {
-            //engage combat!
+            // engage combat!
 
             const hostile: Creep | null = this.creep.pos.findClosestByRange(hostiles);
 
