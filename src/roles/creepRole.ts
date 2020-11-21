@@ -311,7 +311,7 @@ export abstract class CreepRole implements CreepRoleInterface {
             }
         }
         return this.creep.moveTo(target, {
-            costCallback: function (roomName, costMatrix): boolean | CostMatrix {
+            costCallback: function (roomName, costMatrix): void | CostMatrix {
                 if (Game.rooms[roomName] != undefined) {
                     Game.rooms[roomName].find(FIND_MY_CREEPS).forEach(function (creep) {
                         if (
@@ -322,7 +322,7 @@ export abstract class CreepRole implements CreepRoleInterface {
                         }
                     });
                 }
-                return true;
+                return;
             },
             maxOps: 5000,
             reusePath: 25,

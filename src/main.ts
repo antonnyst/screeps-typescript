@@ -27,11 +27,12 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
         if (Config.mainLog) {
             console.log(
-                `CPU : ${Memory.cpuAvg.toFixed(2)} (${(Memory.cpuAvg / Object.keys(Game.creeps).length).toFixed(2)}/c) Bucket : ${Game.cpu.bucket.toFixed(2)}`
+                `CPU : ${Memory.cpuAvg.toFixed(2)} (${(Memory.cpuAvg / Object.keys(Game.creeps).length).toFixed(
+                    2
+                )}/c) Bucket : ${Game.cpu.bucket.toFixed(2)}`
             );
             console.log("Global age : " + (Game.time - globalStartTick));
         }
     }
-    if (Config.cpuLog)
-        console.log("t => " + Game.cpu.getUsed());
+    if (Config.cpuLog) console.log("t => " + Game.cpu.getUsed());
 });
