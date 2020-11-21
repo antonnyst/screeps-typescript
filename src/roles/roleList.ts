@@ -20,14 +20,14 @@ import { ReserverRole } from "./reserverRole";
 import { UpgraderRole } from "./upgraderRole";
 import { ScoutRole } from "./scoutRole";
 
-export const roleList:{[role:string] : CreepRole} = {
+export const roleList: { [role: string]: CreepRole } = {
     armedDismantler: new ArmedDismantlerRole(),
     blinker: new BlinkerRole(),
     builder: new BuilderRole(),
     claimer: new ClaimerRole(),
     dismantler: new DismantlerRole(),
     filler: new FillerRole(),
-    foot:new FootRole(),
+    foot: new FootRole(),
     hauler: new HaulerRole(),
     labrador: new LabradorRole(),
     miner: new MinerRole(),
@@ -40,4 +40,4 @@ export const roleList:{[role:string] : CreepRole} = {
     reserver: new ReserverRole(),
     upgrader: new UpgraderRole(),
     scout: new ScoutRole()
-}
+};

@@ -11,30 +11,40 @@ export class MineralMinerRole extends CreepRole {
             this.creep.memory.roleData = {};
         }
 
-        const minerPos = offsetPositionByDirection(unpackPosition(Memory.rooms[this.creep.memory.home].layout.mineral.pos),Memory.rooms[this.creep.memory.home].layout.mineral.container);
-        const mineral = (Game.getObjectById(Memory.rooms[this.creep.memory.home].layout.mineral.id) as Mineral);
-        
-        let container:StructureContainer|null = null;
+        const minerPos = offsetPositionByDirection(
+            unpackPosition(Memory.rooms[this.creep.memory.home].layout.mineral.pos),
+            Memory.rooms[this.creep.memory.home].layout.mineral.container
+        );
+        const mineral = Game.getObjectById(Memory.rooms[this.creep.memory.home].layout.mineral.id) as Mineral;
+
+        let container: StructureContainer | null = null;
 
         if (this.creep.memory.roleData.target != undefined) {
             container = Game.getObjectById(this.creep.memory.roleData.target) as StructureContainer;
         }
 
         if (container === null) {
-            container = _.filter(minerPos.lookFor(LOOK_STRUCTURES),(s:Structure)=>(s.structureType === STRUCTURE_CONTAINER))[0] as StructureContainer;
+            container = _.filter(
+                minerPos.lookFor(LOOK_STRUCTURES),
+                (s: Structure) => s.structureType === STRUCTURE_CONTAINER
+            )[0] as StructureContainer;
         }
-        
+
         if (container != undefined) {
             this.creep.memory.roleData.target = container.id;
         }
 
-        if (this.creep.pos.isEqualTo(minerPos) && container != undefined && container.store.getFreeCapacity() >= this.creep.getActiveBodyparts(WORK)) {
+        if (
+            this.creep.pos.isEqualTo(minerPos) &&
+            container != undefined &&
+            container.store.getFreeCapacity() >= this.creep.getActiveBodyparts(WORK)
+        ) {
             this.creep.harvest(mineral);
             if (this.creep.memory.checkIdle != undefined) {
                 this.creep.memory.checkIdle.idleCount = 1;
             }
         } else {
-            this.smartMove(minerPos)
+            this.smartMove(minerPos);
         }
     }
 }

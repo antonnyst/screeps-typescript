@@ -2,7 +2,11 @@ import { CreepRole } from "./creepRole";
 
 export class BlinkerRole extends CreepRole {
     runRole() {
-        if (this.creep === null || this.creep.memory.roleData === undefined || this.creep.memory.roleData.target === undefined) {
+        if (
+            this.creep === null ||
+            this.creep.memory.roleData === undefined ||
+            this.creep.memory.roleData.target === undefined
+        ) {
             return;
         }
 
@@ -11,13 +15,13 @@ export class BlinkerRole extends CreepRole {
         }
 
         if (this.creep.room.name != this.creep.memory.roleData.target) {
-            const exit:ExitConstant = this.creep.room.findExitTo(this.creep.memory.roleData.target) as ExitConstant;
-            const e = this.creep.pos.findClosestByRange(this.creep.room.find(exit))
+            const exit: ExitConstant = this.creep.room.findExitTo(this.creep.memory.roleData.target) as ExitConstant;
+            const e = this.creep.pos.findClosestByRange(this.creep.room.find(exit));
             if (e != null) {
                 this.smartMove(e);
             }
         } else {
-            const target:Structure|Creep|null = Game.getObjectById(this.creep.memory.roleData.targetId as string);
+            const target: Structure | Creep | null = Game.getObjectById(this.creep.memory.roleData.targetId as string);
             if (target != null) {
                 const r = this.creep.pos.getRangeTo(target.pos);
 
@@ -34,11 +38,14 @@ export class BlinkerRole extends CreepRole {
                     if (t != null) {
                         this.creep.rangedAttack(t);
                     }
-                    this.smartMove(target.pos,3);
+                    this.smartMove(target.pos, 3);
                 }
-                
             } else {
-                const t = this.creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter:(s)=>(s.structureType !== STRUCTURE_STORAGE || (s.structureType === STRUCTURE_STORAGE && s.store.getUsedCapacity() === 0))});
+                const t = this.creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
+                    filter: (s) =>
+                        s.structureType !== STRUCTURE_STORAGE ||
+                        (s.structureType === STRUCTURE_STORAGE && s.store.getUsedCapacity() === 0)
+                });
 
                 if (t != null) {
                     this.creep.memory.roleData.targetId = t.id;

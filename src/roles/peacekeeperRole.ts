@@ -7,23 +7,28 @@ export class PeacekeeperRole extends CreepRole {
             return;
         }
         if (this.creep.memory.roleData === undefined) {
-            this.creep.memory.roleData = { 
-                target:this.creep.memory.home 
+            this.creep.memory.roleData = {
+                target: this.creep.memory.home
             };
         }
 
-        const hostiles:Creep[] = this.creep.room.find(FIND_HOSTILE_CREEPS);
-        const cores:StructureInvaderCore[] = this.creep.room.find(FIND_HOSTILE_STRUCTURES, {filter:(s)=>(s.structureType === STRUCTURE_INVADER_CORE)}) as StructureInvaderCore[];
+        const hostiles: Creep[] = this.creep.room.find(FIND_HOSTILE_CREEPS);
+        const cores: StructureInvaderCore[] = this.creep.room.find(FIND_HOSTILE_STRUCTURES, {
+            filter: (s) => s.structureType === STRUCTURE_INVADER_CORE
+        }) as StructureInvaderCore[];
 
         if (hostiles.length === 0 && cores.length === 0 && this.creep.room.name === this.creep.memory.roleData.target) {
-            //we are done here 
+            //we are done here
             //retarget
 
-            let foundRoom:Boolean = false;
+            let foundRoom: Boolean = false;
 
-            for(let i = 0; i < Memory.rooms[this.creep.memory.home].remotes.length; i++) { 
+            for (let i = 0; i < Memory.rooms[this.creep.memory.home].remotes.length; i++) {
                 let remote = Memory.rooms[this.creep.memory.home].remotes[i];
-                if (Object.keys(Memory.rooms[remote].hostiles).length > 0 || (Game.rooms[remote] != undefined && Game.rooms[remote].find(FIND_HOSTILE_STRUCTURES).length > 0)) {
+                if (
+                    Object.keys(Memory.rooms[remote].hostiles).length > 0 ||
+                    (Game.rooms[remote] != undefined && Game.rooms[remote].find(FIND_HOSTILE_STRUCTURES).length > 0)
+                ) {
                     this.creep.memory.roleData.target = remote;
                     foundRoom = true;
 
@@ -34,15 +39,18 @@ export class PeacekeeperRole extends CreepRole {
             if (!foundRoom) {
                 this.creep.memory.roleData.target = this.creep.memory.home;
             }
-        } else if (hostiles.length === 0 && this.creep.memory.roleData.target != undefined && this.creep.memory.roleData.target != this.creep.room.name) {
-
-            this.smartMove(new RoomPosition(25,25,this.creep.memory.roleData.target));
+        } else if (
+            hostiles.length === 0 &&
+            this.creep.memory.roleData.target != undefined &&
+            this.creep.memory.roleData.target != this.creep.room.name
+        ) {
+            this.smartMove(new RoomPosition(25, 25, this.creep.memory.roleData.target));
         }
 
         if (hostiles.length > 0) {
             //engage combat!
 
-            const hostile:Creep|null = this.creep.pos.findClosestByRange(hostiles);
+            const hostile: Creep | null = this.creep.pos.findClosestByRange(hostiles);
 
             if (hostile != null) {
                 this.creep.rangedAttack(hostile);
@@ -51,7 +59,7 @@ export class PeacekeeperRole extends CreepRole {
                 }
             }
         } else if (cores.length > 0) {
-            const hostile:StructureInvaderCore|null = this.creep.pos.findClosestByRange(cores);
+            const hostile: StructureInvaderCore | null = this.creep.pos.findClosestByRange(cores);
 
             if (hostile != null) {
                 this.creep.rangedAttack(hostile);
@@ -59,10 +67,13 @@ export class PeacekeeperRole extends CreepRole {
                     this.smartMove(hostile.pos);
                 }
             }
-        } else if (this.creep.room.name === this.creep.memory.home && this.creep.memory.roleData.target === this.creep.memory.home) {
+        } else if (
+            this.creep.room.name === this.creep.memory.home &&
+            this.creep.memory.roleData.target === this.creep.memory.home
+        ) {
             const cpos = unpackPosition(this.creep.room.memory.layout.baseCenter);
 
-            this.smartMove(new RoomPosition(cpos.x,cpos.y+6,this.creep.memory.home));
+            this.smartMove(new RoomPosition(cpos.x, cpos.y + 6, this.creep.memory.home));
         }
     }
 }

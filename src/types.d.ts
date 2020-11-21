@@ -28,7 +28,7 @@ interface RoomMemory {
     roomLevel: number;
     hostiles: { [key: string]: import("./dataInterfaces/hostileData").HostileData };
     reservation: ReservationDefinition | undefined;
-    spawnQueue: Array<import("./dataInterfaces/spawnData").SpawnData>;
+    spawnQueue: import("./dataInterfaces/spawnData").SpawnData[];
     constructionSites: { [site: string]: RoomPosition };
     repairTargets: { [id: string]: RoomPosition };
     remotes: string[];
