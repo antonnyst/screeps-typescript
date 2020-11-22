@@ -292,7 +292,7 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
         if (room.controller?.level === 8) {
             return 0;
         }
-        return Game.time % 10000 < 5000 ? 1 : 0;
+        return 1;
     },
     mineralMiner: (room: Room): number => {
         if (room.controller && room.controller.level < 6) {
