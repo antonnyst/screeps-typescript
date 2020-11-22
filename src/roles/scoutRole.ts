@@ -80,7 +80,7 @@ export class ScoutRole extends CreepRole {
                 }
 
                 if (newTarget === undefined) {
-                    newTarget = exits[Object.keys(exits)[Object.keys(exits).length * Math.random()]];
+                    newTarget = exits[Object.keys(exits)[Math.round(Object.keys(exits).length * Math.random())]];
                 }
 
                 this.creep.memory.roleData.target = newTarget;
