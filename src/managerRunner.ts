@@ -6,6 +6,7 @@ import { FlagManager } from "./managers/flagManager";
 import { ResourceManager } from "./managers/resourceManager";
 import { RoomManager } from "./managers/roomManager";
 import { SpawnManager } from "./managers/spawnManager";
+import { MapManager } from "./managers/mapManager";
 
 const managers: Manager[] = [
     new FlagManager(),
@@ -13,7 +14,8 @@ const managers: Manager[] = [
     new CreepManager(),
     new SpawnManager(),
     new DefenseManager(),
-    new ResourceManager()
+    new ResourceManager(),
+    new MapManager()
 ];
 
 export const runAllManagers = (): void => {
