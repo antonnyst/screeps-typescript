@@ -39,6 +39,7 @@ interface RoomMemory {
     linkStatus: LinkStatus;
     labs?: import("./dataInterfaces/labsData").LabsData;
     resources?: import("./dataInterfaces/resourcesData").ResourcesData;
+    lastUpdate: number;
 }
 
 interface Memory {
