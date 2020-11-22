@@ -603,6 +603,9 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
             }
             const creeps: Creep[] = _.filter(Game.creeps, (c: Creep) => c.memory.home === room.name);
             for (const remote of room.memory.remotes) {
+                if (Memory.rooms[remote].remoteLayout === undefined) {
+                    continue;
+                }
                 for (const source in Memory.rooms[remote].remoteLayout.sources) {
                     const sourceData: RemoteSourceData = Memory.rooms[remote].remoteLayout.sources[source];
                     const remoteHaulerCount: number =
