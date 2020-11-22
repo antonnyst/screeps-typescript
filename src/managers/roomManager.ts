@@ -19,8 +19,9 @@ export class RoomManager implements Manager {
 function roomLogic(roomName: string): void {
     const room: Room = Game.rooms[roomName];
 
-    if (room.memory.roomLevel === undefined || Game.time % 50 === 0) {
+    if (room.memory.roomLevel === undefined || Game.time % 10 === 0) {
         room.memory.roomLevel = getRoomLevel(room);
+        room.memory.lastUpdate = Game.time;
     }
     if (Game.time % 3 === 0) {
         updateRoomHostiles(room);
@@ -39,7 +40,7 @@ function roomLogic(roomName: string): void {
         room.memory.remoteSupportRooms = [];
     }
 
-    if (Game.cpu.bucket > 5000 || Game.time % 50 === 0) {
+    if (Game.cpu.bucket > 4000 || Game.time % 50 === 0) {
         ResourceHandler(room);
 
         LayoutHandler(room);
