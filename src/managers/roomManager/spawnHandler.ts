@@ -78,7 +78,7 @@ function updateSpawnQueue(room: Room): void {
                         (sd: SpawnData) => sd.role === "foot" && sd.memory && sd.memory.home === r
                     ).length;
 
-                if (fAmt < 2) {
+                if (fAmt < 3) {
                     const role = "foot";
                     room.memory.spawnQueue.push({
                         role,
