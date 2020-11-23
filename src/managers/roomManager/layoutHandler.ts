@@ -1110,7 +1110,9 @@ function buildLayout(room: Room) {
         buildAuto(room);
     }
 
-    buildRoads(room);
+    if (room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_EXTENSION } }).length >= 5) {
+        buildRoads(room);
+    }
 
     buildContainers(room);
 
