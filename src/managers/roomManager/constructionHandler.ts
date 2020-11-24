@@ -3,11 +3,9 @@ import { RunEvery } from "../../utils/RunEvery";
 export function ConstructionHandler(room: Room): void {
     RunEvery(
         (room: Room) => {
-            console.log(room.name);
             if (room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
                 room.memory.constructionSites = {};
 
-                console.log(room.name);
 
                 let remoteSites: ConstructionSite[] = [];
 
