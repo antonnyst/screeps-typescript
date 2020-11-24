@@ -1,11 +1,10 @@
+import { RunEvery } from "utils/RunEvery";
 import * as C from "../../config/constants";
 import { LabsData, LabData } from "../../dataInterfaces/labsData";
 import { unpackPosition } from "../../utils/RoomPositionPacker";
 
 export function LabHandler(room: Room): void {
-    if (Game.time % 5 === 0) {
-        LabData(room);
-    }
+    RunEvery(LabData, "labhandlerlabdata", 5, room);
 }
 
 function LabData(room: Room): void {

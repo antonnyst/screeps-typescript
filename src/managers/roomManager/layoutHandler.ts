@@ -13,21 +13,27 @@ import {
     autoExtensionSpawnNode,
     autoExtensionNode
 } from "../../config/base/auto";
+import { RunEvery, RunNow } from "utils/RunEvery";
 
 export function LayoutHandler(room: Room): void {
-    if (Game.time % 50 === 0 && room.memory.roomLevel === 2) {
-        buildLayout(room);
-    }
     if (room.memory.roomLevel === 2) {
-        if (room.memory.layout === undefined || Game.time % 200 === 0) {
-            const l = getLayout(room);
-            if (l != null) {
-                room.memory.layout = l;
-            }
+        RunEvery(buildLayout, "layouthandlerbuildlayout", 50, room);
+
+        if (room.memory.layout === undefined) {
+            RunNow(rebuildLayout, "layouthandlergetlayout", room);
         }
+
+        RunEvery(rebuildLayout, "layouthandlergetlayout", 200, room);
     }
     if (room.memory.basicLayout === undefined) {
         room.memory.basicLayout = getBasicLayout(room);
+    }
+}
+
+function rebuildLayout(room: Room) {
+    const l = getLayout(room);
+    if (l != null) {
+        room.memory.layout = l;
     }
 }
 
