@@ -1237,12 +1237,12 @@ function followBuildInstructions(
 function followBuildInstruction(room: Room, cpos: RoomPosition, bi: BuildInstruction) {
     if (bi.type === STRUCTURE_SPAWN && bi.name !== undefined) {
         let name = bi.name || "";
-        name = name.replace("_rn_", room.name);
+        name = name.replace("{ROOM_NAME}", room.name);
 
         let i = 1;
         const done: boolean = false;
         while (!done) {
-            const potentialName = name.replace("_i_", i.toString());
+            const potentialName = name.replace("{INDEX}", i.toString());
 
             const res = room.createConstructionSite(cpos.x + bi.x, cpos.y + bi.y, bi.type, potentialName);
             if (res === OK) {

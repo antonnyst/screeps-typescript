@@ -1,6 +1,6 @@
 export const baseCenterLayout: BuildInstruction[][] = [
     [],
-    [{ x: 0, y: 0, type: STRUCTURE_SPAWN, name: "_rn_-_i_" }],
+    [{ x: 0, y: 0, type: STRUCTURE_SPAWN, name: "{ROOM_NAME}-{INDEX}" }],
     [{ x: 0, y: 0, type: STRUCTURE_RAMPART }],
     [
         { x: -1, y: 0, type: STRUCTURE_TOWER },

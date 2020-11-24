@@ -91,7 +91,7 @@ export const autoExtensionSpawnNode: BuildInstruction[] = [
     { x: 1, y: 0, type: STRUCTURE_EXTENSION },
     { x: 0, y: -1, type: STRUCTURE_EXTENSION },
     { x: 0, y: 1, type: STRUCTURE_EXTENSION },
-    { x: 0, y: 0, type: STRUCTURE_SPAWN, name: "_rn_-_i_" },
+    { x: 0, y: 0, type: STRUCTURE_SPAWN, name: "{ROOM_NAME}-{INDEX}" },
     { x: 0, y: 0, type: STRUCTURE_RAMPART },
     { x: -2, y: 0, type: STRUCTURE_ROAD },
     { x: -1, y: 1, type: STRUCTURE_ROAD },
