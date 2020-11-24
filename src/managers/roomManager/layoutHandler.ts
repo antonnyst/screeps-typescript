@@ -1123,25 +1123,26 @@ function buildLayout(room: Room) {
     buildContainers(room);
 
     if (room.controller.level >= 5) {
-        unpackPosition(room.memory.layout.controllerStore).createConstructionSite(STRUCTURE_LINK);
-        unpackPosition(room.memory.layout.controllerStore).createConstructionSite(STRUCTURE_RAMPART);
+        const cspos = unpackPosition(room.memory.layout.controllerStore);
+        smartBuild(cspos, STRUCTURE_LINK);
+        smartBuild(cspos, STRUCTURE_RAMPART);
 
         for (let dir: DirectionConstant = 1; dir <= 8; dir++) {
             const pos: RoomPosition = offsetPositionByDirection(room.controller.pos, dir as DirectionConstant);
-            pos.createConstructionSite(STRUCTURE_RAMPART);
+            smartBuild(pos, STRUCTURE_RAMPART);
         }
     }
     if (room.controller.level >= 6) {
-        unpackPosition(room.memory.layout.mineral.pos).createConstructionSite(STRUCTURE_EXTRACTOR);
+        smartBuild(unpackPosition(room.memory.layout.mineral.pos), STRUCTURE_EXTRACTOR);
         const mpos = offsetPositionByDirection(
             unpackPosition(room.memory.layout.sources[0].pos),
             room.memory.layout.sources[0].container
         );
         const lpos = offsetPositionByDirection(mpos, room.memory.layout.sources[0].link);
 
-        lpos.createConstructionSite(STRUCTURE_LINK);
-        lpos.createConstructionSite(STRUCTURE_RAMPART);
-        mpos.createConstructionSite(STRUCTURE_RAMPART);
+        smartBuild(lpos, STRUCTURE_LINK);
+        smartBuild(lpos, STRUCTURE_RAMPART);
+        smartBuild(mpos, STRUCTURE_RAMPART);
     }
     if (room.controller.level >= 7 && room.memory.layout.sources.length >= 2) {
         const mpos = offsetPositionByDirection(
@@ -1150,9 +1151,9 @@ function buildLayout(room: Room) {
         );
         const lpos = offsetPositionByDirection(mpos, room.memory.layout.sources[1].link);
 
-        lpos.createConstructionSite(STRUCTURE_LINK);
-        lpos.createConstructionSite(STRUCTURE_RAMPART);
-        mpos.createConstructionSite(STRUCTURE_RAMPART);
+        smartBuild(lpos, STRUCTURE_LINK);
+        smartBuild(lpos, STRUCTURE_RAMPART);
+        smartBuild(mpos, STRUCTURE_RAMPART);
     }
 
     executeSmartBuild();
@@ -1204,7 +1205,7 @@ function buildAuto(room: Room) {
     if (room.controller.level >= 3) {
         for (const pos of layout.ramparts) {
             const p = unpackPosition(pos);
-            room.createConstructionSite(p, STRUCTURE_RAMPART);
+            smartBuild(p, STRUCTURE_RAMPART);
         }
     }
 }
@@ -1256,7 +1257,7 @@ function followBuildInstruction(room: Room, cpos: RoomPosition, bi: BuildInstruc
             }
         }
     } else {
-        room.createConstructionSite(cpos.x + bi.x, cpos.y + bi.y, bi.type);
+        smartBuild(new RoomPosition(cpos.x + bi.x, cpos.y + bi.y, room.name), bi.type);
     }
 }
 function buildRoads(room: Room) {
@@ -1275,7 +1276,7 @@ function buildRoads(room: Room) {
             const p = unpackPosition(pos);
             const r = Game.rooms[p.roomName];
             if (r !== undefined) {
-                p.createConstructionSite(STRUCTURE_ROAD);
+                smartBuild(p, STRUCTURE_ROAD);
             }
         }
     }
@@ -1334,12 +1335,29 @@ function executeSmartBuild() {
                 continue;
             }
 
+            if (
+                site.pos
+                    .lookFor(LOOK_CONSTRUCTION_SITES)
+                    .filter((s: ConstructionSite) => s.structureType === STRUCTURE_RAMPART).length > 0
+            ) {
+                amtOfRampart++;
+                continue;
+            }
+
             const res = room.createConstructionSite(site.pos, site.type);
             if (res === OK) {
                 amtOfRampart++;
             }
         } else if (site.type === STRUCTURE_ROAD) {
             if (amtOfRoad >= 10) {
+                continue;
+            }
+            if (
+                site.pos
+                    .lookFor(LOOK_CONSTRUCTION_SITES)
+                    .filter((s: ConstructionSite) => s.structureType === STRUCTURE_ROAD).length > 0
+            ) {
+                amtOfRoad++;
                 continue;
             }
 
