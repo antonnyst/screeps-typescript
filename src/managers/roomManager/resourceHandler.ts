@@ -1,10 +1,9 @@
+import { RunEvery } from "utils/RunEvery";
 import * as C from "../../config/constants";
 import { ResourcesData } from "../../dataInterfaces/resourcesData";
 
 export function ResourceHandler(room: Room): void {
-    if (Game.time % 5 === 0) {
-        ResourceData(room);
-    }
+    RunEvery(ResourceData,"resourcehandlerresourcedata",5,room);
 }
 
 function ResourceData(room: Room): void {
