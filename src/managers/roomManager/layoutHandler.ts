@@ -13,17 +13,17 @@ import {
     autoExtensionSpawnNode,
     autoExtensionNode
 } from "../../config/base/auto";
-import { RunEvery, RunNow } from "utils/RunEvery";
+import { RunEvery, RunNow } from "../../utils/RunEvery";
 
 export function LayoutHandler(room: Room): void {
     if (room.memory.roomLevel === 2) {
-        RunEvery(buildLayout, "layouthandlerbuildlayout", 50, room);
+        RunEvery(buildLayout, "layouthandlerbuildlayout" + room.name, 50, room);
 
         if (room.memory.layout === undefined) {
-            RunNow(rebuildLayout, "layouthandlergetlayout", room);
+            RunNow(rebuildLayout, "layouthandlergetlayout" + room.name, room);
         }
 
-        RunEvery(rebuildLayout, "layouthandlergetlayout", 200, room);
+        RunEvery(rebuildLayout, "layouthandlergetlayout" + room.name, 200, room);
     }
     if (room.memory.basicLayout === undefined) {
         room.memory.basicLayout = getBasicLayout(room);
@@ -1154,6 +1154,8 @@ function buildLayout(room: Room) {
         lpos.createConstructionSite(STRUCTURE_RAMPART);
         mpos.createConstructionSite(STRUCTURE_RAMPART);
     }
+
+    executeSmartBuild();
 }
 
 function buildBaseCenter(room: Room) {
@@ -1286,7 +1288,7 @@ function buildContainers(room: Room) {
         return;
     }
     if (room.controller.level > 1 && room.controller.level <= 4) {
-        unpackPosition(room.memory.layout.controllerStore).createConstructionSite(STRUCTURE_CONTAINER);
+        smartBuild(unpackPosition(room.memory.layout.controllerStore), STRUCTURE_CONTAINER);
     } else {
         const c: Structure = unpackPosition(room.memory.layout.controllerStore)
             .lookFor(LOOK_STRUCTURES)
@@ -1297,14 +1299,58 @@ function buildContainers(room: Room) {
     }
     for (const s in room.memory.layout.sources) {
         const source: SourceData = room.memory.layout.sources[s];
-        offsetPositionByDirection(unpackPosition(source.pos), source.container).createConstructionSite(
+        smartBuild(offsetPositionByDirection(unpackPosition(source.pos), source.container), STRUCTURE_CONTAINER);
+    }
+    if (room.controller.level >= 6) {
+        smartBuild(
+            offsetPositionByDirection(
+                unpackPosition(room.memory.layout.mineral.pos),
+                room.memory.layout.mineral.container
+            ),
             STRUCTURE_CONTAINER
         );
     }
-    if (room.controller.level >= 6) {
-        offsetPositionByDirection(
-            unpackPosition(room.memory.layout.mineral.pos),
-            room.memory.layout.mineral.container
-        ).createConstructionSite(STRUCTURE_CONTAINER);
+}
+
+let smartBuildData: { type: BuildableStructureConstant; pos: RoomPosition }[] = [];
+function smartBuild(pos: RoomPosition, type: BuildableStructureConstant) {
+    smartBuildData.push({
+        pos,
+        type
+    });
+}
+
+function executeSmartBuild() {
+    let amtOfRampart = 0;
+    let amtOfRoad = 0;
+
+    for (const site of smartBuildData) {
+        const room: Room = Game.rooms[site.pos.roomName];
+        if (site.type === STRUCTURE_RAMPART) {
+            if (
+                amtOfRampart >= 4 ||
+                (room.memory.repairTargets !== undefined && Object.keys(room.memory.repairTargets).length > 0)
+            ) {
+                continue;
+            }
+
+            const res = room.createConstructionSite(site.pos, site.type);
+            if (res === OK) {
+                amtOfRampart++;
+            }
+        } else if (site.type === STRUCTURE_ROAD) {
+            if (amtOfRoad >= 10) {
+                continue;
+            }
+
+            const res = room.createConstructionSite(site.pos, site.type);
+            if (res === OK) {
+                amtOfRoad++;
+            }
+        } else {
+            room.createConstructionSite(site.pos, site.type);
+        }
     }
+
+    smartBuildData = [];
 }
