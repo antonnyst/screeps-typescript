@@ -7,6 +7,7 @@ import { LinkHandler } from "./roomManager/linkHandler";
 import { TerminalHandler } from "./roomManager/terminalHandler";
 import { LabHandler } from "./roomManager/labHandler";
 import { ResourceHandler } from "./roomManager/resourceHandler";
+import { RunEvery, RunNow } from "utils/RunEvery";
 
 export class RoomManager implements Manager {
     run() {
@@ -19,19 +20,33 @@ export class RoomManager implements Manager {
 function roomLogic(roomName: string): void {
     const room: Room = Game.rooms[roomName];
 
-    if (room.memory.roomLevel === undefined || Game.time % 10 === 0) {
-        room.memory.roomLevel = getRoomLevel(room);
-        room.memory.lastUpdate = Game.time;
+    if (room.memory.roomLevel === undefined) {
+        RunNow(() => {
+            room.memory.roomLevel = getRoomLevel(room);
+            room.memory.lastUpdate = Game.time;
+        }, "roomlogicupdateroomlevel" + roomName);
     }
-    if (Game.time % 3 === 0) {
-        updateRoomHostiles(room);
-    }
-    if (
-        (room.memory.reservation !== undefined || room.memory.roomLevel === -1 || room.memory.roomLevel === 1) &&
-        Game.time % 5 === 0
-    ) {
-        updateRoomReservation(room);
-    }
+
+    RunEvery(
+        () => {
+            room.memory.roomLevel = getRoomLevel(room);
+            room.memory.lastUpdate = Game.time;
+        },
+        "roomlogicupdateroomlevel" + roomName,
+        10
+    );
+
+    RunEvery(updateRoomHostiles, "roomlogicupdateroomhostiles" + roomName, 3, room);
+
+    RunEvery(
+        () => {
+            if (room.memory.reservation !== undefined || room.memory.roomLevel === -1 || room.memory.roomLevel === 1) {
+                updateRoomReservation(room);
+            }
+        },
+        "roomlogicupdateroomreservation" + roomName,
+        5
+    );
 
     if (room.memory.roomLevel === 2 && room.memory.remotes === undefined) {
         room.memory.remotes = [];
@@ -40,14 +55,30 @@ function roomLogic(roomName: string): void {
         room.memory.remoteSupportRooms = [];
     }
 
-    if (Game.cpu.bucket > 4000 || Game.time % 50 === 0) {
-        ResourceHandler(room);
+    if (Game.cpu.bucket > 4000) {
+        RunNow(() => {
+            ResourceHandler(room);
 
-        LayoutHandler(room);
+            LayoutHandler(room);
 
-        TerminalHandler(room);
+            TerminalHandler(room);
 
-        LabHandler(room);
+            LabHandler(room);
+        }, "roomlogicslowstuff" + roomName);
+    } else {
+        RunEvery(
+            () => {
+                ResourceHandler(room);
+
+                LayoutHandler(room);
+
+                TerminalHandler(room);
+
+                LabHandler(room);
+            },
+            "roomlogicslowstuff" + roomName,
+            50
+        );
     }
 
     SpawnHandler(room);
