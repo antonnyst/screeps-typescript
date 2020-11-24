@@ -29,7 +29,8 @@ function perRoom(room: string) {
         Game.map.visual.rect(tl, 48, 48, {
             fill: colors[roomNumber + 2]
         });
-        Game.map.visual.text("A: " + (Game.time - Memory.rooms[room].lastUpdate), new RoomPosition(2, 4, room), {
+        const text: string = "A: " + (Game.time - Memory.rooms[room].lastUpdate);
+        Game.map.visual.text(text, new RoomPosition(2, 4, room), {
             fontSize: 6,
             align: "left"
         });
