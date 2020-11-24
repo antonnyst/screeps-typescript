@@ -10,3 +10,8 @@ export function RunEvery(f: (...n: any) => any, name: string, time: number, ...a
         f(...args);
     }
 }
+
+export function RunNow(f: (...n: any) => any, name: string, ...args: any) {
+    times[name] = Game.time;
+    f(...args);
+}
