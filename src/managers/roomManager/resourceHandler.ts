@@ -3,7 +3,7 @@ import * as C from "../../config/constants";
 import { ResourcesData } from "../../dataInterfaces/resourcesData";
 
 export function ResourceHandler(room: Room): void {
-    RunEvery(ResourceData,"resourcehandlerresourcedata",5,room);
+    RunEvery(ResourceData, "resourcehandlerresourcedata" + room.name, 5, room);
 }
 
 function ResourceData(room: Room): void {

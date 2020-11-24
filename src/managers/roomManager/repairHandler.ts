@@ -64,7 +64,7 @@ export function RepairHandler(room: Room): void {
                 }
             }
         },
-        "repairhandlermain",
+        "repairhandlermain" + room.name,
         5
     );
 }
