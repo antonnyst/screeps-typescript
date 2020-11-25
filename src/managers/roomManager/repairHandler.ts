@@ -28,22 +28,34 @@ export function RepairHandler(room: Room): void {
                     }
                 }
 
-                const structures: Structure[] = room.find(FIND_STRUCTURES, {
-                    filter: (s) => s.hits !== undefined
-                });
+                const structures: Structure[] = remoteStructures.concat(
+                    room.find(FIND_STRUCTURES, {
+                        filter: (s) => s.hits !== undefined
+                    })
+                );
+
+                let amtOfRampart = 0;
 
                 for (const structure of structures) {
-                    if (structure instanceof StructureWall || structure instanceof StructureRampart) {
-                        if (
-                            structure.hits < 2000 ||
-                            (structure.hits < structure.hitsMax * C.RAMPART_PERCENTAGE_MIN &&
-                                Object.keys(room.memory.constructionSites).length === 0)
+                    if (structure instanceof StructureRampart) {
+                        if (structure.hits < 4000) {
+                            room.memory.repairTargets[structure.id] = structure.pos;
+                            amtOfRampart++;
+                        } else if (
+                            structure.hits < structure.hitsMax * C.RAMPART_PERCENTAGE_MIN &&
+                            Object.keys(room.memory.constructionSites).length === 0 &&
+                            amtOfRampart === 0
                         ) {
                             room.memory.repairTargets[structure.id] = structure.pos;
+                            amtOfRampart++;
                         } else if (
-                            structure.hits > structure.hitsMax * C.RAMPART_PERCENTAGE_MAX ||
-                            (Object.keys(room.memory.constructionSites).length > 0 && structure.hits > 2000)
+                            structure.hits < structure.hitsMax * C.RAMPART_PERCENTAGE_MAX &&
+                            Object.keys(room.memory.constructionSites).length === 0 &&
+                            amtOfRampart === 0 &&
+                            room.memory.repairTargets[structure.id] !== undefined
                         ) {
+                            amtOfRampart++;
+                        } else {
                             delete room.memory.repairTargets[structure.id];
                         }
                         continue;
