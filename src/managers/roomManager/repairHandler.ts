@@ -25,7 +25,7 @@ export function RepairHandler(room: Room): void {
                                 filter: (s) =>
                                     s.hits !== undefined &&
                                     s.structureType !== STRUCTURE_WALL &&
-                                    s.structureType != STRUCTURE_INVADER_CORE
+                                    s.structureType !== STRUCTURE_INVADER_CORE
                             })
                         );
                     }
