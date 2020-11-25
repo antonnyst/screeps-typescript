@@ -44,6 +44,19 @@ export class BuilderRole extends CreepRole {
                 if (target instanceof ConstructionSite) {
                     if (this.creep.build(target) === ERR_NOT_IN_RANGE) {
                         this.smartMove(target.pos, 2);
+                    } else {
+                        if (this.creep.pos.x === 0) {
+                            this.creep.move(RIGHT);
+                        }
+                        if (this.creep.pos.y === 0) {
+                            this.creep.move(BOTTOM);
+                        }
+                        if (this.creep.pos.x === 49) {
+                            this.creep.move(LEFT);
+                        }
+                        if (this.creep.pos.y === 49) {
+                            this.creep.move(TOP);
+                        }
                     }
                 } else {
                     const res = this.creep.repair(target);
