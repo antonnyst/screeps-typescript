@@ -83,7 +83,7 @@ export class RemoteHaulerRole extends CreepRole {
                         (s: Structure) => s.structureType === STRUCTURE_LINK
                     )[0] as StructureLink;
 
-                    if (link !== null && (link.store.getFreeCapacity(RESOURCE_ENERGY) as number) > 0) {
+                    if (link !== undefined && (link.store.getFreeCapacity(RESOURCE_ENERGY) as number) > 0) {
                         target = link;
                     }
                 }
