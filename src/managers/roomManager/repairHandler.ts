@@ -22,7 +22,10 @@ export function RepairHandler(room: Room): void {
                     if (Game.rooms[remote] !== undefined) {
                         remoteStructures = remoteStructures.concat(
                             Game.rooms[remote].find(FIND_STRUCTURES, {
-                                filter: (s) => s.hits !== undefined && s.structureType !== STRUCTURE_WALL
+                                filter: (s) =>
+                                    s.hits !== undefined &&
+                                    s.structureType !== STRUCTURE_WALL &&
+                                    s.structureType != STRUCTURE_INVADER_CORE
                             })
                         );
                     }
