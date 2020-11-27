@@ -322,7 +322,7 @@ export abstract class CreepRole implements CreepRoleInterface {
                         }
                     });
                 }
-                return;
+                return costMatrix;
             },
             maxOps: 5000,
             reusePath: 25,
