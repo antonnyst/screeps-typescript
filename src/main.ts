@@ -15,7 +15,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
         Game.cpu.bucket > 9000
     ) {
         Game.cpu.generatePixel();
-        //return;
+        // return;
     }
 
     runAllManagers();
