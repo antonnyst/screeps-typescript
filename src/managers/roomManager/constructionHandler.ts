@@ -2,10 +2,9 @@ import { RunEvery } from "../../utils/RunEvery";
 
 export function ConstructionHandler(room: Room): void {
     RunEvery(
-        (room: Room) => {
+        () => {
             if (room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
                 room.memory.constructionSites = {};
-
 
                 let remoteSites: ConstructionSite[] = [];
 
@@ -24,7 +23,6 @@ export function ConstructionHandler(room: Room): void {
             }
         },
         "constructionhandlermain" + room.name,
-        5,
-        room
+        5
     );
 }
