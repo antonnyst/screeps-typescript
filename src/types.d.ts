@@ -1,3 +1,13 @@
+declare namespace NodeJS {
+    interface Global {
+        Memory?: Memory;
+    }
+}
+
+interface RawMemory {
+    _parsed: Memory;
+}
+
 interface CreepMemory {
     role: string;
     home: string;
