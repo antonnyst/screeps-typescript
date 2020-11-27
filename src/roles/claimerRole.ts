@@ -19,7 +19,7 @@ export class ClaimerRole extends CreepRole {
         } else {
             const controller = this.creep.room.controller;
             if (controller !== undefined) {
-                if (controller.reservation) {
+                if (controller.reservation || (controller.owner !== undefined && !controller.my)) {
                     if (this.creep.attackController(controller) === ERR_NOT_IN_RANGE) {
                         this.smartMove(controller.pos, 1);
                     }
