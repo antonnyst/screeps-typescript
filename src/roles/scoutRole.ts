@@ -26,7 +26,6 @@ export class ScoutRole extends CreepRole {
         if (this.creep.memory.roleData.anyStore === undefined) {
             this.creep.memory.roleData.anyStore = {};
         }
-
         if (
             this.creep.memory.roleData.target !== undefined &&
             this.creep.room.name !== this.creep.memory.roleData.target
@@ -91,10 +90,15 @@ export class ScoutRole extends CreepRole {
                         }
                     }
                 }
-
                 this.creep.memory.roleData.target = newTarget;
                 if (this.creep.memory.roleData.target !== undefined) {
-                    this.smartMove(new RoomPosition(25, 25, this.creep.memory.roleData.target));
+                    const exit: ExitConstant = this.creep.room.findExitTo(
+                        this.creep.memory.roleData.target
+                    ) as ExitConstant;
+                    const e = this.creep.pos.findClosestByRange(this.creep.room.find(exit));
+                    if (e !== null) {
+                        this.smartMove(e);
+                    }
                 }
             }
         }
