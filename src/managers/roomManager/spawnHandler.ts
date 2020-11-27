@@ -259,7 +259,8 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
             if (
                 Memory.rooms[r] !== undefined &&
                 Memory.rooms[r].remoteLayout !== undefined &&
-                Memory.rooms[r].remoteLayout.sources !== undefined
+                Memory.rooms[r].remoteLayout.sources !== undefined &&
+                Object.keys(Memory.rooms[r].hostiles).length === 0
             ) {
                 i += Memory.rooms[r].remoteLayout.sources.length;
             }
@@ -274,7 +275,8 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
             if (
                 Memory.rooms[r] !== undefined &&
                 Memory.rooms[r].remoteLayout !== undefined &&
-                Memory.rooms[r].remoteLayout.sources !== undefined
+                Memory.rooms[r].remoteLayout.sources !== undefined &&
+                Object.keys(Memory.rooms[r].hostiles).length === 0
             ) {
                 i += Memory.rooms[r].remoteLayout.sources.length;
             }
