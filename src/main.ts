@@ -1,3 +1,4 @@
+import MemHack from "./utils/MemHack";
 import * as Config from "./config/config";
 import { runAllManagers } from "./managerRunner";
 import { ErrorMapper } from "./utils/ErrorMapper";
@@ -6,6 +7,7 @@ import { RunEvery } from "./utils/RunEvery";
 const globalStartTick: number = Game.time;
 
 export const loop = ErrorMapper.wrapLoop(() => {
+    MemHack.pretick();
     if (
         Config.burnForPixels &&
         Game.shard.name === "shard3" &&
