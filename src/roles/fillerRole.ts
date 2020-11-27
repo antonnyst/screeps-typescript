@@ -1,6 +1,7 @@
 import { CreepRole } from "./creepRole";
 import { saveToCache, getFromCache } from "../utils/Cache";
 import { unpackPosition } from "../utils/RoomPositionPacker";
+import { find } from "lodash";
 
 export class FillerRole extends CreepRole {
     runRole() {
@@ -30,62 +31,20 @@ export class FillerRole extends CreepRole {
             }
 
             if (target === null) {
-                let targets: Structure[] | null = getFromCache("fillerRole.targets." + this.creep.memory.home, 1);
-
-                let usedCache: boolean = true;
-
-                if (targets === null) {
-                    usedCache = false;
-                    targets = Game.rooms[this.creep.memory.home].find(FIND_MY_STRUCTURES, {
-                        filter: (s) =>
-                            (s.structureType === STRUCTURE_EXTENSION ||
-                                s.structureType === STRUCTURE_SPAWN ||
-                                s.structureType === STRUCTURE_TOWER) &&
-                            (s.store.getFreeCapacity(RESOURCE_ENERGY) as number) > 0
-                    });
-
-                    if (targets.length === 0 && this.creep.room.memory.linkStatus === "fill") {
-                        const cPos = unpackPosition(this.creep.room.memory.layout.baseCenter);
-                        const lPos = new RoomPosition(cPos.x, cPos.y - 1, cPos.roomName);
-                        targets = Game.rooms[this.creep.memory.home].find(FIND_MY_STRUCTURES, {
-                            filter: (s) =>
-                                s.structureType === STRUCTURE_LINK &&
-                                s.pos.isEqualTo(lPos) &&
-                                (s.store.getFreeCapacity(RESOURCE_ENERGY) as number) > 0
-                        });
-                    } else if (targets.length === 0 && this.creep.room.memory.linkStatus === "empty") {
-                        const cPos = unpackPosition(this.creep.room.memory.layout.baseCenter);
-                        const lPos = new RoomPosition(cPos.x, cPos.y - 1, cPos.roomName);
-                        const link = Game.rooms[this.creep.memory.home].find(FIND_MY_STRUCTURES, {
-                            filter: (s) => s.structureType === STRUCTURE_LINK && s.pos.isEqualTo(lPos)
-                        })[0] as StructureLink;
-
-                        if (
-                            this.creep.room.storage !== undefined &&
-                            link !== undefined &&
-                            (link.store.getUsedCapacity(RESOURCE_ENERGY) as number) > 0
-                        ) {
-                            targets.push(this.creep.room.storage);
-                        }
-                    }
-
-                    if (targets.length === 0) {
-                        targets = null;
-                    }
-                }
-
-                if (targets != null) {
-                    if (!usedCache) {
-                        saveToCache("fillerRole.targets." + this.creep.memory.home, targets);
-                    }
-                    target = this.creep.pos.findClosestByRange(targets);
-                }
+                target = this.findTarget();
             }
 
             if (target != null) {
                 this.creep.memory.roleData.targetId = target.id;
-                if (this.creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                const res = this.creep.transfer(target, RESOURCE_ENERGY);
+                if (res === ERR_NOT_IN_RANGE) {
                     this.smartMove(target.pos, 1);
+                } else if (res === OK) {
+                    target = this.findTarget(target);
+                    if (target !== null) {
+                        this.creep.memory.roleData.targetId = target.id;
+                        this.smartMove(target.pos, 1);
+                    }
                 } else {
                     this.creep.memory.roleData.targetId = undefined;
                 }
@@ -96,5 +55,67 @@ export class FillerRole extends CreepRole {
                 }
             }
         }
+    }
+
+    findTarget(filter: Structure | undefined = undefined): Structure | null {
+        if (this.creep === null) {
+            return null;
+        }
+        let target: Structure | null = null;
+        let targets: Structure[] | null = getFromCache("fillerRole.targets." + this.creep.memory.home, 1);
+        let usedCache: boolean = true;
+        if (targets === null) {
+            usedCache = false;
+            targets = Game.rooms[this.creep.memory.home].find(FIND_MY_STRUCTURES, {
+                filter: (s) =>
+                    (s.structureType === STRUCTURE_EXTENSION ||
+                        s.structureType === STRUCTURE_SPAWN ||
+                        s.structureType === STRUCTURE_TOWER) &&
+                    (s.store.getFreeCapacity(RESOURCE_ENERGY) as number) > 0 &&
+                    (filter === undefined || s.id !== filter.id)
+            });
+
+            if (targets.length === 0 && this.creep.room.memory.linkStatus === "fill") {
+                const cPos = unpackPosition(this.creep.room.memory.layout.baseCenter);
+                const lPos = new RoomPosition(cPos.x, cPos.y - 1, cPos.roomName);
+                targets = Game.rooms[this.creep.memory.home].find(FIND_MY_STRUCTURES, {
+                    filter: (s) =>
+                        s.structureType === STRUCTURE_LINK &&
+                        s.pos.isEqualTo(lPos) &&
+                        (s.store.getFreeCapacity(RESOURCE_ENERGY) as number) > 0 &&
+                        (filter === undefined || s.id !== filter.id)
+                });
+            } else if (targets.length === 0 && this.creep.room.memory.linkStatus === "empty") {
+                const cPos = unpackPosition(this.creep.room.memory.layout.baseCenter);
+                const lPos = new RoomPosition(cPos.x, cPos.y - 1, cPos.roomName);
+                const link = Game.rooms[this.creep.memory.home].find(FIND_MY_STRUCTURES, {
+                    filter: (s) =>
+                        s.structureType === STRUCTURE_LINK &&
+                        s.pos.isEqualTo(lPos) &&
+                        (filter === undefined || s.id !== filter.id)
+                })[0] as StructureLink;
+
+                if (
+                    this.creep.room.storage !== undefined &&
+                    link !== undefined &&
+                    (link.store.getUsedCapacity(RESOURCE_ENERGY) as number) > 0
+                ) {
+                    targets.push(this.creep.room.storage);
+                }
+            }
+
+            if (targets.length === 0) {
+                targets = null;
+            }
+        }
+
+        if (targets != null) {
+            if (!usedCache) {
+                saveToCache("fillerRole.targets." + this.creep.memory.home, targets);
+            }
+            target = this.creep.pos.findClosestByRange(targets);
+        }
+
+        return target;
     }
 }
