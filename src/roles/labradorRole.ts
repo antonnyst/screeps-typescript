@@ -690,7 +690,7 @@ export class LabradorRole extends CreepRole {
                 return;
             }
 
-            const resource: ResourceConstant = _.findKey(this.creep.store);
+            const resource: ResourceConstant = _.findKey(this.creep.store) as ResourceConstant;
             const amount: number = this.creep.store.getUsedCapacity(resource);
             const freeAmount: number = terminal.store.getFreeCapacity(resource);
 
