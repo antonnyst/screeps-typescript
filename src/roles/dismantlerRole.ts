@@ -20,7 +20,7 @@ export class DismantlerRole extends CreepRole {
             const target: Structure | null = Game.getObjectById(this.creep.memory.roleData.targetId as string);
             if (target != null) {
                 if (this.creep.dismantle(target) === ERR_NOT_IN_RANGE) {
-                    this.smartMove(target.pos);
+                    this.smartMove(target.pos,1);
                 }
             } else {
                 const t = this.creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES);

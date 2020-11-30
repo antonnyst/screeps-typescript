@@ -26,7 +26,7 @@ export class ReserverRole extends CreepRole {
                 }
             }
         } else {
-            this.smartMove(cPos);
+            this.smartMove(cPos, 1);
         }
     }
 }
