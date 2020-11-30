@@ -39,7 +39,7 @@ export class ArmedDismantlerRole extends CreepRole {
                 }
 
                 if (!this.creep.pos.isNearTo(target.pos)) {
-                    this.smartMove(target.pos);
+                    this.smartMove(target.pos,1);
                 }
             } else {
                 const t = this.creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {

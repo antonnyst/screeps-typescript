@@ -72,7 +72,7 @@ export class PeacekeeperRole extends CreepRole {
         ) {
             const cpos = unpackPosition(this.creep.room.memory.layout.baseCenter);
 
-            this.smartMove(new RoomPosition(cpos.x, cpos.y + 6, this.creep.memory.home));
+            this.smartMove(new RoomPosition(cpos.x, cpos.y, this.creep.memory.home), 6);
         }
     }
 }

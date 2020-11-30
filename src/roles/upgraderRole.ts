@@ -22,7 +22,7 @@ export class UpgraderRole extends CreepRole {
                 }
                 this.creep.upgradeController(this.creep.room.controller!);
             } else {
-                this.smartMove(cpos);
+                this.smartMove(cpos, 1);
             }
         } else {
             if (this.creep.memory.roleData === undefined) {
@@ -49,7 +49,7 @@ export class UpgraderRole extends CreepRole {
             } else {
                 const controller: StructureController | undefined = Game.rooms[this.creep.memory.home].controller;
                 if (controller !== undefined && this.creep.upgradeController(controller) === ERR_NOT_IN_RANGE) {
-                    this.smartMove(controller.pos);
+                    this.smartMove(controller.pos, 3);
                 }
             }
         }

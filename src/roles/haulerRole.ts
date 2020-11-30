@@ -57,7 +57,7 @@ export class HaulerRole extends CreepRole {
                     this.creep.withdraw(container, RESOURCE_ENERGY);
                 }
             } else {
-                this.smartMove(minerPos);
+                this.smartMove(minerPos,1);
             }
         } else {
             const container: StructureContainer = _.filter(

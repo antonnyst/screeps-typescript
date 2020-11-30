@@ -58,7 +58,7 @@ export class MineralHaulerRole extends CreepRole {
                     this.creep.withdraw(container, res);
                 }
             } else {
-                this.smartMove(minerPos);
+                this.smartMove(minerPos, 1);
             }
         } else {
             const target = this.creep.room.terminal;
