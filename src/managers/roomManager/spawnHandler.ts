@@ -307,7 +307,8 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
             return 0;
         }
         const mineral = room.find(FIND_MINERALS)[0];
-        if (mineral.mineralAmount > 0) {
+        const extractor = room.find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === STRUCTURE_EXTRACTOR })[0];
+        if (mineral.mineralAmount > 0 && extractor !== undefined) {
             return 1;
         } else {
             return 0;
@@ -324,7 +325,8 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
             return 0;
         }
         const mineral = room.find(FIND_MINERALS)[0];
-        if (mineral.mineralAmount > 0) {
+        const extractor = room.find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === STRUCTURE_EXTRACTOR })[0];
+        if (mineral.mineralAmount > 0 && extractor !== undefined) {
             return 1;
         } else {
             return 0;
