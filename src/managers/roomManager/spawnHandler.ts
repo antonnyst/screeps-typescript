@@ -308,7 +308,11 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
         }
         const mineral = room.find(FIND_MINERALS)[0];
         const extractor = room.find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === STRUCTURE_EXTRACTOR })[0];
-        if (mineral.mineralAmount > 0 && extractor !== undefined) {
+        const sites = offsetPositionByDirection(
+            unpackPosition(room.memory.layout.mineral.pos),
+            room.memory.layout.mineral.container
+        ).lookFor("constructionSite");
+        if (mineral.mineralAmount > 0 && extractor !== undefined && sites.length === 0) {
             return 1;
         } else {
             return 0;
@@ -326,7 +330,11 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
         }
         const mineral = room.find(FIND_MINERALS)[0];
         const extractor = room.find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === STRUCTURE_EXTRACTOR })[0];
-        if (mineral.mineralAmount > 0 && extractor !== undefined) {
+        const sites = offsetPositionByDirection(
+            unpackPosition(room.memory.layout.mineral.pos),
+            room.memory.layout.mineral.container
+        ).lookFor("constructionSite");
+        if (mineral.mineralAmount > 0 && extractor !== undefined && sites.length === 0) {
             return 1;
         } else {
             return 0;
