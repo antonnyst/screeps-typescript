@@ -225,7 +225,8 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
             Object.keys(room.memory.constructionSites).length,
             Object.keys(room.memory.repairTargets).length
         );
-        const num = Math.ceil(repNum / (10 / (10 - room.controller.level)));
+
+        const num = Math.ceil(repNum / (Math.min(room.energyCapacityAvailable, 3000) / 300));
 
         return Math.min(num, 12 - room.controller.level);
     },
