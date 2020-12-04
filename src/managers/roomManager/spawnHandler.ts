@@ -499,7 +499,7 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
                 return;
             }
             const role = "filler";
-            room.memory.spawnQueue.push({
+            room.memory.spawnQueue.unshift({
                 role,
                 pattern: rolePatterns[role],
                 energy: room.energyCapacityAvailable
@@ -543,7 +543,7 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
                     const capacityNeeded = (SOURCE_ENERGY_CAPACITY / ENERGY_REGEN_TIME) * tdist;
                     const carryNeeded = capacityNeeded / 50;
                     const patternValue = Math.ceil(carryNeeded / 2) + 1;
-                    room.memory.spawnQueue.push({
+                    room.memory.spawnQueue.unshift({
                         role: "hauler",
                         pattern: "[mcc]" + patternValue,
                         energy: room.energyCapacityAvailable,
