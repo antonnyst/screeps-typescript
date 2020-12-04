@@ -37,29 +37,15 @@ export function RepairHandler(room: Room): void {
                     })
                 );
 
-                let amtOfRampart = 0;
+                const ramparts = [];
 
                 for (const structure of structures) {
                     if (structure instanceof StructureRampart) {
                         if (structure.hits < 4000) {
                             room.memory.repairTargets[structure.id] = structure.pos;
-                            amtOfRampart++;
-                        } else if (
-                            structure.hits < structure.hitsMax * C.RAMPART_PERCENTAGE_MIN &&
-                            Object.keys(room.memory.constructionSites).length === 0 &&
-                            amtOfRampart === 0
-                        ) {
-                            room.memory.repairTargets[structure.id] = structure.pos;
-                            amtOfRampart++;
-                        } else if (
-                            structure.hits < structure.hitsMax * C.RAMPART_PERCENTAGE_MAX &&
-                            Object.keys(room.memory.constructionSites).length === 0 &&
-                            amtOfRampart === 0 &&
-                            room.memory.repairTargets[structure.id] !== undefined
-                        ) {
-                            amtOfRampart++;
                         } else {
                             delete room.memory.repairTargets[structure.id];
+                            ramparts.push(structure);
                         }
                         continue;
                     }
@@ -75,6 +61,20 @@ export function RepairHandler(room: Room): void {
                         room.memory.repairTargets[structure.id] = structure.pos;
                     } else {
                         delete room.memory.repairTargets[structure.id];
+                    }
+                }
+
+                if (
+                    Object.keys(room.memory.repairTargets).length === 0 &&
+                    ramparts.length > 0 &&
+                    Object.keys(room.memory.constructionSites).length === 0
+                ) {
+                    let amt = 0;
+                    for (const r of ramparts) {
+                        if (r.hits < C.RAMPART_PERCENTAGE_MIN * r.hitsMax && amt < 6) {
+                            room.memory.repairTargets[r.id] = r.pos;
+                            amt++;
+                        }
                     }
                 }
             }
