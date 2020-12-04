@@ -59,11 +59,19 @@ export class BuilderRole extends CreepRole {
                         }
                     }
                 } else {
-                    const res = this.creep.repair(target);
-                    if (res === ERR_NOT_IN_RANGE) {
-                        this.smartMove(target.pos, 2);
-                    } else if (res !== OK || Game.time % 20 === 0) {
+                    if (target.hits === target.hitsMax) {
                         this.creep.memory.roleData.targetId = undefined;
+                        target = findTarget(this.creep);
+                        if (target !== null) {
+                            this.creep.memory.roleData.targetId = target.id;
+                        }
+                    } else {
+                        const res = this.creep.repair(target);
+                        if (res === ERR_NOT_IN_RANGE) {
+                            this.smartMove(target.pos, 2);
+                        } else if (res !== OK || Game.time % 10 === 0) {
+                            this.creep.memory.roleData.targetId = undefined;
+                        }
                     }
                 }
             } else {
