@@ -8,6 +8,7 @@ import { TerminalHandler } from "./roomManager/terminalHandler";
 import { LabHandler } from "./roomManager/labHandler";
 import { ResourceHandler } from "./roomManager/resourceHandler";
 import { RunEvery, RunNow } from "utils/RunEvery";
+import { VisualHandler } from "./roomManager/visualHandler";
 
 export class RoomManager implements Manager {
     run() {
@@ -88,6 +89,8 @@ function roomLogic(roomName: string): void {
     RepairHandler(room);
 
     LinkHandler(room);
+
+    VisualHandler(room);
 }
 
 function getRoomLevel(room: Room): number {
