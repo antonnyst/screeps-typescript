@@ -12,10 +12,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
         Config.burnForPixels &&
         Game.shard.name === "shard3" &&
         Memory.cpuAvg < Game.cpu.limit &&
-        Game.cpu.bucket > 9000
+        Game.cpu.bucket >= 10000
     ) {
         Game.cpu.generatePixel();
-        // return;
     }
 
     runAllManagers();
