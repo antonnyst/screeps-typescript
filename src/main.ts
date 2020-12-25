@@ -50,11 +50,13 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
     const uTime: number = Game.cpu.getUsed();
 
+    const age = Game.time - globalStartTick + 1;
+
     if (Memory.cpuAvg === undefined) {
-        Memory.cpuAvg = uTime;
+        Memory.cpuAvg = 0;
     }
 
-    Memory.cpuAvg = Memory.cpuAvg * 0.95 + uTime * 0.05;
+    Memory.cpuAvg = Memory.cpuAvg + (uTime - Memory.cpuAvg) / Math.min(age, 250);
 
     if (Config.mainLog) {
         RunEvery(
