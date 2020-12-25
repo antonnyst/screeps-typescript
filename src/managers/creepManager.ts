@@ -14,10 +14,6 @@ export class CreepManager implements Manager {
             }
         }
 
-        if (Game.cpu.bucket < 3000 && Game.time % 3 === 0) {
-            return;
-        }
-
         for (const i in Game.creeps) {
             const creep: Creep = Game.creeps[i];
             if (creep === undefined) {
