@@ -18,7 +18,8 @@ export class MineralHaulerRole extends CreepRole {
 
         if (
             this.creep.memory.roleData.hasEnergy === false &&
-            (this.creep.store.getFreeCapacity() === 0 || this.creep.room.find(FIND_MINERALS)[0].mineralAmount === 0)
+            (this.creep.store.getFreeCapacity() === 0 ||
+                (this.creep.room.find(FIND_MINERALS)[0].mineralAmount === 0 && this.creep.store.getUsedCapacity() > 0))
         ) {
             this.creep.memory.roleData.hasEnergy = true;
         }
@@ -51,7 +52,9 @@ export class MineralHaulerRole extends CreepRole {
 
                 if (
                     container !== undefined &&
-                    container.store.getUsedCapacity(res) >= this.creep.store.getCapacity() &&
+                    (container.store.getUsedCapacity(res) >= this.creep.store.getCapacity() ||
+                        (container.store.getUsedCapacity(res) > 0 &&
+                            this.creep.room.find(FIND_MINERALS)[0].mineralAmount === 0)) &&
                     this.creep.ticksToLive! > 50
                 ) {
                     this.creep.memory.roleData.target = container.id;
