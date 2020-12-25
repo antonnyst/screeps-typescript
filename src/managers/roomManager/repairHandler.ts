@@ -38,19 +38,20 @@ export function RepairHandler(room: Room): void {
                 );
 
                 const ramparts = [];
+                const already = [];
 
                 for (const structure of structures) {
                     if (structure instanceof StructureRampart) {
-                        if (structure.hits < 4000) {
-                            room.memory.repairTargets[structure.id] = structure.pos;
-                        } else {
+                        if (room.memory.repairTargets[structure.id] !== undefined) {
+                            already.push(structure);
                             delete room.memory.repairTargets[structure.id];
+                        } else {
                             ramparts.push(structure);
                         }
                         continue;
                     }
                     if (structure instanceof StructureRoad || structure instanceof StructureContainer) {
-                        if (structure.hits < 2000 || structure.hits < structure.hitsMax * 0.75) {
+                        if (structure.hits < 2000 || structure.hits < structure.hitsMax * 0.5) {
                             room.memory.repairTargets[structure.id] = structure.pos;
                         } else if (structure.hits >= structure.hitsMax) {
                             delete room.memory.repairTargets[structure.id];
@@ -64,16 +65,38 @@ export function RepairHandler(room: Room): void {
                     }
                 }
 
-                if (
-                    Object.keys(room.memory.repairTargets).length === 0 &&
-                    ramparts.length > 0 &&
-                    Object.keys(room.memory.constructionSites).length === 0
-                ) {
-                    let amt = 0;
+                if (ramparts.length > 0) {
                     for (const r of ramparts) {
-                        if (r.hits < C.RAMPART_PERCENTAGE_MIN * r.hitsMax && amt < 6) {
+                        if (r.hits < 4000) {
                             room.memory.repairTargets[r.id] = r.pos;
-                            amt++;
+                            continue;
+                        }
+                    }
+
+                    if (
+                        Object.keys(room.memory.repairTargets).length === 0 &&
+                        Object.keys(room.memory.constructionSites).length === 0
+                    ) {
+                        let amt = 0;
+                        for (const r of already) {
+                            if (r.hits < r.hitsMax * C.RAMPART_PERCENTAGE_MAX) {
+                                room.memory.repairTargets[r.id] = r.pos;
+                                amt++;
+                                if (amt >= 6) {
+                                    break;
+                                }
+                            }
+                        }
+                        if (amt < 6) {
+                            for (const r of ramparts) {
+                                if (r.hits < r.hitsMax * C.RAMPART_PERCENTAGE_MIN) {
+                                    room.memory.repairTargets[r.id] = r.pos;
+                                    amt++;
+                                    if (amt >= 6) {
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
