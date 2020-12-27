@@ -49,6 +49,7 @@ interface RoomMemory {
     linkStatus: LinkStatus;
     labs?: import("./dataInterfaces/labsData").LabsData;
     resources?: import("./dataInterfaces/resourcesData").ResourcesData;
+    rampartData?: import("./dataInterfaces/rampartData").RampartData;
     lastUpdate: number;
 }
 
@@ -69,6 +70,21 @@ interface Stats {
         progressTotal: number;
         level: number;
     };
+    rooms: {
+        [key in string]: RoomStats;
+    };
+}
+
+interface RoomStats {
+    energystored: number;
+    controller: {
+        level: number;
+        progress: number;
+        progressTotal: number;
+    };
+    rampartavg: number;
+    rampartmin: number;
+    rampartmax: number;
 }
 
 declare type LinkStatus = "fill" | "empty";
