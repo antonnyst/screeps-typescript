@@ -44,4 +44,18 @@ export const loop = ErrorMapper.wrapLoop(() => {
         );
     }
     if (Config.cpuLog) console.log("t => " + Game.cpu.getUsed());
+
+    Memory.stats = {
+        time: Game.time,
+        cpu: {
+            used: uTime,
+            limit: Game.cpu.limit,
+            bucket: Game.cpu.bucket
+        },
+        gcl: {
+            level: Game.gcl.level,
+            progress: Game.gcl.progress,
+            progressTotal: Game.gcl.progressTotal
+        }
+    };
 });
