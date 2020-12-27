@@ -40,8 +40,18 @@ export function RepairHandler(room: Room): void {
                 const ramparts = [];
                 const already = [];
 
+                let ramparthitsum = 0;
+                let rampartamt = 0;
+                let rampartmin = Infinity;
+                let rampartmax = 0;
+
                 for (const structure of structures) {
                     if (structure instanceof StructureRampart) {
+                        ramparthitsum += structure.hits;
+                        rampartamt += 1;
+                        rampartmin = Math.min(rampartmin, structure.hits);
+                        rampartmax = Math.max(rampartmax, structure.hits);
+
                         if (room.memory.repairTargets[structure.id] !== undefined) {
                             already.push(structure);
                             delete room.memory.repairTargets[structure.id];
@@ -64,6 +74,8 @@ export function RepairHandler(room: Room): void {
                         delete room.memory.repairTargets[structure.id];
                     }
                 }
+
+                const rampartavg = ramparthitsum / rampartamt;
 
                 if (ramparts.length > 0) {
                     for (const r of ramparts) {
@@ -88,6 +100,7 @@ export function RepairHandler(room: Room): void {
                             }
                         }
                         if (amt < 6) {
+                            ramparts.sort((a, b) => a.hits - b.hits);
                             for (const r of ramparts) {
                                 if (r.hits < r.hitsMax * C.RAMPART_PERCENTAGE_MIN) {
                                     room.memory.repairTargets[r.id] = r.pos;
@@ -100,6 +113,12 @@ export function RepairHandler(room: Room): void {
                         }
                     }
                 }
+
+                room.memory.rampartData = {
+                    rampartavg,
+                    rampartmin,
+                    rampartmax
+                };
             }
         },
         "repairhandlermain" + room.name,

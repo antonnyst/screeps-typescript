@@ -56,6 +56,39 @@ export const loop = ErrorMapper.wrapLoop(() => {
             level: Game.gcl.level,
             progress: Game.gcl.progress,
             progressTotal: Game.gcl.progressTotal
-        }
+        },
+        rooms: {}
     };
+
+    for (const roomName in Game.rooms) {
+        const room = Game.rooms[roomName];
+        if (room.controller && room.controller.my) {
+            const energystored = (Memory.rooms[roomName].resources !== undefined
+                ? Memory.rooms[roomName].resources?.total.energy
+                : 0) as number;
+
+            const rampartavg = (Memory.rooms[roomName].rampartData !== undefined
+                ? Memory.rooms[roomName].rampartData?.rampartavg
+                : 0) as number;
+            const rampartmin = (Memory.rooms[roomName].rampartData !== undefined
+                ? Memory.rooms[roomName].rampartData?.rampartmin
+                : 0) as number;
+            const rampartmax = (Memory.rooms[roomName].rampartData !== undefined
+                ? Memory.rooms[roomName].rampartData?.rampartmax
+                : 0) as number;
+
+            Memory.stats.rooms[roomName] = {
+                controller: {
+                    level: room.controller.level,
+                    progress: room.controller.progress,
+                    progressTotal: room.controller.progressTotal
+                },
+                energystored,
+                rampartavg,
+                rampartmin,
+                rampartmax
+            };
+        }
+    }
+    Memory.stats.cpu.used = Game.cpu.getUsed();
 });

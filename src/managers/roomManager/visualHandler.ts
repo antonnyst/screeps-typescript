@@ -19,22 +19,6 @@ export function VisualHandler(room: Room): void {
                     });
                 }
             }
-            const ramparts = room.find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === STRUCTURE_RAMPART });
-
-            let sum = 0;
-
-            let hitsMax = 0;
-            let hitsMin = Infinity;
-
-            for (const rampart of ramparts) {
-                if (hitsMax < rampart.hits) {
-                    hitsMax = rampart.hits;
-                }
-                if (hitsMin > rampart.hits) {
-                    hitsMin = rampart.hits;
-                }
-                sum += rampart.hits;
-            }
 
             room.visual.text(
                 "Rampart Health Target: " +
@@ -50,11 +34,11 @@ export function VisualHandler(room: Room): void {
 
             room.visual.text(
                 "Rampart Health: " +
-                    Math.round(sum / ramparts.length / 1000) +
+                    Math.round((room.memory.rampartData?.rampartavg || 0) / 1000) +
                     "k/" +
-                    Math.round(hitsMin / 1000) +
+                    Math.round((room.memory.rampartData?.rampartmin || 0) / 1000) +
                     "k/" +
-                    Math.round(hitsMax / 1000) +
+                    Math.round((room.memory.rampartData?.rampartmax || 0) / 1000) +
                     "k (avg/min/max)",
                 1,
                 3.275,
