@@ -54,6 +54,21 @@ interface RoomMemory {
 
 interface Memory {
     cpuAvg: number;
+    stats: Stats;
+}
+
+interface Stats {
+    time: number;
+    cpu: {
+        used: number;
+        limit: number;
+        bucket: number;
+    };
+    gcl: {
+        progress: number;
+        progressTotal: number;
+        level: number;
+    };
 }
 
 declare type LinkStatus = "fill" | "empty";
@@ -80,4 +95,4 @@ declare interface LabradorTask {
     type: ActionType;
 }
 
-declare const _: any;
+declare namespace _ {}
