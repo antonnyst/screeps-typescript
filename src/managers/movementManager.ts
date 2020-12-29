@@ -264,6 +264,12 @@ const roomCallback = (roomName: string): boolean | CostMatrix => {
     let lazyMatrix: CostMatrix | null = getFromCache("rccostmatrixlazy" + roomName, 100);
     if (lazyMatrix === null) {
         lazyMatrix = new PathFinder.CostMatrix();
+        const roads = room.find(FIND_STRUCTURES, {
+            filter: (s) => s.structureType === STRUCTURE_ROAD
+        });
+        for (const road of roads) {
+            lazyMatrix.set(road.pos.x, road.pos.y, 1);
+        }
         const structures = room.find(FIND_STRUCTURES, {
             filter: (s) =>
                 s.structureType !== STRUCTURE_CONTAINER &&
@@ -290,12 +296,7 @@ const roomCallback = (roomName: string): boolean | CostMatrix => {
                 lazyMatrix.set(constructionSite.pos.x, constructionSite.pos.y, 255);
             }
         }
-        const roads = room.find(FIND_STRUCTURES, {
-            filter: (s) => s.structureType === STRUCTURE_ROAD
-        });
-        for (const road of roads) {
-            lazyMatrix.set(road.pos.x, road.pos.y, 1);
-        }
+
         saveToCache("rccostmatrixlazy" + roomName, lazyMatrix);
     }
     let finalMatrix = lazyMatrix.clone();
