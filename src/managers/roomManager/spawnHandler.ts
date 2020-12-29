@@ -5,15 +5,16 @@ import { offsetPositionByDirection } from "../../utils/RoomPositionHelpers";
 import * as C from "../../config/constants";
 import { roomTotalStoredEnergy } from "../../utils/RoomCalc";
 import { SpawnData } from "../../dataInterfaces/spawnData";
+import { RunEvery } from "utils/RunEvery";
 
 export function SpawnHandler(room: Room): void {
-    if (Game.time % 2 === 0 && room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
+    if (room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
         const spawns = room.find(FIND_MY_STRUCTURES, {
             filter: (s) => s.structureType === STRUCTURE_SPAWN && s.spawning === null
         });
 
         if (spawns.length > 0) {
-            updateSpawnQueue(room);
+            RunEvery(updateSpawnQueue, "SpawnHandlerUpdateSpawnQueue" + room, 10, room);
         }
     }
 }
