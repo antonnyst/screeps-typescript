@@ -45,12 +45,16 @@ export const loop = ErrorMapper.wrapLoop(() => {
     }
     if (Config.cpuLog) console.log("t => " + Game.cpu.getUsed());
 
+    const msplit = Memory.msplit;
     Memory.stats = {
         time: Game.time,
+        globalReset: globalStartTick,
+        creeps: Object.keys(Game.creeps).length,
         cpu: {
             used: uTime,
             limit: Game.cpu.limit,
-            bucket: Game.cpu.bucket
+            bucket: Game.cpu.bucket,
+            msplit: msplit
         },
         gcl: {
             level: Game.gcl.level,

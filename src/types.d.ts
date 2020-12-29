@@ -56,15 +56,19 @@ interface RoomMemory {
 
 interface Memory {
     cpuAvg: number;
+    msplit: number[];
     stats: Stats;
 }
 
 interface Stats {
     time: number;
+    globalReset: number;
+    creeps: number;
     cpu: {
         used: number;
         limit: number;
         bucket: number;
+        msplit: number[];
     };
     gcl: {
         progress: number;
