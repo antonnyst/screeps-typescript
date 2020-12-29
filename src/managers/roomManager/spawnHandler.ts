@@ -647,7 +647,10 @@ const roleCalcFunctions: { [role: string]: RoleCalcFunction } = {
 
                     const capacityNeeded = (SOURCE_ENERGY_CAPACITY / ENERGY_REGEN_TIME) * tdist;
                     const carryNeeded = capacityNeeded / 50;
-                    const creepsNeeded = Math.ceil(carryNeeded / 33);
+
+                    const maxCarry = Math.min(Math.floor(room.energyCapacityAvailable / 75), 33);
+
+                    const creepsNeeded = Math.ceil(carryNeeded / maxCarry);
                     const patternValue = Math.ceil(carryNeeded / creepsNeeded / 2) + 1;
 
                     if (remoteHaulerCount < creepsNeeded) {
