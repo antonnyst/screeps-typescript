@@ -7,11 +7,13 @@ import { ResourceManager } from "./managers/resourceManager";
 import { RoomManager } from "./managers/roomManager";
 import { SpawnManager } from "./managers/spawnManager";
 import { MapManager } from "./managers/mapManager";
+import { MovementManager } from "managers/movementManager";
 
 const managers: Manager[] = [
     new FlagManager(),
     new RoomManager(),
     new CreepManager(),
+    new MovementManager(),
     new SpawnManager(),
     new DefenseManager(),
     new ResourceManager(),
