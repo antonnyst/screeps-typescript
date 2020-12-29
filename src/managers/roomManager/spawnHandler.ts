@@ -297,7 +297,7 @@ const roleNeedsFunctions: { [role: string]: RoleNeedFunction } = {
         return room.memory.remotes.length > 0 ? 1 : 0;
     },
     scout: (room: Room): number => {
-        if (room.controller?.level === 8) {
+        if (room.controller?.level === 8 || Game.time % 5000 < 1000) {
             return 0;
         }
         return 1;
