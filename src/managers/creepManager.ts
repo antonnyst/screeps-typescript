@@ -2,7 +2,6 @@ import * as Config from "./../config/config";
 import { Manager } from "./manager";
 import { CreepRole } from "./../roles/creepRole";
 import { roleList } from "./../roles/roleList";
-import { config } from "chai";
 
 const cpuArr: { [name: string]: { c: number; cpu: number } } = {};
 
@@ -50,7 +49,7 @@ export class CreepManager implements Manager {
                     pc: cpuArr[ca].cpu / cpuArr[ca].c
                 };
 
-                console.log(ca + " = " + nCpuArr[ca].c.toFixed(3) + " per creep");
+                console.log(ca + " = " + nCpuArr[ca].pc.toFixed(3) + " per creep");
             }
         }
     }
