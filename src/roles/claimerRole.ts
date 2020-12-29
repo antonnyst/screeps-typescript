@@ -11,21 +11,16 @@ export class ClaimerRole extends CreepRole {
         }
 
         if (this.creep.room.name !== this.creep.memory.roleData.target) {
-            const exit: ExitConstant = this.creep.room.findExitTo(this.creep.memory.roleData.target) as ExitConstant;
-            const e = this.creep.pos.findClosestByPath(this.creep.room.find(exit));
-            if (e != null) {
-                this.smartMove(new RoomPosition(25, 25, this.creep.memory.roleData.target));
-            }
+            this.setMovementData(new RoomPosition(25, 25, this.creep.memory.roleData.target), 20, false, false);
         } else {
             const controller = this.creep.room.controller;
             if (controller !== undefined) {
-                if (controller.reservation || (controller.owner !== undefined && !controller.my)) {
-                    if (this.creep.attackController(controller) === ERR_NOT_IN_RANGE) {
-                        this.smartMove(controller.pos, 1);
-                    }
-                } else {
-                    if (this.creep.claimController(controller) === ERR_NOT_IN_RANGE) {
-                        this.smartMove(controller.pos, 1);
+                this.setMovementData(controller.pos, 1, false, false);
+                if (this.creep.pos.isNearTo(controller.pos)) {
+                    if (controller.reservation || (controller.owner !== undefined && !controller.my)) {
+                        this.creep.attackController(controller);
+                    } else {
+                        this.creep.claimController(controller);
                     }
                 }
             }

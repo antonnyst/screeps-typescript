@@ -39,6 +39,7 @@ export class RemoteHaulerRole extends CreepRole {
         const minerPos: RoomPosition = offsetPositionByDirection(unpackPosition(sourceData.pos), sourceData.container);
 
         if (this.creep.memory.roleData.hasEnergy === false) {
+            this.setMovementData(minerPos, 1, false, false);
             if (this.creep.pos.isNearTo(minerPos)) {
                 let container: StructureContainer | null = null;
 
@@ -55,8 +56,6 @@ export class RemoteHaulerRole extends CreepRole {
                 ) {
                     this.creep.withdraw(container, RESOURCE_ENERGY);
                 }
-            } else {
-                this.smartMove(minerPos, 1);
             }
         } else {
             const container: StructureContainer = _.filter(
@@ -93,8 +92,9 @@ export class RemoteHaulerRole extends CreepRole {
             }
 
             if (target !== undefined) {
-                if (this.creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-                    this.smartMove(target.pos, 1);
+                this.setMovementData(target.pos, 1, false, false);
+                if (this.creep.pos.isNearTo(target.pos)) {
+                    this.creep.transfer(target, RESOURCE_ENERGY);
                 }
             }
         }

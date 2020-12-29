@@ -27,15 +27,16 @@ export class RaiderRole extends CreepRole {
 
         if (this.creep.memory.roleData.hasEnergy === false) {
             if (this.creep.room.name !== this.creep.memory.roleData.target) {
-                this.smartMove(new RoomPosition(25, 25, this.creep.memory.roleData.target), 20);
+                this.setMovementData(new RoomPosition(25, 25, this.creep.memory.roleData.target), 20, false, false);
             } else {
                 const target: StructureStorage = this.creep.room.find(FIND_STRUCTURES, {
                     filter: (s) => s.structureType === STRUCTURE_STORAGE
                 })[0] as StructureStorage;
 
                 if (target !== undefined) {
-                    if (this.creep.withdraw(target, _.findKey(target.store) as ResourceConstant) === ERR_NOT_IN_RANGE) {
-                        this.smartMove(target.pos, 1);
+                    this.setMovementData(target.pos, 1, false, false);
+                    if (this.creep.pos.isNearTo(target.pos)) {
+                        this.creep.withdraw(target, _.findKey(target.store) as ResourceConstant);
                     }
                 }
             }
@@ -43,8 +44,9 @@ export class RaiderRole extends CreepRole {
             const target: StructureStorage | undefined = Game.rooms[this.creep.memory.home].storage;
 
             if (target !== undefined) {
-                if (this.creep.transfer(target, _.findKey(this.creep.store) as ResourceConstant) === ERR_NOT_IN_RANGE) {
-                    this.smartMove(target.pos, 1);
+                this.setMovementData(target.pos, 1, false, false);
+                if (this.creep.pos.isNearTo(target.pos)) {
+                    this.creep.transfer(target, _.findKey(this.creep.store) as ResourceConstant);
                 }
             }
         }

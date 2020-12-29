@@ -11,16 +11,13 @@ export class DismantlerRole extends CreepRole {
         }
 
         if (this.creep.room.name !== this.creep.memory.roleData.target) {
-            const exit: ExitConstant = this.creep.room.findExitTo(this.creep.memory.roleData.target) as ExitConstant;
-            const e = this.creep.pos.findClosestByRange(this.creep.room.find(exit));
-            if (e !== null) {
-                this.smartMove(e);
-            }
+            this.setMovementData(new RoomPosition(25, 25, this.creep.memory.roleData.target), 20, false, false);
         } else {
             const target: Structure | null = Game.getObjectById(this.creep.memory.roleData.targetId as string);
             if (target != null) {
-                if (this.creep.dismantle(target) === ERR_NOT_IN_RANGE) {
-                    this.smartMove(target.pos,1);
+                this.setMovementData(target.pos, 1, false, false);
+                if (this.creep.pos.isNearTo(target.pos)) {
+                    this.creep.dismantle(target);
                 }
             } else {
                 const t = this.creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES);

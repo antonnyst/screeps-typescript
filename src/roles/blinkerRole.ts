@@ -15,16 +15,13 @@ export class BlinkerRole extends CreepRole {
         }
 
         if (this.creep.room.name !== this.creep.memory.roleData.target) {
-            const exit: ExitConstant = this.creep.room.findExitTo(this.creep.memory.roleData.target) as ExitConstant;
-            const e = this.creep.pos.findClosestByRange(this.creep.room.find(exit));
-            if (e !== null) {
-                this.smartMove(e);
-            }
+            this.setMovementData(new RoomPosition(25, 25, this.creep.memory.roleData.target), 20, false, false);
         } else {
             const target: Structure | Creep | null = Game.getObjectById(this.creep.memory.roleData.targetId as string);
             if (target != null) {
-                const r = this.creep.pos.getRangeTo(target.pos);
+                this.setMovementData(target.pos, 3, false, false);
 
+                const r = this.creep.pos.getRangeTo(target.pos);
                 if (r <= 3) {
                     const t = this.creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
                     if (t != null && this.creep.pos.getRangeTo(t.pos) <= 3) {
@@ -38,7 +35,6 @@ export class BlinkerRole extends CreepRole {
                     if (t != null) {
                         this.creep.rangedAttack(t);
                     }
-                    this.smartMove(target.pos, 3);
                 }
             } else {
                 const t = this.creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {

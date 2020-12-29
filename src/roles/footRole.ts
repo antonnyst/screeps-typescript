@@ -38,8 +38,9 @@ export class FootRole extends CreepRole {
                     (s.store.getFreeCapacity(RESOURCE_ENERGY) as number) > 0
             });
             if (target !== null) {
-                if (this.creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-                    this.smartMove(target.pos);
+                this.setMovementData(target.pos, 1, false, false);
+                if (this.creep.pos.isNearTo(target.pos)) {
+                    this.creep.transfer(target, RESOURCE_ENERGY);
                 }
             } else {
                 let csite: ConstructionSite | null = this.creep.room.find(FIND_MY_CONSTRUCTION_SITES, {
@@ -51,8 +52,9 @@ export class FootRole extends CreepRole {
                 }
 
                 if (csite != null) {
-                    if (this.creep.build(csite) === ERR_NOT_IN_RANGE) {
-                        this.smartMove(csite.pos);
+                    this.setMovementData(csite.pos, 3, false, false);
+                    if (this.creep.pos.inRangeTo(csite.pos, 3)) {
+                        this.creep.build(csite);
                     }
                 }
             }

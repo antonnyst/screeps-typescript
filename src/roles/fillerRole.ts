@@ -36,22 +36,25 @@ export class FillerRole extends CreepRole {
 
             if (target != null) {
                 this.creep.memory.roleData.targetId = target.id;
-                const res = this.creep.transfer(target, RESOURCE_ENERGY);
-                if (res === ERR_NOT_IN_RANGE) {
-                    this.smartMove(target.pos, 1);
-                } else if (res === OK) {
-                    target = this.findTarget(target);
-                    if (target !== null) {
-                        this.creep.memory.roleData.targetId = target.id;
-                        this.smartMove(target.pos, 1);
+                this.setMovementData(target.pos, 1, false, false);
+                if (this.creep.pos.isNearTo(target.pos)) {
+                    const res = this.creep.transfer(target, RESOURCE_ENERGY);
+                    if (res === OK) {
+                        target = this.findTarget(target);
+                        if (target !== null) {
+                            this.creep.memory.roleData.targetId = target.id;
+                            this.setMovementData(target.pos, 1, false, false);
+                        }
+                    } else {
+                        this.creep.memory.roleData.targetId = undefined;
                     }
-                } else {
-                    this.creep.memory.roleData.targetId = undefined;
                 }
             } else {
                 if (this.creep.store.getUsedCapacity(RESOURCE_ENERGY) < 50) {
                     this.creep.memory.roleData.hasEnergy = false;
                     this.getEnergy();
+                } else {
+                    this.setMovementData(unpackPosition(this.creep.room.memory.layout.baseCenter), 6, false, false);
                 }
             }
         }

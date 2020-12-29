@@ -33,12 +33,10 @@ export class MinerRole extends CreepRole {
             return;
         }
 
+        this.setMovementData(minerPos, 0, false, true);
+
         if (this.creep.pos.isEqualTo(minerPos)) {
             this.creep.harvest(source);
-
-            if (this.creep.memory.checkIdle !== undefined) {
-                this.creep.memory.checkIdle.idleCount = 1;
-            }
 
             if (this.creep.getActiveBodyparts(CARRY) > 0 && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
                 const container: Structure | null =
@@ -86,8 +84,6 @@ export class MinerRole extends CreepRole {
                     }
                 }
             }
-        } else {
-            this.smartMove(minerPos);
         }
     }
 }
