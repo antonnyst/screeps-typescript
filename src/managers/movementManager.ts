@@ -14,8 +14,6 @@ import { partial } from "lodash";
 //          put creeps in the way in the queue for proccessing
 //      when done move all creeps to their nextposition
 
-//Check for fatige in preparation!!!
-
 export class MovementManager implements Manager {
     public run() {
         const rooms = _.groupBy(Game.creeps, (c) => c.room.name);
@@ -94,7 +92,7 @@ export class MovementManager implements Manager {
                                     roomCallback,
                                     swampCost: 10,
                                     plainCost: 2,
-                                    maxOps: 10000,
+                                    maxOps: 5000,
                                     maxRooms: 32
                                 }
                             ).path;
