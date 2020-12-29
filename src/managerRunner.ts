@@ -21,15 +21,14 @@ const managers: Manager[] = [
 ];
 
 export const runAllManagers = (): void => {
-    let i = 0;
-    for (const manager of managers) {
+    Memory.msplit = [];
+    for (let i = 0; i < managers.length; i++) {
         const a = Game.cpu.getUsed();
-        manager.run();
+        managers[i].run();
         const b = Game.cpu.getUsed() - a;
-
+        Memory.msplit[i] = b;
         if (Config.cpuLog) {
             console.log(i + " => " + b);
         }
-        i++;
     }
 };
