@@ -7,8 +7,9 @@ export class UpgraderRole extends CreepRole {
             return;
         }
 
-        if (this.creep.room.controller!.level >= 7) {
+        if (this.creep.room.controller && this.creep.room.controller.level >= 7) {
             const cpos = unpackPosition(this.creep.room.memory.layout.controllerStore);
+            this.setMovementData(cpos, 1, false, false);
             if (this.creep.pos.isNearTo(cpos)) {
                 if (this.creep.store.getUsedCapacity(RESOURCE_ENERGY) <= this.creep.getActiveBodyparts(WORK)) {
                     const link = _.filter(
@@ -21,8 +22,6 @@ export class UpgraderRole extends CreepRole {
                     }
                 }
                 this.creep.upgradeController(this.creep.room.controller!);
-            } else {
-                this.smartMove(cpos, 1);
             }
         } else {
             if (this.creep.memory.roleData === undefined) {
@@ -48,8 +47,11 @@ export class UpgraderRole extends CreepRole {
                 this.getEnergy();
             } else {
                 const controller: StructureController | undefined = Game.rooms[this.creep.memory.home].controller;
-                if (controller !== undefined && this.creep.upgradeController(controller) === ERR_NOT_IN_RANGE) {
-                    this.smartMove(controller.pos, 3);
+                if (controller !== undefined) {
+                    this.setMovementData(controller.pos, 3, false, false);
+                    if (this.creep.pos.inRangeTo(controller.pos, 3)) {
+                        this.creep.upgradeController(controller);
+                    }
                 }
             }
         }

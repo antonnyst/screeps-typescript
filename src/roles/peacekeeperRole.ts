@@ -43,7 +43,7 @@ export class PeacekeeperRole extends CreepRole {
             this.creep.memory.roleData.target !== undefined &&
             this.creep.memory.roleData.target !== this.creep.room.name
         ) {
-            this.smartMove(new RoomPosition(25, 25, this.creep.memory.roleData.target));
+            this.setMovementData(new RoomPosition(25, 25, this.creep.memory.roleData.target), 20, false, false);
         }
 
         if (hostiles.length > 0) {
@@ -53,8 +53,9 @@ export class PeacekeeperRole extends CreepRole {
 
             if (hostile != null) {
                 this.creep.rangedAttack(hostile);
-                if (this.creep.attack(hostile) === ERR_NOT_IN_RANGE) {
-                    this.smartMove(hostile.pos);
+                this.setMovementData(hostile.pos, 1, false, false);
+                if (this.creep.pos.isNearTo(hostile.pos)) {
+                    this.creep.attack(hostile);
                 }
             }
         } else if (cores.length > 0) {
@@ -62,8 +63,9 @@ export class PeacekeeperRole extends CreepRole {
 
             if (hostile != null) {
                 this.creep.rangedAttack(hostile);
-                if (this.creep.attack(hostile) === ERR_NOT_IN_RANGE) {
-                    this.smartMove(hostile.pos);
+                this.setMovementData(hostile.pos, 1, false, false);
+                if (this.creep.pos.isNearTo(hostile.pos)) {
+                    this.creep.attack(hostile);
                 }
             }
         } else if (
@@ -71,9 +73,8 @@ export class PeacekeeperRole extends CreepRole {
             this.creep.memory.roleData.target === this.creep.memory.home
         ) {
             const cpos = unpackPosition(this.creep.room.memory.layout.baseCenter);
-            if (!this.creep.pos.inRangeTo(cpos, 6)) {
-                this.smartMove(cpos, 6);
-            } else if (this.creep.pos.isEqualTo(cpos.x, cpos.y + 1)) {
+            this.setMovementData(cpos, 3, false, false);
+            if (this.creep.pos.isEqualTo(cpos.x, cpos.y + 1)) {
                 this.creep.move(BOTTOM_LEFT);
             }
         }

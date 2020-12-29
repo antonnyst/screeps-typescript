@@ -544,9 +544,7 @@ export class LabradorRole extends CreepRole {
             if (this.creep.memory.labrador.qtask.length > 0) {
                 // there are tasks in the queue
                 this.creep.memory.labrador.task = this.creep.memory.labrador.qtask.shift();
-            }
-
-            if (this.creep.memory.labrador.task === undefined) {
+            } else {
                 // we didnt find anything in the queue
                 // get a task and fill queue if possible
                 this.getTask();
@@ -591,9 +589,9 @@ export class LabradorRole extends CreepRole {
 
         const range: number = this.creep.pos.getRangeTo(target.pos);
 
-        if (range > 1) {
-            this.smartMove(target, 1);
-        } else {
+        this.setMovementData(target.pos, 1, false, false);
+
+        if (this.creep.pos.isNearTo(target.pos)) {
             let result: number = -99;
 
             switch (this.creep.memory.labrador.task.type) {
@@ -651,11 +649,7 @@ export class LabradorRole extends CreepRole {
                         return;
                     }
 
-                    const rrange: number = this.creep.pos.getRangeTo(ttarget.pos);
-
-                    if (rrange > 1) {
-                        this.smartMove(ttarget, 1);
-                    }
+                    this.setMovementData(ttarget.pos, 1, false, false);
                 }
             } else {
                 this.creep.memory.labrador.task = undefined;

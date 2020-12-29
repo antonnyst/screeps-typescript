@@ -13,6 +13,11 @@ export class RemoteMinerRole extends CreepRole {
             return;
         }
 
+        if (this.creep.getActiveBodyparts(WORK) === 0) {
+            this.creep.suicide();
+            return;
+        }
+
         const sourceIndex: string | undefined = this.creep.memory.roleData.targetId;
         if (sourceIndex === undefined) {
             console.log("invalid sourceIndex");
@@ -26,6 +31,7 @@ export class RemoteMinerRole extends CreepRole {
         }
         const minerPos: RoomPosition = offsetPositionByDirection(unpackPosition(sourceData.pos), sourceData.container);
 
+        this.setMovementData(minerPos, 0, false, true);
         if (this.creep.pos.isEqualTo(minerPos)) {
             const source: Source | null = Game.getObjectById(sourceData.id);
             if (source === null) {
@@ -44,9 +50,6 @@ export class RemoteMinerRole extends CreepRole {
                 container.store.getFreeCapacity(RESOURCE_ENERGY) >= this.creep.getActiveBodyparts(WORK) * 5
             ) {
                 this.creep.harvest(source);
-            }
-            if (this.creep.memory.checkIdle !== undefined) {
-                this.creep.memory.checkIdle.idleCount = 1;
             }
             if (this.creep.getActiveBodyparts(CARRY) > 0 && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
                 if (container !== undefined && container.hits < container.hitsMax) {
@@ -67,8 +70,6 @@ export class RemoteMinerRole extends CreepRole {
                     }
                 }
             }
-        } else {
-            this.smartMove(minerPos);
         }
     }
 }

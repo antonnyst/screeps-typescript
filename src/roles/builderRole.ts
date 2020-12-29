@@ -1,3 +1,4 @@
+import { isPositionEdge } from "utils/RoomPositionHelpers";
 import { CreepRole } from "./creepRole";
 
 export class BuilderRole extends CreepRole {
@@ -41,36 +42,27 @@ export class BuilderRole extends CreepRole {
             }
 
             if (target !== null) {
-                if (target instanceof ConstructionSite) {
-                    if (this.creep.build(target) === ERR_NOT_IN_RANGE) {
-                        this.smartMove(target.pos, 2);
-                    } else {
-                        if (this.creep.pos.x === 0) {
-                            this.creep.move(RIGHT);
-                        }
-                        if (this.creep.pos.y === 0) {
-                            this.creep.move(BOTTOM);
-                        }
-                        if (this.creep.pos.x === 49) {
-                            this.creep.move(LEFT);
-                        }
-                        if (this.creep.pos.y === 49) {
-                            this.creep.move(TOP);
-                        }
-                    }
+                if (target.pos.roomName !== this.creep.room.name || isPositionEdge(this.creep.pos)) {
+                    this.setMovementData(new RoomPosition(25, 25, target.pos.roomName), 20, false, false);
                 } else {
-                    if (target.hits === target.hitsMax) {
-                        this.creep.memory.roleData.targetId = undefined;
-                        target = findTarget(this.creep);
-                        if (target !== null) {
-                            this.creep.memory.roleData.targetId = target.id;
-                        }
-                    } else {
-                        const res = this.creep.repair(target);
-                        if (res === ERR_NOT_IN_RANGE) {
-                            this.smartMove(target.pos, 2);
-                        } else if (res !== OK || Game.time % 10 === 0) {
-                            this.creep.memory.roleData.targetId = undefined;
+                    this.setMovementData(target.pos, 3, false, false);
+
+                    if (this.creep.pos.inRangeTo(target.pos, 3)) {
+                        if (target instanceof ConstructionSite) {
+                            this.creep.build(target);
+                        } else {
+                            if (target.hits === target.hitsMax) {
+                                this.creep.memory.roleData.targetId = undefined;
+                                target = findTarget(this.creep);
+                                if (target !== null) {
+                                    this.creep.memory.roleData.targetId = target.id;
+                                }
+                            } else {
+                                const res = this.creep.repair(target);
+                                if (res !== OK || Game.time % 10 === 0) {
+                                    this.creep.memory.roleData.targetId = undefined;
+                                }
+                            }
                         }
                     }
                 }

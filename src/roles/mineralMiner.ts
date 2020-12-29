@@ -34,17 +34,13 @@ export class MineralMinerRole extends CreepRole {
             this.creep.memory.roleData.target = container.id;
         }
 
+        this.setMovementData(minerPos, 0, false, true);
         if (
             this.creep.pos.isEqualTo(minerPos) &&
             container !== undefined &&
             container.store.getFreeCapacity() >= this.creep.getActiveBodyparts(WORK)
         ) {
             this.creep.harvest(mineral);
-            if (this.creep.memory.checkIdle !== undefined) {
-                this.creep.memory.checkIdle.idleCount = 1;
-            }
-        } else {
-            this.smartMove(minerPos);
         }
     }
 }

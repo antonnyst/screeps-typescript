@@ -36,6 +36,7 @@ export class MineralHaulerRole extends CreepRole {
 
         if (this.creep.memory.roleData.hasEnergy === false) {
             // get from designated source
+            this.setMovementData(minerPos, 1, false, false);
             if (this.creep.pos.isNearTo(minerPos)) {
                 let container: StructureContainer | null = null;
 
@@ -60,15 +61,13 @@ export class MineralHaulerRole extends CreepRole {
                     this.creep.memory.roleData.target = container.id;
                     this.creep.withdraw(container, res);
                 }
-            } else {
-                this.smartMove(minerPos, 1);
             }
         } else {
             const target = this.creep.room.terminal;
-
             if (target !== undefined) {
-                if (this.creep.transfer(target, res) === ERR_NOT_IN_RANGE) {
-                    this.smartMove(target.pos, 1);
+                this.setMovementData(target.pos, 1, false, false);
+                if (this.creep.pos.isNearTo(target.pos)) {
+                    this.creep.transfer(target, res);
                 }
             }
         }
