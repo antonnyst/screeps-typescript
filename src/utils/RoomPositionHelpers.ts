@@ -35,3 +35,6 @@ function getDeltaFromDirection(direction: DirectionConstant): { x: number; y: nu
             return { x: 0, y: 0 };
     }
 }
+export function isPositionEdge(pos: RoomPosition) {
+    return pos.x === 0 || pos.x === 49 || pos.y === 0 || pos.y === 49;
+}

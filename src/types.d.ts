@@ -32,6 +32,7 @@ interface CreepMemory {
         task: LabradorTask | undefined;
         qtask: LabradorTask[];
     };
+    movementData?: import("./dataInterfaces/movementData").MovementData;
 }
 
 interface RoomMemory {

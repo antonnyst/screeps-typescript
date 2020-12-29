@@ -19,3 +19,31 @@ export function roomTotalStoredEnergy(room: Room): number {
 
     return containers + storage + link;
 }
+
+/*
+ * Get type of room from name
+ *
+ * @author engineeryo
+ * @co-author warinternal
+ *
+ */
+export function describeRoom(roomName: string): string {
+    const array = roomName.match(/\d+/g);
+
+    if (array) {
+        const EW = parseInt(array[0]);
+        const NS = parseInt(array[1]);
+        if (EW % 10 == 0 && NS % 10 == 0) {
+            return "highway_portal";
+        } else if (EW % 10 == 0 || NS % 10 == 0) {
+            return "highway";
+        } else if (EW % 5 == 0 && NS % 5 == 0) {
+            return "center";
+        } else if (Math.abs(5 - (EW % 10)) <= 1 && Math.abs(5 - (NS % 10)) <= 1) {
+            return "source_keeper";
+        } else {
+            return "room";
+        }
+    }
+    return "err";
+}
