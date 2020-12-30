@@ -112,6 +112,11 @@ function getLayout(room: Room): LayoutData | null {
     if (sources === null) {
         return null;
     }
+    if (baseType !== "auto") {
+        for (const sourceData of sources) {
+            sourceData.extensions = [];
+        }
+    }
 
     const mineral: MineralData | null = getMineral(room.memory.basicLayout, centerLocation);
     if (mineral === null) {
@@ -756,6 +761,21 @@ function getSources(basicLayout: BasicLayoutData, centerLocation: RoomPosition):
             return null;
         }
 
+        let extensionDir: DirectionConstant | null = null;
+        for (let i = 1; i <= 8; i++) {
+            if (roadDir === i) {
+                continue;
+            }
+            if (linkDir === i) {
+                continue;
+            }
+            const p = offsetPositionByDirection(containerPos, i as DirectionConstant);
+            if (terrain.get(p.x, p.y) !== TERRAIN_MASK_WALL) {
+                extensionDir = i as DirectionConstant;
+                break;
+            }
+        }
+
         const distance = PathFinder.search(
             new RoomPosition(centerLocation.x, centerLocation.y - 2, centerLocation.roomName),
             {
@@ -769,7 +789,7 @@ function getSources(basicLayout: BasicLayoutData, centerLocation: RoomPosition):
             pos: bsource.pos,
             container: unpackPosition(bsource.pos).getDirectionTo(containerPos),
             dist: distance,
-            extensions: [],
+            extensions: extensionDir === null ? [] : [extensionDir],
             link: linkDir
         });
     }
@@ -1199,6 +1219,21 @@ function buildAuto(room: Room) {
     ) {
         const pos: RoomPosition = unpackPosition(layout.extensions[index]);
         followBuildInstructions(room, pos, index <= 1 ? [autoExtensionSpawnNode] : [autoExtensionNode]);
+
+        if (index <= 1) {
+            if (layout.sources[index].extensions.length > 0) {
+                for (const i of layout.sources[index].extensions) {
+                    const epos = offsetPositionByDirection(
+                        offsetPositionByDirection(
+                            unpackPosition(layout.sources[index].pos),
+                            layout.sources[index].container
+                        ),
+                        i
+                    );
+                    smartBuild(epos, STRUCTURE_EXTENSION);
+                }
+            }
+        }
     }
 
     // build ramparts
