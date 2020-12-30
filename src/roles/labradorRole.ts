@@ -1,5 +1,6 @@
 import { CreepRole } from "./creepRole";
 import * as C from "../config/constants";
+import { unpackPosition } from "utils/RoomPositionPacker";
 
 /*
 export class OldLabradorRole extends CreepRole {
@@ -553,6 +554,13 @@ export class LabradorRole extends CreepRole {
 
         if (this.creep.memory.labrador.task !== undefined) {
             this.executeTask();
+        } else {
+            this.setMovementData(
+                unpackPosition(Memory.rooms[this.creep.memory.home].layout.baseCenter),
+                3,
+                false,
+                false
+            );
         }
     }
     executeTask() {
