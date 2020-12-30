@@ -57,6 +57,8 @@ interface RoomMemory {
 interface Memory {
     cpuAvg: number;
     msplit: number[];
+    cacheHits: number;
+    totalQueries: number;
     stats: Stats;
 }
 
@@ -77,6 +79,10 @@ interface Stats {
     };
     rooms: {
         [key in string]: RoomStats;
+    };
+    pathfinding: {
+        cacheHits: number;
+        totalQueries: number;
     };
 }
 

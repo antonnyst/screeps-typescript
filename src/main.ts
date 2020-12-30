@@ -45,7 +45,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
     }
     if (Config.cpuLog) console.log("t => " + Game.cpu.getUsed());
 
-    const msplit = Memory.msplit;
     Memory.stats = {
         time: Game.time,
         globalReset: globalStartTick,
@@ -54,14 +53,18 @@ export const loop = ErrorMapper.wrapLoop(() => {
             used: uTime,
             limit: Game.cpu.limit,
             bucket: Game.cpu.bucket,
-            msplit: msplit
+            msplit: Memory.msplit
         },
         gcl: {
             level: Game.gcl.level,
             progress: Game.gcl.progress,
             progressTotal: Game.gcl.progressTotal
         },
-        rooms: {}
+        rooms: {},
+        pathfinding: {
+            cacheHits: Memory.cacheHits,
+            totalQueries: Memory.totalQueries
+        }
     };
 
     for (const roomName in Game.rooms) {
