@@ -3,5 +3,5 @@ export interface MovementData {
     range: number;
     flee: boolean;
     heavy: boolean;
-    _path?: number[];
+    _path?: string;
 }

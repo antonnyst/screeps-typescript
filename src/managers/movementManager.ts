@@ -4,7 +4,7 @@ import * as Config from "../config/config";
 import { packPosition, unpackPosition } from "utils/RoomPositionPacker";
 import { isPositionEdge, offsetPositionByDirection } from "utils/RoomPositionHelpers";
 import { describeRoom } from "utils/RoomCalc";
-import { partial } from "lodash";
+import { RunEvery } from "utils/RunEvery";
 
 //  group creeps by rooms
 //  loop by rooms
@@ -14,10 +14,14 @@ import { partial } from "lodash";
 //          put creeps in the way in the queue for proccessing
 //      when done move all creeps to their nextposition
 
+let cacheHits = 0;
+let totalQueries = 0;
+
 export class MovementManager implements Manager {
     public run() {
-        const rooms = _.groupBy(Game.creeps, (c) => c.room.name);
+        RunEvery(cleanPathCache, "movementmanagercleanpathcache", 9000);
 
+        const rooms = _.groupBy(Game.creeps, (c) => c.room.name);
         for (const room of Object.keys(rooms)) {
             const terrain = Game.rooms[room].getTerrain();
 
@@ -55,13 +59,19 @@ export class MovementManager implements Manager {
                         }
                     } else {
                         if (creep.memory.movementData._path) {
-                            if (creep.pos.isEqualTo(unpackPosition(creep.memory.movementData._path[0]))) {
-                                creep.memory.movementData._path.shift();
+                            if (
+                                creep.pos.isEqualTo(
+                                    unpackPosition(parseInt(creep.memory.movementData._path.split("_")[0]))
+                                )
+                            ) {
+                                creep.memory.movementData._path = serializePath(
+                                    deserializePath(creep.memory.movementData._path).slice(1)
+                                );
                             }
 
                             data[creep.name] = {
                                 needsToMove: true,
-                                nextLocation: unpackPosition(creep.memory.movementData._path[0])
+                                nextLocation: unpackPosition(parseInt(creep.memory.movementData._path.split("_")[0]))
                             };
                             creepQueue.push(creep);
                         } else {
@@ -78,39 +88,64 @@ export class MovementManager implements Manager {
                                 }
                             }
 
-                            const path = PathFinder.search(
-                                creep.pos,
-                                {
-                                    pos:
-                                        partialTarget === undefined
-                                            ? unpackPosition(creep.memory.movementData.targetPos)
-                                            : partialTarget,
-                                    range: partialTarget === undefined ? creep.memory.movementData.range : 20
-                                },
-                                {
-                                    flee: creep.memory.movementData.flee,
-                                    roomCallback,
-                                    swampCost: 10,
-                                    plainCost: 2,
-                                    maxOps: 5000,
-                                    maxRooms: 32
+                            const targetPos =
+                                partialTarget === undefined
+                                    ? unpackPosition(creep.memory.movementData.targetPos)
+                                    : partialTarget;
+
+                            const targetRange = partialTarget === undefined ? creep.memory.movementData.range : 20;
+
+                            const pathName =
+                                "path_" +
+                                packPosition(creep.pos).toString() +
+                                "_" +
+                                packPosition(targetPos).toString() +
+                                "_" +
+                                targetRange.toString() +
+                                "_" +
+                                (creep.memory.movementData.flee ? "1" : "0");
+
+                            let serializedPath = getPath(pathName);
+                            let path: RoomPosition[] | undefined;
+
+                            if (serializedPath === null) {
+                                totalQueries++;
+                                path = PathFinder.search(
+                                    creep.pos,
+                                    {
+                                        pos: targetPos,
+                                        range: targetRange
+                                    },
+                                    {
+                                        flee: creep.memory.movementData.flee,
+                                        roomCallback,
+                                        swampCost: 10,
+                                        plainCost: 2,
+                                        maxOps: 5000,
+                                        maxRooms: 32
+                                    }
+                                ).path;
+
+                                if (path.length !== 0) {
+                                    serializedPath = serializePath(path);
+                                    savePath(pathName, serializedPath);
+                                } else {
+                                    creep.say("zero length path");
+                                    console.log("zero length path " + creep.name + " " + creep.pos);
                                 }
-                            ).path;
-
-                            if (path.length === 0) {
-                                creep.say("zero length path");
-                                console.log("zero length path " + creep.name + " " + creep.pos);
+                            } else {
+                                cacheHits++;
+                                totalQueries++;
+                                path = deserializePath(serializedPath);
                             }
-
-                            creep.memory.movementData._path = [];
-                            for (let i = 0; i < path.length; i++) {
-                                creep.memory.movementData._path[i] = packPosition(path[i]);
+                            if (serializedPath !== null) {
+                                creep.memory.movementData._path = serializedPath;
+                                data[creep.name] = {
+                                    needsToMove: true,
+                                    nextLocation: path[0]
+                                };
+                                creepQueue.push(creep);
                             }
-                            data[creep.name] = {
-                                needsToMove: true,
-                                nextLocation: path[0]
-                            };
-                            creepQueue.push(creep);
                         }
                     }
                 } else {
@@ -189,7 +224,9 @@ export class MovementManager implements Manager {
                                 pos.getRangeTo(unpackPosition(creep.memory.movementData.targetPos)) <=
                                     creep.memory.movementData.range ||
                                 (creep.memory.movementData._path &&
-                                    unpackPosition(creep.memory.movementData._path[0]).isEqualTo(pos))
+                                    unpackPosition(parseInt(creep.memory.movementData._path.split("_")[0])).isEqualTo(
+                                        pos
+                                    ))
                             ) {
                                 candidate = pos;
                                 break;
@@ -206,7 +243,9 @@ export class MovementManager implements Manager {
 
                         if (
                             creep.memory.movementData._path &&
-                            creep.memory.movementData._path[0] !== packPosition(candidate)
+                            !unpackPosition(parseInt(creep.memory.movementData._path.split("_")[0])).isEqualTo(
+                                candidate
+                            )
                         ) {
                             creep.memory.movementData._path = undefined;
                         }
@@ -220,6 +259,7 @@ export class MovementManager implements Manager {
                 if (data[creep.name] && data[creep.name].needsToMove && data[creep.name].nextLocation) {
                     if (creep.fatigue === 0) {
                         if (creep.pos.getRangeTo(data[creep.name].nextLocation!) !== 1 && creep.memory.movementData) {
+                            console.log(creep.memory.movementData._path);
                             creep.memory.movementData._path = undefined;
                             console.log(creep.name + " " + "fail move " + creep.pos + data[creep.name].nextLocation!);
                             creep.say("fail move");
@@ -230,7 +270,12 @@ export class MovementManager implements Manager {
                             creep.move(creep.pos.getDirectionTo(data[creep.name].nextLocation!));
                         }
 
-                        creep.memory.movementData?._path?.shift();
+                        if (creep.memory.movementData?._path) {
+                            creep.memory.movementData._path = serializePath(
+                                deserializePath(creep.memory.movementData._path).slice(1)
+                            );
+                        }
+
                         if (creep.memory.movementData?._path?.length === 0) {
                             creep.memory.movementData._path = undefined;
                         }
@@ -238,6 +283,8 @@ export class MovementManager implements Manager {
                 }
             }
         }
+        Memory.cacheHits = cacheHits;
+        Memory.totalQueries = totalQueries;
     }
 }
 
@@ -311,3 +358,63 @@ const roomCallback = (roomName: string): boolean | CostMatrix => {
     saveToCache("rccostmatrixfinal" + roomName, finalMatrix);
     return finalMatrix;
 };
+
+const cacheTime = 3000;
+
+const _pathCache: { [key in string]: { path: string; time: number } } = {};
+
+function savePath(pathName: string, path: string): void {
+    _pathCache[pathName] = {
+        path,
+        time: Game.time
+    };
+}
+
+function getPath(pathName: string): string | null {
+    if (_pathCache[pathName] === undefined || _pathCache[pathName].time < Game.time - cacheTime) {
+        return null;
+    }
+    return _pathCache[pathName].path;
+}
+
+function cleanPathCache(): void {
+    for (const pathName of Object.keys(_pathCache)) {
+        if (_pathCache[pathName].time < Game.time - cacheTime) {
+            delete _pathCache[pathName];
+        }
+    }
+}
+
+function serializePath(path: RoomPosition[]): string {
+    let result = "";
+    if (path.length === 0) {
+        return result;
+    }
+    let currentRoom = "";
+    for (let i = 0; i < path.length; i++) {
+        const pos = path[i];
+        if (currentRoom !== pos.roomName) {
+            result += packPosition(pos) + (i < path.length - 1 ? "_" : "");
+            currentRoom = pos.roomName;
+        } else {
+            result += path[i - 1].getDirectionTo(pos).toString() + (i < path.length - 1 ? "_" : "");
+        }
+    }
+    return result;
+}
+
+function deserializePath(path: string): RoomPosition[] {
+    let result: RoomPosition[] = [];
+    if (path.length === 0) {
+        return result;
+    }
+    let split: string[] = path.split("_");
+    for (let i = 0; i < split.length; i++) {
+        if (split[i].length > 1) {
+            result[i] = unpackPosition(parseInt(split[i]));
+        } else {
+            result[i] = offsetPositionByDirection(result[i - 1], parseInt(split[i]) as DirectionConstant);
+        }
+    }
+    return result;
+}
