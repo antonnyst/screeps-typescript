@@ -12,7 +12,7 @@ export class ScoutRole extends CreepRole {
         }
 
         if (this.creep.memory.roleData.target !== undefined) {
-            this.setMovementData(new RoomPosition(25, 25, this.creep.memory.roleData.target), 20, false, false);
+            this.setMovementData(new RoomPosition(25, 25, this.creep.memory.roleData.target), 23, false, false);
             if (this.creep.room.name === this.creep.memory.roleData.target) {
                 this.creep.memory.roleData.target = undefined;
             }
@@ -34,24 +34,25 @@ export class ScoutRole extends CreepRole {
                 let newTarget: string | undefined;
 
                 for (const e in exits) {
+                    if (
+                        Game.map.getRoomStatus(exits[e]).status !== Game.map.getRoomStatus(this.creep.room.name).status
+                    ) {
+                        continue;
+                    }
+                    if (newTarget === undefined) {
+                        newTarget = exits[e];
+                    }
                     if (Memory.rooms[exits[e]] === undefined) {
                         newTarget = exits[e];
                         break;
                     }
-                }
-
-                if (newTarget === undefined) {
-                    for (const e in exits) {
-                        if (newTarget === undefined) {
+                    if (Memory.rooms[exits[e]].lastUpdate !== undefined) {
+                        if (Memory.rooms[exits[e]].lastUpdate < Memory.rooms[newTarget as string].lastUpdate) {
                             newTarget = exits[e];
-                        }
-                        if (Memory.rooms[exits[e]].lastUpdate !== undefined) {
-                            if (Memory.rooms[exits[e]].lastUpdate < Memory.rooms[newTarget as string].lastUpdate) {
-                                newTarget = exits[e];
-                            }
                         }
                     }
                 }
+
                 this.creep.memory.roleData.target = newTarget;
             }
         }
