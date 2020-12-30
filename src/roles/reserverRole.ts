@@ -15,6 +15,10 @@ export class ReserverRole extends CreepRole {
         this.setMovementData(cPos, 1, false, false);
         if (this.creep.pos.isNearTo(cPos)) {
             if (this.creep.room.controller !== undefined) {
+                if (this.creep.room.controller.sign !== undefined) {
+                    this.creep.signController(this.creep.room.controller, "");
+                }
+
                 if (
                     this.creep.room.controller.reservation !== undefined &&
                     this.creep.room.controller.reservation.username !==
