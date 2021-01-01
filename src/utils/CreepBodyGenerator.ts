@@ -100,7 +100,7 @@ export const rolePatterns: { [roleName: string]: string } = {
     mineralMiner: "[mwwww]10",
     peacekeeper: "[mamamamrmr]3",
     remoteHauler: "[cmc]10",
-    remoteMiner: "w6cm4w4m",
+    remoteMiner: "w4cmw2m3w4m",
     reserver: "[lm]5",
     scout: "m",
     upgrader: "[mwcwmw]8"
