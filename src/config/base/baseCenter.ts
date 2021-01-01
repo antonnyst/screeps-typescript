@@ -1,10 +1,8 @@
 export const baseCenterLayout: BuildInstruction[][] = [
     [],
     [{ x: 0, y: 0, type: STRUCTURE_SPAWN, name: "{ROOM_NAME}-{INDEX}" }],
-    [{ x: 0, y: 0, type: STRUCTURE_RAMPART }],
     [
-        { x: -1, y: 0, type: STRUCTURE_TOWER },
-        { x: -1, y: 0, type: STRUCTURE_RAMPART },
+        { x: 0, y: 0, type: STRUCTURE_RAMPART },
         { x: 0, y: 1, type: STRUCTURE_ROAD },
         { x: 0, y: 3, type: STRUCTURE_ROAD },
         { x: 0, y: -3, type: STRUCTURE_ROAD },
@@ -18,6 +16,10 @@ export const baseCenterLayout: BuildInstruction[][] = [
         { x: 3, y: 0, type: STRUCTURE_ROAD },
         { x: 2, y: -1, type: STRUCTURE_ROAD },
         { x: 1, y: -2, type: STRUCTURE_ROAD }
+    ],
+    [
+        { x: -1, y: 0, type: STRUCTURE_TOWER },
+        { x: -1, y: 0, type: STRUCTURE_RAMPART }
     ],
     [
         { x: 0, y: -2, type: STRUCTURE_STORAGE },
