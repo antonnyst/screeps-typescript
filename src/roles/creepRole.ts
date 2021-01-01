@@ -93,12 +93,7 @@ export abstract class CreepRole implements CreepRoleInterface {
         }
 
         if (this.creep.pos.roomName !== this.creep.memory.home) {
-            this.setMovementData(
-                unpackPosition(Memory.rooms[this.creep.memory.home].layout.baseCenter),
-                20,
-                false,
-                false
-            );
+            this.setMovementData(new RoomPosition(25, 25, this.creep.memory.home), 20, false, false);
             return;
         }
 
