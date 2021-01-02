@@ -96,6 +96,20 @@ export class RemoteHaulerRole extends CreepRole {
                 if (this.creep.pos.isNearTo(target.pos)) {
                     this.creep.transfer(target, RESOURCE_ENERGY);
                 }
+            } else {
+                const targets = Game.rooms[this.creep.memory.home].find(FIND_MY_STRUCTURES, {
+                    filter: (s) =>
+                        (s.structureType === STRUCTURE_EXTENSION ||
+                            s.structureType === STRUCTURE_SPAWN ||
+                            s.structureType === STRUCTURE_TOWER) &&
+                        (s.store.getFreeCapacity(RESOURCE_ENERGY) as number) > 0
+                });
+                if (targets.length > 0) {
+                    this.setMovementData(targets[0].pos, 1, false, false);
+                    if (this.creep.pos.isNearTo(targets[0].pos)) {
+                        this.creep.transfer(targets[0], RESOURCE_ENERGY);
+                    }
+                }
             }
         }
     }
