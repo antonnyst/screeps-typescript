@@ -4,4 +4,5 @@ export interface MovementData {
     flee: boolean;
     heavy: boolean;
     _path?: string;
+    _pathName?: string;
 }
