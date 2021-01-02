@@ -8,7 +8,8 @@ import { SpawnData } from "../../dataInterfaces/spawnData";
 import { RunEvery } from "utils/RunEvery";
 
 export function SpawnHandler(room: Room): void {
-    if (room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
+    return;
+    /*if (room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
         const spawns = room.find(FIND_MY_STRUCTURES, {
             filter: (s) => s.structureType === STRUCTURE_SPAWN && s.spawning === null
         });
@@ -16,7 +17,7 @@ export function SpawnHandler(room: Room): void {
         if (spawns.length > 0) {
             RunEvery(updateSpawnQueue, "SpawnHandlerUpdateSpawnQueue" + room, 10, room);
         }
-    }
+    }*/
 }
 
 function updateSpawnQueue(room: Room): void {
