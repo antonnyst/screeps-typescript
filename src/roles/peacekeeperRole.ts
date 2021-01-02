@@ -25,7 +25,7 @@ export class PeacekeeperRole extends CreepRole {
 
             for (const remote of Memory.rooms[this.creep.memory.home].remotes) {
                 if (
-                    Object.keys(Memory.rooms[remote].hostiles).length > 0 ||
+                    (Memory.rooms[remote] !== undefined && Object.keys(Memory.rooms[remote].hostiles).length > 0) ||
                     (Game.rooms[remote] !== undefined && Game.rooms[remote].find(FIND_HOSTILE_STRUCTURES).length > 0)
                 ) {
                     this.creep.memory.roleData.target = remote;
