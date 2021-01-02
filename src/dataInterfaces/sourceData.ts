@@ -17,4 +17,10 @@ export interface RemoteSourceData {
     pos: number;
     dist: number;
     container: DirectionConstant;
+    haulers: HaulerData;
+}
+
+export interface HaulerData {
+    amountNeeded: number;
+    pattern: string;
 }

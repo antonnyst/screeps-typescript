@@ -1,10 +1,10 @@
 export interface MineralData {
-    id: string;
+    id: Id<Mineral>;
     pos: number;
     dist: number;
     container: DirectionConstant;
 }
 export interface BasicMineralData {
-    id: string;
+    id: Id<Mineral>;
     pos: number;
 }

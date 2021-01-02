@@ -56,7 +56,7 @@ function getBasicLayout(room: Room): BasicLayoutData {
     );
 
     const basicMineral: BasicMineralData | undefined =
-        mineral !== undefined ? { id: mineral.id as string, pos: packPosition(mineral.pos) } : undefined;
+        mineral !== undefined ? { id: mineral.id, pos: packPosition(mineral.pos) } : undefined;
 
     return {
         controller: controller !== undefined ? packPosition(controller.pos) : undefined,
@@ -74,7 +74,9 @@ function getLayout(room: Room): LayoutData | null {
     }
 
     const baseType: BaseType | null =
-        room.memory.layout === undefined ? getBaseType(room.name) : room.memory.layout.baseType;
+        room.memory.layout === undefined
+            ? getBaseType(room.name, room.memory.basicLayout)
+            : room.memory.layout.baseType;
     if (baseType === null) {
         return null;
     }
@@ -125,7 +127,7 @@ function getLayout(room: Room): LayoutData | null {
 
     if (room.memory.remotes.length > 0) {
         for (const roomName of room.memory.remotes) {
-            const res = getRemoteLayout(roomName, centerLocation);
+            const res = getRemoteLayout(room.name, roomName, centerLocation);
             if (res != null) {
                 Memory.rooms[roomName].remoteLayout = res;
             }
@@ -180,8 +182,8 @@ function getLayout(room: Room): LayoutData | null {
     return null;
 }
 
-function getBaseType(roomName: string): BaseType | null {
-    if (getPotentialBunkerCenters(roomName).length > 0) {
+function getBaseType(roomName: string, basicLayout: BasicLayoutData): BaseType | null {
+    if (getPotentialBunkerCenters(roomName, basicLayout).length > 0) {
         return "bunker";
     }
     if (getPotentialAutoCenters(roomName).length > 0) {
@@ -209,7 +211,7 @@ function getBunkerCenterLocation(roomName: string, basicLayout: BasicLayoutData)
         }
     }
 
-    const potentialLocations: RoomPosition[] = getPotentialBunkerCenters(roomName);
+    const potentialLocations: RoomPosition[] = getPotentialBunkerCenters(roomName, basicLayout);
 
     if (potentialLocations.length === 0) {
         console.log("no potential baseCenters in " + roomName);
@@ -419,34 +421,66 @@ function getAutoRamparts(
     return newPositions;
 }
 
-function getPotentialBunkerCenters(roomName: string): RoomPosition[] {
+function getPotentialBunkerCenters(roomName: string, basicLayout: BasicLayoutData): RoomPosition[] {
     const terrain: RoomTerrain = Game.map.getRoomTerrain(roomName);
     const potentialLocations: RoomPosition[] = [];
+    let matrix = new PathFinder.CostMatrix();
+    //255 = too close to wall
+    //0 = ok
+    for (let x = 0; x < 50; x++) {
+        for (let y = 0; y < 50; y++) {
+            if (terrain.get(x, y) === TERRAIN_MASK_WALL) {
+                matrix = _pbcSetWALL(matrix, x, y);
+            }
+        }
+    }
+    const controllerPos = unpackPosition(basicLayout.controller);
+    for (let dx = -8; dx <= 8; dx++) {
+        for (let dy = -8; dy <= 8; dy++) {
+            if (
+                controllerPos.x + dx < 0 ||
+                controllerPos.x + dx > 49 ||
+                controllerPos.y + dy < 0 ||
+                controllerPos.y + dy > 49
+            ) {
+                continue;
+            }
+            matrix.set(controllerPos.x + dx, controllerPos.y + dy, 255);
+        }
+    }
+    for (const sourceData of basicLayout.sources) {
+        const sourcePos = unpackPosition(sourceData.pos);
+        for (let dx = -8; dx <= 8; dx++) {
+            for (let dy = -8; dy <= 8; dy++) {
+                if (sourcePos.x + dx < 0 || sourcePos.x + dx > 49 || sourcePos.y + dy < 0 || sourcePos.y + dy > 49) {
+                    continue;
+                }
+                matrix.set(sourcePos.x + dx, sourcePos.y + dy, 255);
+            }
+        }
+    }
+
     for (let x = 8; x <= 41; x++) {
         for (let y = 8; y <= 41; y++) {
-            if (terrain.get(x, y) === TERRAIN_MASK_WALL) {
-                continue;
+            if (matrix.get(x, y) !== 255) {
+                potentialLocations.push(new RoomPosition(x, y, roomName));
             }
-            let close: boolean = false;
-            for (let i = -6; i <= 6; i++) {
-                for (let j = -6; j <= 6; j++) {
-                    if (terrain.get(x + i, y + j) === TERRAIN_MASK_WALL) {
-                        close = true;
-                        break;
-                    }
-                }
-                if (close === true) {
-                    break;
-                }
-            }
-            if (close === true) {
-                continue;
-            }
-            potentialLocations.push(new RoomPosition(x, y, roomName));
         }
     }
     return potentialLocations;
 }
+function _pbcSetWALL(matrix: CostMatrix, x: number, y: number): CostMatrix {
+    for (let dx = -6; dx <= 6; dx++) {
+        for (let dy = -6; dy <= 6; dy++) {
+            if (x + dx < 0 || x + dx > 49 || y + dy < 0 || y + dy > 49) {
+                continue;
+            }
+            matrix.set(x + dx, y + dy, 255);
+        }
+    }
+    return matrix;
+}
+
 function getPotentialAutoCenters(roomName: string): { pos: RoomPosition; dir: LabDirection }[] {
     const terrain: RoomTerrain = Game.map.getRoomTerrain(roomName);
     const potentialLocations: { pos: RoomPosition; dir: LabDirection }[] = [];
@@ -914,6 +948,10 @@ function getRoads(
                 for (const s of sources) {
                     const containerPos = offsetPositionByDirection(unpackPosition(s.pos), s.container);
                     const linkPos = offsetPositionByDirection(containerPos, s.link);
+                    if (baseType === "auto") {
+                        const extensionPos = offsetPositionByDirection(containerPos, s.extensions[0]);
+                        costs.set(extensionPos.x, extensionPos.y, 0xff);
+                    }
 
                     costs.set(containerPos.x, containerPos.y, 0xff);
                     costs.set(linkPos.x, linkPos.y, 0xff);
@@ -1037,7 +1075,7 @@ function getRoads(
     if (Memory.rooms[centerLocation.roomName].remotes.length > 0) {
         for (const remote of Memory.rooms[centerLocation.roomName].remotes) {
             for (const rd of Memory.rooms[remote].remoteLayout.sources) {
-                console.log("finding remote roads");
+                //console.log("finding remote roads");
                 const sourcePath: RoomPosition[] = PathFinder.search(
                     centerLocation,
                     {
@@ -1075,7 +1113,7 @@ function getRoads(
     return roads;
 }
 
-function getRemoteLayout(roomName: string, centerLocation: RoomPosition): RemoteLayoutData | null {
+function getRemoteLayout(orgRoomName: string, roomName: string, centerLocation: RoomPosition): RemoteLayoutData | null {
     const basicLayout: BasicLayoutData = Memory.rooms[roomName].basicLayout;
     if (basicLayout === undefined) {
         if (Game.rooms[roomName] !== undefined) {
@@ -1102,11 +1140,23 @@ function getRemoteLayout(roomName: string, centerLocation: RoomPosition): Remote
             }
         ).path.length;
 
+        const tdist = distance * 2;
+        const capacityNeeded = (SOURCE_ENERGY_CAPACITY / ENERGY_REGEN_TIME) * tdist;
+        const carryNeeded = capacityNeeded / 50;
+        const maxCarry = Math.min(Math.floor(Game.rooms[orgRoomName].energyCapacityAvailable / 75), 33);
+
+        const creepsNeeded = Math.ceil(carryNeeded / maxCarry);
+        const patternValue = Math.ceil(carryNeeded / creepsNeeded / 2) + 1;
+
         sources.push({
             id: sourceData.id,
             pos: sourceData.pos,
             container: unpackPosition(sourceData.pos).getDirectionTo(containerPos),
-            dist: distance
+            dist: distance,
+            haulers: {
+                amountNeeded: creepsNeeded,
+                pattern: "[mcc]" + patternValue
+            }
         });
     }
     return {
@@ -1128,16 +1178,14 @@ function buildLayout(room: Room) {
         filter: (s) => s.structureType === STRUCTURE_WALL
     }).forEach((s) => s.destroy());
 
+    buildRoads(room);
+
     buildBaseCenter(room);
 
     if (baseType === "bunker") {
         buildBunker(room);
     } else if (baseType === "auto") {
         buildAuto(room);
-    }
-
-    if (room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_EXTENSION } }).length >= 5) {
-        buildRoads(room);
     }
 
     buildContainers(room);
@@ -1176,7 +1224,7 @@ function buildLayout(room: Room) {
         smartBuild(mpos, STRUCTURE_RAMPART);
     }
 
-    executeSmartBuild();
+    executeSmartBuild(room);
 }
 
 function buildBaseCenter(room: Room) {
@@ -1323,7 +1371,7 @@ function buildContainers(room: Room) {
     if (room.controller === undefined) {
         return;
     }
-    if (room.controller.level > 1 && room.controller.level <= 4) {
+    if (room.controller.level >= 1 && room.controller.level <= 4) {
         smartBuild(unpackPosition(room.memory.layout.controllerStore), STRUCTURE_CONTAINER);
     } else {
         const c: Structure = unpackPosition(room.memory.layout.controllerStore)
@@ -1356,9 +1404,12 @@ function smartBuild(pos: RoomPosition, type: BuildableStructureConstant) {
     });
 }
 
-function executeSmartBuild() {
+function executeSmartBuild(room: Room) {
     let amtOfRampart = 0;
     let amtOfRoad = 0;
+
+    const buildRoads: boolean =
+        room.find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === STRUCTURE_EXTENSION }).length >= 5;
 
     for (const site of smartBuildData) {
         const room: Room = Game.rooms[site.pos.roomName];
@@ -1384,7 +1435,7 @@ function executeSmartBuild() {
                 amtOfRampart++;
             }
         } else if (site.type === STRUCTURE_ROAD) {
-            if (amtOfRoad >= 10) {
+            if (amtOfRoad >= 10 || !buildRoads) {
                 continue;
             }
             if (
