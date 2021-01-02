@@ -122,7 +122,7 @@ export class MovementManager implements Manager {
                                         swampCost: 10,
                                         plainCost: 2,
                                         maxOps: 5000,
-                                        maxRooms: 32
+                                        maxRooms: creep.pos.roomName === targetPos.roomName ? 1 : 32
                                     }
                                 ).path;
 
@@ -140,6 +140,7 @@ export class MovementManager implements Manager {
                             }
                             if (serializedPath !== null) {
                                 creep.memory.movementData._path = serializedPath;
+                                creep.memory.movementData._pathName = pathName;
                                 data[creep.name] = {
                                     needsToMove: true,
                                     nextLocation: path[0]
@@ -168,6 +169,13 @@ export class MovementManager implements Manager {
                                 data[creep.name].nextLocation = undefined;
                                 data[creep.name].needsToMove = true;
                                 creepQueue.unshift(creep);
+                            } else if (
+                                occupiedSpaces[data[creep.name].nextLocation!.x][data[creep.name].nextLocation!.y]
+                                    .memory.movementData?.heavy
+                            ) {
+                                data[creep.name].needsToMove = false;
+                                data[creep.name].nextLocation = undefined;
+                                creep.memory.movementData._path = undefined;
                             } else {
                                 data[creep.name].needsToMove = false;
                                 data[creep.name].nextLocation = undefined;
@@ -176,7 +184,11 @@ export class MovementManager implements Manager {
                             occupiedSpaces[data[creep.name].nextLocation!.x][data[creep.name].nextLocation!.y] = creep;
                             if (
                                 currentSpaces[data[creep.name].nextLocation!.x][data[creep.name].nextLocation!.y] !==
-                                undefined
+                                    undefined &&
+                                data[
+                                    currentSpaces[data[creep.name].nextLocation!.x][data[creep.name].nextLocation!.y]
+                                        .name
+                                ] !== undefined
                             ) {
                                 data[
                                     currentSpaces[data[creep.name].nextLocation!.x][
@@ -233,7 +245,13 @@ export class MovementManager implements Manager {
                             }
                         }
 
-                        potentialPositions.sort((a, b) => costMatrix.get(a.x, a.y) - costMatrix.get(b.x, b.y));
+                        potentialPositions.sort((a, b) => {
+                            let av = costMatrix.get(a.x, a.y);
+                            let bv = costMatrix.get(b.x, b.y);
+                            av = av === 0 ? terrain.get(a.x, a.y) * 5 : av;
+                            bv = bv === 0 ? terrain.get(b.x, b.y) * 5 : bv;
+                            return av - bv;
+                        });
 
                         if (candidate === undefined) {
                             candidate = potentialPositions[0];
@@ -263,6 +281,10 @@ export class MovementManager implements Manager {
                             creep.memory.movementData._path = undefined;
                             console.log(creep.name + " " + "fail move " + creep.pos + data[creep.name].nextLocation!);
                             creep.say("fail move");
+                            if (creep.memory.movementData._pathName !== undefined) {
+                                removePath(creep.memory.movementData._pathName);
+                                console.log("removed path");
+                            }
                             continue;
                         }
 
@@ -375,6 +397,10 @@ function getPath(pathName: string): string | null {
         return null;
     }
     return _pathCache[pathName].path;
+}
+
+function removePath(pathName: string): void {
+    delete _pathCache[pathName];
 }
 
 function cleanPathCache(): void {
