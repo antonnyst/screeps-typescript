@@ -381,7 +381,7 @@ const roomCallback = (roomName: string): boolean | CostMatrix => {
     return finalMatrix;
 };
 
-const cacheTime = 3000;
+const cacheTime = 6000;
 
 const _pathCache: { [key in string]: { path: string; time: number } } = {};
 
