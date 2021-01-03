@@ -64,7 +64,14 @@ export const loop = ErrorMapper.wrapLoop(() => {
         pathfinding: {
             cacheHits: Memory.cacheHits,
             totalQueries: Memory.totalQueries
-        }
+        },
+        accountResources: {
+            token: Game.resources[SUBSCRIPTION_TOKEN],
+            cpuUnlock: Game.resources[CPU_UNLOCK],
+            pixel: Game.resources[PIXEL],
+            accessKey: Game.resources[ACCESS_KEY]
+        },
+        credits: Game.market.credits
     };
 
     for (const roomName in Game.rooms) {
@@ -73,7 +80,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
             const energystored = (Memory.rooms[roomName].resources !== undefined
                 ? Memory.rooms[roomName].resources?.total.energy
                 : 0) as number;
-
+            let resources = Memory.rooms[roomName].resources?.total;
             const rampartavg = (Memory.rooms[roomName].rampartData !== undefined
                 ? Memory.rooms[roomName].rampartData?.rampartavg
                 : 0) as number;
@@ -93,7 +100,8 @@ export const loop = ErrorMapper.wrapLoop(() => {
                 energystored,
                 rampartavg,
                 rampartmin,
-                rampartmax
+                rampartmax,
+                resources
             };
         }
     }

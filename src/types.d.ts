@@ -86,6 +86,10 @@ interface Stats {
         cacheHits: number;
         totalQueries: number;
     };
+    accountResources: {
+        [key in InterShardResourceConstant]: number;
+    };
+    credits: number;
 }
 
 interface RoomStats {
@@ -98,6 +102,9 @@ interface RoomStats {
     rampartavg: number;
     rampartmin: number;
     rampartmax: number;
+    resources?: {
+        [key in ResourceConstant]: number;
+    };
 }
 
 declare type LinkStatus = "fill" | "empty";
