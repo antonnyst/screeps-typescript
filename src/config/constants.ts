@@ -44,3 +44,7 @@ export const TERMINAL_BOOSTS: ResourceConstant[] = Object.keys(REACTION_TIME) as
 export const TERMINAL_COMMODITIES: ResourceConstant[] = Object.keys(COMMODITIES).filter((c) =>
     TERMINAL_MINERALS.includes(c as ResourceConstant)
 ) as ResourceConstant[];
+
+export const MARKET_RESOURCES: MarketResourceConstant[] = (RESOURCES_ALL as MarketResourceConstant[]).concat(
+    Object.values(INTERSHARD_RESOURCES) as MarketResourceConstant[]
+);
