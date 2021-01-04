@@ -62,6 +62,7 @@ interface Memory {
     cacheHits: number;
     totalQueries: number;
     stats: Stats;
+    marketData: import("./dataInterfaces/marketData").MarketData;
 }
 
 interface Stats {
@@ -90,6 +91,12 @@ interface Stats {
         [key in InterShardResourceConstant]: number;
     };
     credits: number;
+    prices: {
+        [key in MarketResourceConstant]?: {
+            sell: number;
+            buy: number;
+        };
+    };
 }
 
 interface RoomStats {

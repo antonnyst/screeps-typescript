@@ -71,7 +71,8 @@ export const loop = ErrorMapper.wrapLoop(() => {
             pixel: Game.resources[PIXEL],
             accessKey: Game.resources[ACCESS_KEY]
         },
-        credits: Game.market.credits
+        credits: Game.market.credits,
+        prices: Memory.marketData.prices
     };
 
     for (const roomName in Game.rooms) {
