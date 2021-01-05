@@ -15,15 +15,15 @@ import {
 } from "../../config/base/auto";
 import { RunEvery, RunNow } from "../../utils/RunEvery";
 
-export function LayoutHandler(room: Room): void {
+export function LayoutHandler(room: Room, speed: number): void {
     if (room.memory.roomLevel === 2) {
-        RunEvery(buildLayout, "layouthandlerbuildlayout" + room.name, 50, room);
+        buildLayout(room);
 
         if (room.memory.layout === undefined) {
             RunNow(rebuildLayout, "layouthandlergetlayout" + room.name, room);
         }
 
-        RunEvery(rebuildLayout, "layouthandlergetlayout" + room.name, 200, room);
+        RunEvery(rebuildLayout, "layouthandlergetlayout" + room.name, 500 / speed, room);
     }
     if (room.memory.basicLayout === undefined) {
         room.memory.basicLayout = getBasicLayout(room);

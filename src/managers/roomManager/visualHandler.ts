@@ -1,12 +1,10 @@
-import { RoomManager } from "managers/roomManager";
-import { RunEvery } from "utils/RunEvery";
 import * as C from "../../config/constants";
 import * as Config from "../../config/config";
 import { getFromCache, saveToCache } from "../../utils/Cache";
 
-export function VisualHandler(room: Room): void {
+export function VisualHandler(room: Room, speed: number): void {
     if (Config.roomVisuals && room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
-        let data: string | null = getFromCache("visualhandlerdata" + room.name, 10);
+        let data: string | null = getFromCache("visualhandlerdata" + room.name, 10 / speed);
         if (data === null) {
             room.visual.text("Repair Targets: " + Object.values(room.memory.repairTargets).length, 1, 1.275, {
                 align: "left",

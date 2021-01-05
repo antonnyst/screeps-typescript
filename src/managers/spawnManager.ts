@@ -16,7 +16,9 @@ import { RunEvery } from "utils/RunEvery";
 // take spawn data from spawnQueue if no needs
 
 export class SpawnManager implements Manager {
-    public run() {
+    minSpeed = 0.2;
+    maxSpeed = 1;
+    public run(speed: number) {
         RunEvery(
             () => {
                 for (const i in Game.rooms) {
@@ -38,7 +40,7 @@ export class SpawnManager implements Manager {
                 }
             },
             "spawnmanagerrun",
-            3
+            3 / speed
         );
     }
     public checkWaiting(room: Room, spawns: StructureSpawn[]): boolean {

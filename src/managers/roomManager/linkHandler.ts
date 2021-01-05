@@ -2,7 +2,7 @@ import { unpackPosition } from "../../utils/RoomPositionPacker";
 import * as C from "../../config/constants";
 
 export function LinkHandler(room: Room): void {
-    if (Game.time % 2 === 0 && room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
+    if (room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
         if (room.controller.level < 5) {
             return;
         }

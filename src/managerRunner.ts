@@ -21,10 +21,12 @@ const managers: Manager[] = [
 ];
 
 export const runAllManagers = (): void => {
+    const globalSpeed = Math.min(Config.bucketTarget, Game.cpu.bucket) / Config.bucketTarget;
     Memory.msplit = [];
     for (let i = 0; i < managers.length; i++) {
         const a = Game.cpu.getUsed();
-        managers[i].run();
+        const speed = managers[i].minSpeed + (managers[i].maxSpeed - managers[i].minSpeed) * globalSpeed;
+        managers[i].run(speed);
         const b = Game.cpu.getUsed() - a;
         Memory.msplit[i] = b;
         if (Config.cpuLog) {

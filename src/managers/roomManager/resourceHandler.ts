@@ -1,9 +1,7 @@
-import { RunEvery } from "utils/RunEvery";
 import * as C from "../../config/constants";
-import { ResourcesData } from "../../dataInterfaces/resourcesData";
 
 export function ResourceHandler(room: Room): void {
-    RunEvery(ResourceData, "resourcehandlerresourcedata" + room.name, 5, room);
+    ResourceData(room);
 }
 
 function ResourceData(room: Room): void {

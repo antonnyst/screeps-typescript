@@ -1,6 +1,8 @@
 import { Manager } from "./manager";
 export class FlagManager implements Manager {
-    public run() {
+    minSpeed = 1;
+    maxSpeed = 1;
+    public run(speed: number) {
         for (const flag in Game.flags) {
             HandleFlag(Game.flags[flag]);
         }

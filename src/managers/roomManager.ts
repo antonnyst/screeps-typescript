@@ -10,16 +10,19 @@ import { RunEvery, RunNow } from "utils/RunEvery";
 import { VisualHandler } from "./roomManager/visualHandler";
 
 export class RoomManager implements Manager {
-    run() {
+    minSpeed = 0.2;
+    maxSpeed = 1;
+    run(speed: number) {
         for (const room in Game.rooms) {
-            roomLogic(room);
+            roomLogic(room, speed);
         }
     }
 }
 
-function roomLogic(roomName: string): void {
+function roomLogic(roomName: string, speed: number): void {
     const room: Room = Game.rooms[roomName];
 
+    //Update room level
     if (room.memory.roomLevel === undefined) {
         RunNow(() => {
             room.memory.roomLevel = getRoomLevel(room);
@@ -33,19 +36,7 @@ function roomLogic(roomName: string): void {
             room.memory.lastUpdate = Game.time;
         },
         "roomlogicupdateroomlevel" + roomName,
-        10
-    );
-
-    RunEvery(updateRoomHostiles, "roomlogicupdateroomhostiles" + roomName, 3, room);
-
-    RunEvery(
-        () => {
-            if (room.memory.reservation !== undefined || room.memory.roomLevel === -1 || room.memory.roomLevel === 1) {
-                updateRoomReservation(room);
-            }
-        },
-        "roomlogicupdateroomreservation" + roomName,
-        5
+        10 / speed
     );
 
     if (room.memory.roomLevel === 2 && room.memory.remotes === undefined) {
@@ -55,39 +46,43 @@ function roomLogic(roomName: string): void {
         room.memory.remoteSupportRooms = [];
     }
 
-    if (Game.cpu.bucket > 4000) {
-        RunNow(() => {
-            ResourceHandler(room);
+    //Update room hostiles
+    RunEvery(updateRoomHostiles, "roomlogicupdateroomhostiles" + roomName, 3 / speed, room);
 
-            LayoutHandler(room);
+    //Update room reservation
+    RunEvery(
+        () => {
+            if (room.memory.reservation !== undefined || room.memory.roomLevel === -1 || room.memory.roomLevel === 1) {
+                updateRoomReservation(room);
+            }
+        },
+        "roomlogicupdateroomreservation" + roomName,
+        5 / speed
+    );
 
-            TerminalHandler(room);
+    //ResourceHandler
+    RunEvery(ResourceHandler, "roomlogicresourcehandler" + roomName, 5 / speed, room);
 
-            LabHandler(room);
-        }, "roomlogicslowstuff" + roomName);
-    } else {
-        RunEvery(
-            () => {
-                ResourceHandler(room);
+    //LayoutHandler
+    RunEvery(LayoutHandler, "roomlogiclayouthandler" + roomName, 50 / speed, room, speed);
 
-                LayoutHandler(room);
+    //TerminalHandler
+    //RunEvery(TerminalHandler, "roomlogicterminalhandler" + roomName, 50 / speed, room);
 
-                TerminalHandler(room);
+    //LabHandler
+    RunEvery(LabHandler, "roomlogiclabhandler" + roomName, 5 / speed, room);
 
-                LabHandler(room);
-            },
-            "roomlogicslowstuff" + roomName,
-            50
-        );
-    }
+    //ConstructionHandler
+    RunEvery(ConstructionHandler, "roomlogicconstructionhandler" + roomName, 5 / speed, room);
 
-    ConstructionHandler(room);
+    //RepairHandler
+    RunEvery(RepairHandler, "roomlogicrepairhandler" + roomName, 5 / speed, room);
 
-    RepairHandler(room);
+    //LinkHandler
+    RunEvery(LinkHandler, "roomlogiclinkhandler" + roomName, 4 / speed, room);
 
-    LinkHandler(room);
-
-    VisualHandler(room);
+    //VisualHandler
+    VisualHandler(room, speed);
 }
 
 function getRoomLevel(room: Room): number {
