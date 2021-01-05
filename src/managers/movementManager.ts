@@ -1,6 +1,5 @@
 import { Manager } from "./manager";
 import { getFromCache, saveToCache } from "../utils/Cache";
-import * as Config from "../config/config";
 import { packPosition, unpackPosition } from "utils/RoomPositionPacker";
 import { isPositionEdge, offsetPositionByDirection } from "utils/RoomPositionHelpers";
 import { describeRoom } from "utils/RoomCalc";

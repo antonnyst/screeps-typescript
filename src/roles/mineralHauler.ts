@@ -1,5 +1,4 @@
 import { CreepRole } from "./creepRole";
-import { SourceData } from "../dataInterfaces/sourceData";
 import { offsetPositionByDirection } from "../utils/RoomPositionHelpers";
 import { unpackPosition } from "../utils/RoomPositionPacker";
 
