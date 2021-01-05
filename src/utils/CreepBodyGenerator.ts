@@ -1,6 +1,6 @@
 /**
  * original by kaiskye
- * ported to TS by Awesomeadda
+ * ported to TS by antonn
  *
  * Generates a list of body parts to spawn a creep with by following a
  * regex-like pattern to decide which parts to try spawning and fitting in as
