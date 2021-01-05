@@ -144,5 +144,3 @@ declare interface LabradorTask {
     amount: number;
     type: ActionType;
 }
-
-declare namespace _ {}
