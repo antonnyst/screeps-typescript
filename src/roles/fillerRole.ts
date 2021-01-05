@@ -1,7 +1,6 @@
 import { CreepRole } from "./creepRole";
 import { saveToCache, getFromCache } from "../utils/Cache";
 import { unpackPosition } from "../utils/RoomPositionPacker";
-import { find } from "lodash";
 
 export class FillerRole extends CreepRole {
     runRole() {

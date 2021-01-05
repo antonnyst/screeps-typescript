@@ -1,5 +1,4 @@
 import { CreepRole } from "./creepRole";
-import { packPosition, unpackPosition } from "../utils/RoomPositionPacker";
 
 export class ScoutRole extends CreepRole {
     runRole() {
