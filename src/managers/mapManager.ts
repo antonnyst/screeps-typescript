@@ -3,9 +3,11 @@ import { getFromCache, saveToCache } from "../utils/Cache";
 import * as Config from "../config/config";
 
 export class MapManager implements Manager {
-    public run() {
+    minSpeed = 0.1;
+    maxSpeed = 1;
+    public run(speed: number) {
         if (Config.mapVisuals) {
-            const visualString: string | undefined = getFromCache("mapCache", 100);
+            const visualString: string | undefined = getFromCache("mapCache", 100 / speed);
             if (visualString === undefined || visualString === null) {
                 for (const room in Memory.rooms) {
                     perRoom(room);

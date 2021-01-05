@@ -4,10 +4,10 @@ import { LabsData, LabData } from "../../dataInterfaces/labsData";
 import { unpackPosition } from "../../utils/RoomPositionPacker";
 
 export function LabHandler(room: Room): void {
-    RunEvery(LabData, "labhandlerlabdata" + room.name, 5, room);
+    runLabData(room);
 }
 
-function LabData(room: Room): void {
+function runLabData(room: Room): void {
     if (room.controller === undefined || !room.controller.my) {
         return;
     }

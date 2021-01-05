@@ -6,7 +6,9 @@ import { roleList } from "./../roles/roleList";
 const cpuArr: { [name: string]: { c: number; cpu: number } } = {};
 
 export class CreepManager implements Manager {
-    public run() {
+    minSpeed = 0.5;
+    maxSpeed = 1;
+    public run(speed: number) {
         for (const creep in Memory.creeps) {
             if (!Game.creeps[creep]) {
                 delete Memory.creeps[creep];

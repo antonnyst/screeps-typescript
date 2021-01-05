@@ -3,7 +3,9 @@ import * as C from "../config/constants";
 import { Manager } from "./manager";
 
 export class ResourceManager implements Manager {
-    public run() {
+    minSpeed = 0.2;
+    maxSpeed = 1;
+    public run(speed: number) {
         RunEvery(
             () => {
                 const TerminalRooms: string[] = [];
@@ -103,7 +105,7 @@ export class ResourceManager implements Manager {
                 }
             },
             "resourcemanagerrunterminals",
-            10
+            10 / speed
         );
 
         RunEvery(
@@ -139,7 +141,7 @@ export class ResourceManager implements Manager {
                 }
             },
             "resourcemanagerrunmarket",
-            3000
+            3000 / speed
         );
     }
 }

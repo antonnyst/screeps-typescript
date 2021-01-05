@@ -1,28 +1,22 @@
 import { RunEvery } from "../../utils/RunEvery";
 
 export function ConstructionHandler(room: Room): void {
-    RunEvery(
-        () => {
-            if (room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
-                room.memory.constructionSites = {};
+    if (room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
+        room.memory.constructionSites = {};
 
-                let remoteSites: ConstructionSite[] = [];
+        let remoteSites: ConstructionSite[] = [];
 
-                for (const r in room.memory.remotes) {
-                    const remote: string = room.memory.remotes[r];
-                    if (Game.rooms[remote] !== undefined) {
-                        remoteSites = remoteSites.concat(Game.rooms[remote].find(FIND_MY_CONSTRUCTION_SITES));
-                    }
-                }
-
-                const sites: ConstructionSite[] = room.find(FIND_MY_CONSTRUCTION_SITES).concat(remoteSites);
-
-                for (const site of sites) {
-                    room.memory.constructionSites[site.id] = site.pos;
-                }
+        for (const r in room.memory.remotes) {
+            const remote: string = room.memory.remotes[r];
+            if (Game.rooms[remote] !== undefined) {
+                remoteSites = remoteSites.concat(Game.rooms[remote].find(FIND_MY_CONSTRUCTION_SITES));
             }
-        },
-        "constructionhandlermain" + room.name,
-        5
-    );
+        }
+
+        const sites: ConstructionSite[] = room.find(FIND_MY_CONSTRUCTION_SITES).concat(remoteSites);
+
+        for (const site of sites) {
+            room.memory.constructionSites[site.id] = site.pos;
+        }
+    }
 }

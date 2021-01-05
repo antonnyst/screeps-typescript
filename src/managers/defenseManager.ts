@@ -2,7 +2,9 @@ import { Manager } from "./manager";
 import { unpackPosition } from "../utils/RoomPositionPacker";
 
 export class DefenseManager implements Manager {
-    public run() {
+    minSpeed = 1;
+    maxSpeed = 1;
+    public run(speed: number) {
         for (const room in Game.rooms) {
             RunTowers(Game.rooms[room]);
         }

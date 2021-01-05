@@ -18,8 +18,10 @@ let cacheHits = 0;
 let totalQueries = 0;
 
 export class MovementManager implements Manager {
-    public run() {
-        RunEvery(cleanPathCache, "movementmanagercleanpathcache", 9000);
+    minSpeed = 0.1;
+    maxSpeed = 1;
+    public run(speed: number) {
+        RunEvery(cleanPathCache, "movementmanagercleanpathcache", 9000 / speed, speed);
 
         const rooms = _.groupBy(Game.creeps, (c) => c.room.name);
         for (const room of Object.keys(rooms)) {
@@ -105,7 +107,7 @@ export class MovementManager implements Manager {
                                 "_" +
                                 (creep.memory.movementData.flee ? "1" : "0");
 
-                            let serializedPath = getPath(pathName);
+                            let serializedPath = getPath(pathName, speed);
                             let path: RoomPosition[] | undefined;
 
                             if (serializedPath === null) {
@@ -392,8 +394,8 @@ function savePath(pathName: string, path: string): void {
     };
 }
 
-function getPath(pathName: string): string | null {
-    if (_pathCache[pathName] === undefined || _pathCache[pathName].time < Game.time - cacheTime) {
+function getPath(pathName: string, speed: number): string | null {
+    if (_pathCache[pathName] === undefined || _pathCache[pathName].time < Game.time - cacheTime / speed) {
         return null;
     }
     return _pathCache[pathName].path;
@@ -403,9 +405,9 @@ function removePath(pathName: string): void {
     delete _pathCache[pathName];
 }
 
-function cleanPathCache(): void {
+function cleanPathCache(speed: number): void {
     for (const pathName of Object.keys(_pathCache)) {
-        if (_pathCache[pathName].time < Game.time - cacheTime) {
+        if (_pathCache[pathName].time < Game.time - cacheTime / speed) {
             delete _pathCache[pathName];
         }
     }
