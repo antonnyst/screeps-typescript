@@ -3,7 +3,6 @@ import { ConstructionHandler } from "./roomManager/constructionHandler";
 import { RepairHandler } from "./roomManager/repairHandler";
 import { LayoutHandler } from "./roomManager/layoutHandler";
 import { LinkHandler } from "./roomManager/linkHandler";
-import { TerminalHandler } from "./roomManager/terminalHandler";
 import { LabHandler } from "./roomManager/labHandler";
 import { ResourceHandler } from "./roomManager/resourceHandler";
 import { RunEvery, RunNow } from "utils/RunEvery";
@@ -65,9 +64,6 @@ function roomLogic(roomName: string, speed: number): void {
 
     //LayoutHandler
     RunEvery(LayoutHandler, "roomlogiclayouthandler" + roomName, 50 / speed, room, speed);
-
-    //TerminalHandler
-    //RunEvery(TerminalHandler, "roomlogicterminalhandler" + roomName, 50 / speed, room);
 
     //LabHandler
     RunEvery(LabHandler, "roomlogiclabhandler" + roomName, 5 / speed, room);
