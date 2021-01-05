@@ -1,5 +1,4 @@
 import { Manager } from "./manager";
-import { SpawnHandler } from "./roomManager/spawnHandler";
 import { ConstructionHandler } from "./roomManager/constructionHandler";
 import { RepairHandler } from "./roomManager/repairHandler";
 import { LayoutHandler } from "./roomManager/layoutHandler";
@@ -81,8 +80,6 @@ function roomLogic(roomName: string): void {
             50
         );
     }
-
-    SpawnHandler(room);
 
     ConstructionHandler(room);
 
