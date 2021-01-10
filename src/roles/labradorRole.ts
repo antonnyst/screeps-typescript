@@ -602,7 +602,7 @@ export class LabradorRole extends CreepRole {
         if (this.creep.pos.isNearTo(target.pos)) {
             let result: number = -99;
 
-            switch (this.creep.memory.labrador.task.type) {
+            switch (this.creep.memory.labrador.task.type) { 
                 case "transfer":
                     if (!(target instanceof Resource) && !(target instanceof Tombstone)) {
                         // filter out Resource and Tombstone

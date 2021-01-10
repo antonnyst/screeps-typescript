@@ -811,7 +811,7 @@ function getSources(basicLayout: BasicLayoutData, centerLocation: RoomPosition):
         }
 
         const distance = PathFinder.search(
-            new RoomPosition(centerLocation.x, centerLocation.y - 2, centerLocation.roomName),
+            new RoomPosition(centerLocation.x - 1, centerLocation.y, centerLocation.roomName),
             {
                 pos: containerPos,
                 range: 1
@@ -1133,7 +1133,7 @@ function getRemoteLayout(orgRoomName: string, roomName: string, centerLocation: 
         const containerPos = path[path.length - 1];
 
         const distance = PathFinder.search(
-            new RoomPosition(centerLocation.x, centerLocation.y - 2, centerLocation.roomName),
+            new RoomPosition(centerLocation.x - 1, centerLocation.y, centerLocation.roomName),
             {
                 pos: containerPos,
                 range: 1

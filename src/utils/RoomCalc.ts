@@ -8,7 +8,7 @@ export function roomTotalStoredEnergy(room: Room): number {
     const storage = room.storage !== undefined ? room.storage.store.getUsedCapacity(RESOURCE_ENERGY) : 0;
 
     const cpos = unpackPosition(room.memory.layout.baseCenter);
-    const lpos = new RoomPosition(cpos.x, cpos.y - 1, cpos.roomName);
+    const lpos = new RoomPosition(cpos.x + 1, cpos.y, cpos.roomName);
 
     const blink = _.filter(
         lpos.lookFor(LOOK_STRUCTURES),

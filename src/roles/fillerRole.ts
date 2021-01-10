@@ -79,7 +79,7 @@ export class FillerRole extends CreepRole {
 
             if (targets.length === 0 && this.creep.room.memory.linkStatus === "fill") {
                 const cPos = unpackPosition(this.creep.room.memory.layout.baseCenter);
-                const lPos = new RoomPosition(cPos.x, cPos.y - 1, cPos.roomName);
+                const lPos = new RoomPosition(cPos.x + 1, cPos.y, cPos.roomName);
                 targets = Game.rooms[this.creep.memory.home].find(FIND_MY_STRUCTURES, {
                     filter: (s) =>
                         s.structureType === STRUCTURE_LINK &&
@@ -89,7 +89,7 @@ export class FillerRole extends CreepRole {
                 });
             } else if (targets.length === 0 && this.creep.room.memory.linkStatus === "empty") {
                 const cPos = unpackPosition(this.creep.room.memory.layout.baseCenter);
-                const lPos = new RoomPosition(cPos.x, cPos.y - 1, cPos.roomName);
+                const lPos = new RoomPosition(cPos.x + 1, cPos.y, cPos.roomName);
                 const link = Game.rooms[this.creep.memory.home].find(FIND_MY_STRUCTURES, {
                     filter: (s) =>
                         s.structureType === STRUCTURE_LINK &&

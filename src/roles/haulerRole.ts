@@ -74,7 +74,7 @@ export class HaulerRole extends CreepRole {
                 if (this.creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 100000) {
                     const cpos = unpackPosition(Memory.rooms[this.creep.memory.home].layout.baseCenter);
                     const link: StructureLink = _.filter(
-                        new RoomPosition(cpos.x, cpos.y - 1, cpos.roomName).lookFor(LOOK_STRUCTURES),
+                        new RoomPosition(cpos.x + 1, cpos.y, cpos.roomName).lookFor(LOOK_STRUCTURES),
                         (s: Structure) => s.structureType === STRUCTURE_LINK
                     )[0] as StructureLink;
 
