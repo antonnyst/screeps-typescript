@@ -1,3 +1,5 @@
+import { autoLabsInLabsLocation, autoLabsRotationGuide } from "config/base/auto";
+import { AutoLayoutData } from "dataInterfaces/layoutData";
 import { LabsData, LabData } from "../../dataInterfaces/labsData";
 import { unpackPosition } from "../../utils/RoomPositionPacker";
 
@@ -12,7 +14,7 @@ function runLabData(room: Room): void {
     if (room.memory.layout && room.memory.layout.baseType !== "bunker") {
         return;
     }
-    if (room.controller.level < 7) {
+    if (room.controller.level < 6) {
         room.memory.labs = undefined;
     } else {
         if (room.memory.labs === undefined) {
@@ -94,11 +96,29 @@ function GenerateLabsData(room: Room): LabsData {
     const outLabs: number[] = [];
 
     const cpos = unpackPosition(room.memory.layout.baseCenter);
-    const ipos: RoomPosition[] = [
-        new RoomPosition(cpos.x + 3, cpos.y + 3, cpos.roomName),
-        new RoomPosition(cpos.x + 4, cpos.y + 4, cpos.roomName)
+    let ipos: RoomPosition[] = [
+        new RoomPosition(cpos.x, cpos.y + 4, cpos.roomName),
+        new RoomPosition(cpos.x, cpos.y + 5, cpos.roomName)
     ];
 
+    if (room.memory.layout.baseType === "auto") {
+        ipos = [
+            new RoomPosition(
+                autoLabsInLabsLocation[0].x *
+                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
+                autoLabsInLabsLocation[0].y *
+                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
+                cpos.roomName
+            ),
+            new RoomPosition(
+                autoLabsInLabsLocation[1].x *
+                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
+                autoLabsInLabsLocation[1].y *
+                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
+                cpos.roomName
+            )
+        ];
+    }
     for (const la in labs) {
         const l = Game.getObjectById(labs[la].id) as StructureLab;
         if (l != null) {
@@ -142,10 +162,29 @@ function UpdateLabData(room: Room) {
     const outLabs: number[] = [];
 
     const cpos = unpackPosition(room.memory.layout.baseCenter);
-    const ipos: RoomPosition[] = [
-        new RoomPosition(cpos.x + 3, cpos.y + 3, cpos.roomName),
-        new RoomPosition(cpos.x + 4, cpos.y + 4, cpos.roomName)
+    let ipos: RoomPosition[] = [
+        new RoomPosition(cpos.x, cpos.y + 4, cpos.roomName),
+        new RoomPosition(cpos.x, cpos.y + 5, cpos.roomName)
     ];
+
+    if (room.memory.layout.baseType === "auto") {
+        ipos = [
+            new RoomPosition(
+                autoLabsInLabsLocation[0].x *
+                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
+                autoLabsInLabsLocation[0].y *
+                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
+                cpos.roomName
+            ),
+            new RoomPosition(
+                autoLabsInLabsLocation[1].x *
+                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
+                autoLabsInLabsLocation[1].y *
+                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
+                cpos.roomName
+            )
+        ];
+    }
 
     for (const la in labs) {
         const l = Game.getObjectById(labs[la].id) as StructureLab;

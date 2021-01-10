@@ -16,7 +16,7 @@ export function LinkHandler(room: Room): void {
             return;
         }
         const cPos = unpackPosition(room.memory.layout.baseCenter);
-        const lPos = new RoomPosition(cPos.x, cPos.y - 1, cPos.roomName);
+        const lPos = new RoomPosition(cPos.x + 1, cPos.y, cPos.roomName);
         const baseLink: StructureLink | null = _.filter(
             lPos.lookFor(LOOK_STRUCTURES),
             (s: Structure) => s.structureType === STRUCTURE_LINK
@@ -71,7 +71,7 @@ export function LinkHandler(room: Room): void {
                     }
                 }
             }
-            if (!transfered) {
+            if (!transfered && baseLink !== undefined) {
                 const r = baseLink.store.getUsedCapacity(RESOURCE_ENERGY) as number;
                 if (r >= eNeeded) {
                     baseLink.transferEnergy(controllerLink);

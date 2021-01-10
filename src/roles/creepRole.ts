@@ -187,7 +187,7 @@ export abstract class CreepRole implements CreepRoleInterface {
                                 }
                             } else {
                                 const cpos = unpackPosition(creep.room.memory.layout.baseCenter);
-                                const lpos = new RoomPosition(cpos.x, cpos.y - 1, cpos.roomName);
+                                const lpos = new RoomPosition(cpos.x + 1, cpos.y, cpos.roomName);
                                 if (s.pos.isEqualTo(lpos)) {
                                     // if controller is full
                                     if (
