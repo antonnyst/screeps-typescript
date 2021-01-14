@@ -300,26 +300,18 @@ const needChecks: CreepNeedCheckFunction[] = [
         }
         return null;
     },
-    //Check builders
+    //Check minimal builders
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        const builderTarget = Math.max(
-            Math.ceil(
-                Object.keys(room.memory.constructionSites).length /
-                    (Math.min(room.energyCapacityAvailable, 3000) * 0.00167)
-            ),
-            Math.ceil(
-                Object.keys(room.memory.repairTargets).length / (Math.min(room.energyCapacityAvailable, 3000) * 0.0012)
-            )
-        );
-
-        if (counts["builder"] < builderTarget) {
+        if (
+            counts["builder"] === 0 &&
+            (Object.keys(room.memory.constructionSites).length > 0 || Object.keys(room.memory.repairTargets).length > 0)
+        ) {
             return {
                 role: "builder",
                 pattern: rolePatterns["builder"],
                 energy: room.energyCapacityAvailable
             };
         }
-
         return null;
     },
     //Check remote support
@@ -526,6 +518,26 @@ const needChecks: CreepNeedCheckFunction[] = [
                     };
                 }
             }
+        }
+        return null;
+    },
+    //Check builders
+    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+        let builderTarget = Math.max(
+            Math.ceil(
+                Object.keys(room.memory.constructionSites).length /
+                    (Math.min(room.energyCapacityAvailable, 3000) * 0.00167)
+            ),
+            Math.ceil(
+                Object.keys(room.memory.repairTargets).length / (Math.min(room.energyCapacityAvailable, 3000) * 0.0012)
+            )
+        );
+        if (counts["builder"] < builderTarget) {
+            return {
+                role: "builder",
+                pattern: rolePatterns["builder"],
+                energy: room.energyCapacityAvailable
+            };
         }
         return null;
     },
