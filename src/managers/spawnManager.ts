@@ -594,17 +594,6 @@ const needChecks: CreepNeedCheckFunction[] = [
         }
         return null;
     },
-    //Check labrador
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (room.controller && room.controller.level > 5 && counts["labrador"] < 1) {
-            return {
-                role: "labrador",
-                pattern: rolePatterns["labrador"],
-                energy: room.energyCapacityAvailable
-            };
-        }
-        return null;
-    },
     //Check manager
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (
