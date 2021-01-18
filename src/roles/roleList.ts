@@ -9,6 +9,7 @@ import { FillerRole } from "./fillerRole";
 import { FootRole } from "./footRole";
 import { HaulerRole } from "./haulerRole";
 import { LabradorRole } from "./labradorRole";
+import { ManagerRole } from "./managerRole";
 import { MinerRole } from "./minerRole";
 import { MineralHaulerRole } from "./mineralHauler";
 import { MineralMinerRole } from "./mineralMiner";
@@ -30,6 +31,7 @@ export const roleList: { [role: string]: CreepRole } = {
     foot: new FootRole(),
     hauler: new HaulerRole(),
     labrador: new LabradorRole(),
+    manager: new ManagerRole(),
     miner: new MinerRole(),
     mineralHauler: new MineralHaulerRole(),
     mineralMiner: new MineralMinerRole(),
