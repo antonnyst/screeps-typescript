@@ -177,6 +177,17 @@ export class MovementManager implements Manager {
                                 data[creep.name].needsToMove = false;
                                 data[creep.name].nextLocation = undefined;
                                 creep.memory.movementData._path = undefined;
+                            } else if (
+                                occupiedSpaces[data[creep.name].nextLocation!.x][data[creep.name].nextLocation!.y]
+                                    .memory.movementData === undefined
+                            ) {
+                                data[creep.name].needsToMove = false;
+                                data[creep.name].nextLocation = undefined;
+                                creep.memory.movementData._path = undefined;
+                                if (creep.memory.movementData._pathName !== undefined) {
+                                    removePath(creep.memory.movementData._pathName);
+                                    console.log("removed path");
+                                }
                             } else {
                                 data[creep.name].needsToMove = false;
                                 data[creep.name].nextLocation = undefined;
