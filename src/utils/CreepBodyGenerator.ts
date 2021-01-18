@@ -103,7 +103,8 @@ export const rolePatterns: { [roleName: string]: string } = {
     remoteMiner: "w4cmw2m3w4m",
     reserver: "[lm]5",
     scout: "m",
-    upgrader: "[mwcwmw]8"
+    upgrader: "[mwcwmw]8",
+    manager: "c16"
 };
 
 export const bodySortingValues: { [bodyPartName: string]: number } = {

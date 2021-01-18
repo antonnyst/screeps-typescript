@@ -126,7 +126,15 @@ export class SpawnManager implements Manager {
         if (body === undefined || memory === undefined || name === undefined) {
             return false;
         } else {
-            return spawns[0].spawnCreep(body, name, { memory }) === OK;
+            let spawner: number = 0;
+            if (spawnData.center === true) {
+                spawner = _.findIndex(spawns, (s) => s.pos.isEqualTo(unpackPosition(room.memory.layout.baseCenter)));
+                if (spawner === -1) {
+                    return false;
+                }
+            }
+
+            return spawns[spawner].spawnCreep(body, name, { memory, directions: spawnData.directions }) === OK;
         }
     }
 }
@@ -593,6 +601,26 @@ const needChecks: CreepNeedCheckFunction[] = [
                 role: "labrador",
                 pattern: rolePatterns["labrador"],
                 energy: room.energyCapacityAvailable
+            };
+        }
+        return null;
+    },
+    //Check manager
+    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+        if (
+            room.controller &&
+            room.controller.level >= 5 &&
+            counts["manager"] < 1 &&
+            _.findIndex(room.find(FIND_MY_SPAWNS, { filter: (s) => s.spawning === null }), (s) =>
+                s.pos.isEqualTo(unpackPosition(room.memory.layout.baseCenter))
+            ) !== -1
+        ) {
+            return {
+                role: "manager",
+                pattern: rolePatterns["manager"],
+                energy: room.energyCapacityAvailable,
+                center: true,
+                directions: [BOTTOM]
             };
         }
         return null;
