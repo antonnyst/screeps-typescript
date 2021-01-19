@@ -59,7 +59,7 @@ export class ManagerRole extends CreepRole {
 
                 if (possibleAmount > 0) {
                     // We can do it
-                    console.log("manager filling link");
+
                     this.creep.withdraw(storage, RESOURCE_ENERGY, possibleAmount);
                     this.creep.memory.roleData.targetId = link.id;
                     return;
@@ -73,7 +73,7 @@ export class ManagerRole extends CreepRole {
 
                 if (possibleAmount > 0) {
                     // We can do it
-                    console.log("manager emptying link");
+
                     this.creep.withdraw(link, RESOURCE_ENERGY, possibleAmount);
                     this.creep.memory.roleData.targetId = storage.id;
                     return;
@@ -116,7 +116,7 @@ export class ManagerRole extends CreepRole {
                         // there are two tasks needed
                         // task1 : grab resources from storage
                         // task2 : put resources in terminal
-                        console.log("manager moving to terminal");
+
                         this.creep.withdraw(storage, resource, possibleAmount);
                         this.creep.memory.roleData.targetId = terminal.id;
                         return;
@@ -136,7 +136,7 @@ export class ManagerRole extends CreepRole {
                         // there are two tasks needed
                         // task1 : grab resources from terminal
                         // task2 : put resources in storage
-                        console.log("manager moving to storage");
+
                         this.creep.withdraw(terminal, resource, possibleAmount);
                         this.creep.memory.roleData.targetId = storage.id;
                         return;
