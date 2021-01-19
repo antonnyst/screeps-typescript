@@ -58,7 +58,7 @@ interface RoomMemory {
 
 interface Memory {
     cpuAvg: number;
-    msplit: number[];
+    msplit: { [key in string]: number };
     cacheHits: number;
     totalQueries: number;
     stats: Stats;
@@ -73,7 +73,7 @@ interface Stats {
         used: number;
         limit: number;
         bucket: number;
-        msplit: number[];
+        msplit: { [key in string]: number };
     };
     gcl: {
         progress: number;
