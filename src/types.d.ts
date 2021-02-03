@@ -144,3 +144,7 @@ declare interface LabradorTask {
     amount: number;
     type: ActionType;
 }
+
+interface FlagMemory {
+    processed?: boolean;
+}
