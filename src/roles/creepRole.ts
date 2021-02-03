@@ -186,17 +186,6 @@ export abstract class CreepRole implements CreepRoleInterface {
                                     return false;
                                 }
                             } else {
-                                const cpos = unpackPosition(creep.room.memory.layout.baseCenter);
-                                const lpos = new RoomPosition(cpos.x + 1, cpos.y, cpos.roomName);
-                                if (s.pos.isEqualTo(lpos)) {
-                                    // if controller is full
-                                    if (
-                                        s.room.memory.linkStatus === "empty" &&
-                                        (s.store.getUsedCapacity(RESOURCE_ENERGY) as number) >= requiredAmount
-                                    ) {
-                                        return true;
-                                    }
-                                }
                                 return false;
                             }
                         } else {
