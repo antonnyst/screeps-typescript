@@ -329,7 +329,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                 const fAmt = _.filter(Game.creeps, (c: Creep) => c.memory.role === "foot" && c.memory.home === r)
                     .length;
 
-                if (fAmt < 3) {
+                if (fAmt < 3 && Game.rooms[r] !== undefined) {
                     return {
                         role: "foot",
                         pattern: rolePatterns["foot"],
