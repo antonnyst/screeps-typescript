@@ -308,6 +308,22 @@ const needChecks: CreepNeedCheckFunction[] = [
         }
         return null;
     },
+    //Check scouts
+    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+        if (
+            (Game.time % 10000 < 5000 || room.controller?.level === 2) &&
+            counts["scout"] < 1 &&
+            room.controller &&
+            room.controller.level < 8
+        ) {
+            return {
+                role: "scout",
+                pattern: rolePatterns["scout"],
+                energy: room.energyCapacityAvailable
+            };
+        }
+        return null;
+    },
     //Check minimal builders
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (
@@ -610,22 +626,6 @@ const needChecks: CreepNeedCheckFunction[] = [
                 energy: room.energyCapacityAvailable,
                 center: true,
                 directions: [BOTTOM]
-            };
-        }
-        return null;
-    },
-    //Check scouts
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (
-            (Game.time % 10000 < 5000 || room.controller?.level === 2) &&
-            counts["scout"] < 1 &&
-            room.controller &&
-            room.controller.level < 8
-        ) {
-            return {
-                role: "scout",
-                pattern: rolePatterns["scout"],
-                energy: room.energyCapacityAvailable
             };
         }
         return null;
