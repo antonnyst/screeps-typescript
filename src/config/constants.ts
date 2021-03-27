@@ -1,6 +1,7 @@
 export const MINERAL_MINING_ENERGY_NEEDED = 50000;
 export const BASE_LINK_GREEDY_LIMIT = 35000;
 export const FULL_UPGRADER_ENERGY_NEEDED = 80000;
+export const EXTRA_ENERGY_FILL_ENERGY_NEEDED = 100000;
 
 // How much of each resource type should be stored in the terminal
 export const TERMINAL_ENERGY_MIN = 30000;
@@ -21,7 +22,7 @@ export const ROOM_MINERAL_IMPORT_LIMIT = 12000;
 export const ROOM_MINERAL_EXPORT_LIMIT = 24000;
 
 // How much energy should be stored in each room
-export const ROOM_ENERGY_IMPORT_LIMIT = 100000;
+export const ROOM_ENERGY_IMPORT_LIMIT = 150000;
 export const ROOM_ENERGY_EXPORT_LIMIT = 400000;
 
 // How many percents of max health should rampart be maintained at
