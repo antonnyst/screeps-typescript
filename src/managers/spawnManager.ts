@@ -373,6 +373,28 @@ const needChecks: CreepNeedCheckFunction[] = [
         }
         return null;
     },
+    //Check remote support peacekeeper
+    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+        if (room.memory.remoteSupportRooms.length > 0) {
+            for (const r of room.memory.remoteSupportRooms) {
+                const fAmt = _.filter(Game.creeps, (c: Creep) => c.memory.role === "peacekeeper" && c.memory.home === r)
+                    .length;
+
+                if (fAmt < 1 && Game.rooms[r] !== undefined) {
+                    return {
+                        role: "peacekeeper",
+                        pattern: rolePatterns["peacekeeper"],
+                        energy: room.energyCapacityAvailable,
+                        memory: {
+                            role: "peacekeeper",
+                            home: r
+                        }
+                    };
+                }
+            }
+        }
+        return null;
+    },
     //Check remote miners and haulers
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (room.memory.remotes.length === 0) return null;
