@@ -403,7 +403,10 @@ const needChecks: CreepNeedCheckFunction[] = [
         let haulerTarget = 0;
         let haulerPerRoom: { [key: string]: number } = {};
         for (let i = 0; i < room.memory.remotes.length; i++) {
-            if (Memory.rooms[room.memory.remotes[i]].remoteLayout === undefined) {
+            if (
+                Memory.rooms[room.memory.remotes[i]] === undefined ||
+                Memory.rooms[room.memory.remotes[i]].remoteLayout === undefined
+            ) {
                 continue;
             }
             minerTarget += Memory.rooms[room.memory.remotes[i]].remoteLayout.sources.length;
