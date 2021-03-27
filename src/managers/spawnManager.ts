@@ -500,7 +500,13 @@ const needChecks: CreepNeedCheckFunction[] = [
         if (!room.controller) return null;
 
         let upgraderTarget = 4;
-        if (room.controller.level >= 7) {
+        if (room.controller.level === 8) {
+            if (room.controller.ticksToDowngrade < 100000) {
+                upgraderTarget = 1;
+            } else {
+                upgraderTarget = 0;
+            }
+        } else if (room.controller.level === 7) {
             upgraderTarget = 1;
         } else if (room.storage) {
             upgraderTarget = 1 + Math.floor(room.storage.store.getUsedCapacity(RESOURCE_ENERGY) / 100000);
