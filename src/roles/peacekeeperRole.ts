@@ -76,9 +76,10 @@ export class PeacekeeperRole extends CreepRole {
             this.creep.memory.roleData.target === this.creep.memory.home
         ) {
             const cpos = unpackPosition(this.creep.room.memory.layout.baseCenter);
-            this.setMovementData(cpos, 3, false, false);
-            if (this.creep.pos.isEqualTo(cpos.x, cpos.y + 1)) {
-                this.creep.move(BOTTOM_LEFT);
+            if (this.creep.pos.getRangeTo(cpos) === 1) {
+                this.setMovementData(cpos, 2, true, false);
+            } else {
+                this.setMovementData(cpos, 3, false, false);
             }
         }
     }
