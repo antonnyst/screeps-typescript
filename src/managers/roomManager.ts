@@ -122,12 +122,22 @@ function updateRoomHostiles(room: Room): void {
         if (room.memory.hostiles[creep.id] !== undefined) {
             newHostiles[creep.id] = room.memory.hostiles[creep.id];
         } else {
-            newHostiles[creep.id] = {
-                id: creep.id,
-                pos: creep.pos,
-                body: creep.body,
-                firstSeen: Game.time
-            };
+            if (
+                room.memory.roomLevel === 2 ||
+                creep.getActiveBodyparts(ATTACK) > 0 ||
+                creep.getActiveBodyparts(RANGED_ATTACK) > 0 ||
+                creep.getActiveBodyparts(CLAIM) > 0 ||
+                creep.getActiveBodyparts(CARRY) > 0 ||
+                creep.getActiveBodyparts(WORK) > 0 ||
+                creep.getActiveBodyparts(HEAL) > 0
+            ) {
+                newHostiles[creep.id] = {
+                    id: creep.id,
+                    pos: creep.pos,
+                    body: creep.body,
+                    firstSeen: Game.time
+                };
+            }
         }
     }
     room.memory.hostiles = newHostiles;
