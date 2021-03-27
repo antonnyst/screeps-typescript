@@ -375,7 +375,14 @@ const roomCallback = (roomName: string): boolean | CostMatrix => {
                 lazyMatrix.set(constructionSite.pos.x, constructionSite.pos.y, 255);
             }
         }
-
+        if (room.controller?.my && room.controller.level >= 5 && room.memory.layout !== undefined) {
+            const cpos = unpackPosition(room.memory.layout.baseCenter);
+            lazyMatrix.set(cpos.x, cpos.y + 1, 255);
+        }
+        if (room.controller?.my && room.controller.level === 8 && room.memory.layout !== undefined) {
+            const cpos = unpackPosition(room.memory.layout.baseCenter);
+            lazyMatrix.set(cpos.x, cpos.y - 1, 255);
+        }
         saveToCache("rccostmatrixlazy" + roomName, lazyMatrix);
     }
     let finalMatrix = lazyMatrix.clone();
