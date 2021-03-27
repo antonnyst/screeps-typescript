@@ -1,15 +1,12 @@
 export function offsetPositionByDirection(pos: RoomPosition, dir: DirectionConstant): RoomPosition {
     const delta: { x: number; y: number } = getDeltaFromDirection(dir);
-
-    const newPos = new RoomPosition(pos.x + delta.x, pos.y + delta.y, pos.roomName);
-
-    if (newPos.x < 0 || newPos.x > 49 || newPos.y < 0 || newPos.y > 49) {
-        console.log("invalid resulting pos!");
-
+    if (pos.x + delta.x < 0 || pos.x + delta.x > 49 || pos.y + delta.y < 0 || pos.y + delta.y > 49) {
+        console.log(
+            "invalid resulting pos! x:" + pos.x + delta.x + " y:" + pos.y + delta.y + " roomName:" + pos.roomName
+        );
         return pos;
     }
-
-    return newPos;
+    return new RoomPosition(pos.x + delta.x, pos.y + delta.y, pos.roomName);
 }
 
 function getDeltaFromDirection(direction: DirectionConstant): { x: number; y: number } {
