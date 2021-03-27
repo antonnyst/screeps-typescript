@@ -13,9 +13,9 @@ const managers: Manager[] = [
     new FlagManager(),
     new RoomManager(),
     new CreepManager(),
+    new DefenseManager(),
     new MovementManager(),
     new SpawnManager(),
-    new DefenseManager(),
     new ResourceManager(),
     new MapManager()
 ];
