@@ -539,7 +539,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (room.memory.remotes.length === 0) return null;
 
-        if (counts["reserver"] < room.memory.remotes.length) {
+        if (counts["reserver"] < room.memory.remotes.length && room.energyCapacityAvailable >= 650) {
             const splitByRoom = _.groupBy(roles["reserver"], (c) => c.memory.roleData?.target);
             for (let i = 0; i < room.memory.remotes.length; i++) {
                 if (Game.rooms[room.memory.remotes[i]] === undefined) {
