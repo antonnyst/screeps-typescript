@@ -14,8 +14,9 @@ import {
     autoExtensionNode
 } from "../../config/base/auto";
 import { RunEvery, RunNow } from "../../utils/RunEvery";
+import { off } from "process";
 
-export function LayoutHandler(room: Room, speed: number): void {
+export function OldLayoutHandler(room: Room, speed: number): void {
     if (room.memory.roomLevel === 2) {
         buildLayout(room);
 
@@ -1074,6 +1075,9 @@ function getRoads(
 
     if (Memory.rooms[centerLocation.roomName].remotes.length > 0) {
         for (const remote of Memory.rooms[centerLocation.roomName].remotes) {
+            if (Memory.rooms[remote] === undefined) {
+                continue;
+            }
             for (const rd of Memory.rooms[remote].remoteLayout.sources) {
                 //console.log("finding remote roads");
                 const sourcePath: RoomPosition[] = PathFinder.search(
@@ -1114,6 +1118,10 @@ function getRoads(
 }
 
 function getRemoteLayout(orgRoomName: string, roomName: string, centerLocation: RoomPosition): RemoteLayoutData | null {
+    if (Memory.rooms[roomName] === undefined) {
+        return null;
+    }
+
     const basicLayout: BasicLayoutData = Memory.rooms[roomName].basicLayout;
     if (basicLayout === undefined) {
         if (Game.rooms[roomName] !== undefined) {
@@ -1457,4 +1465,1623 @@ function executeSmartBuild(room: Room) {
     }
 
     smartBuildData = [];
+}
+
+//
+// NEW LAYOUT BUILD SYSTEM
+//
+
+declare global {
+    interface RoomMemory {
+        buildings?: BuildingsData;
+    }
+}
+
+export interface BuildingsData {
+    roads: BuildingData<STRUCTURE_ROAD>[][];
+    ramparts: BuildingData<STRUCTURE_RAMPART>[];
+    extensions: BuildingData<STRUCTURE_EXTENSION>[];
+    towers: BuildingData<STRUCTURE_TOWER>[];
+    labs: BuildingData<STRUCTURE_LAB>[];
+    links: BuildingData<STRUCTURE_LINK>[];
+    spawns: BuildingData<STRUCTURE_SPAWN>[];
+    containers: BuildingData<STRUCTURE_CONTAINER>[];
+    storage: BuildingData<STRUCTURE_STORAGE>;
+    terminal: BuildingData<STRUCTURE_TERMINAL>;
+    factory: BuildingData<STRUCTURE_FACTORY>;
+    powerspawn: BuildingData<STRUCTURE_POWER_SPAWN>;
+    nuker: BuildingData<STRUCTURE_NUKER>;
+    observer: BuildingData<STRUCTURE_OBSERVER>;
+    extractor: BuildingData<STRUCTURE_EXTRACTOR>;
+}
+export interface BuildingData<T extends BuildableStructureConstant> {
+    pos: number;
+    id?: Id<Structure<T> | ConstructionSite<T>>;
+    name?: string;
+    active: boolean;
+}
+
+export function LayoutHandler(room: Room, speed: number): void {
+    if (room.memory.roomLevel === 2) {
+        //buildLayout(room);
+        _BuildBuildings(room);
+
+        if (room.memory.layout === undefined) {
+            RunNow(rebuildLayout, "layouthandlergetlayout" + room.name, room);
+        }
+
+        RunEvery(rebuildLayout, "layouthandlergetlayout" + room.name, 500 / speed, room);
+
+        if (room.memory.buildings === undefined) {
+            RunNow(_GenerateBuildings, "layouthandlergeneratebuildings" + room.name, room);
+            RunNow(_UpdateBuildings, "layouthandlerupdatebuildings" + room.name, room);
+        }
+
+        RunEvery(_GenerateBuildings, "layouthandlergeneratebuildings" + room.name, 500 / speed, room);
+        RunEvery(_UpdateBuildings, "layouthandlerupdatebuildings" + room.name, 500 / speed, room);
+    }
+    if (room.memory.basicLayout === undefined) {
+        room.memory.basicLayout = getBasicLayout(room);
+    }
+}
+
+// GenerateBuildings(room)
+// Creates buildings memory structure based on layout
+
+function _GenerateBuildings(room: Room) {
+    if (room.memory.layout === undefined || room.controller === undefined) {
+        return;
+    }
+
+    // ROADS
+
+    let roadAmt = 2 + room.memory.layout.sources.length;
+    for (const remote of room.memory.remotes) {
+        if (Memory.rooms[remote] !== undefined) {
+            roadAmt += Memory.rooms[remote].remoteLayout.sources.length;
+        }
+    }
+
+    const roads: BuildingData<STRUCTURE_ROAD>[][] = [];
+    for (let i = 0; i <= roadAmt; i++) {
+        roads[i] = [];
+        if (room.memory.buildings !== undefined && room.memory.buildings.roads[i] !== undefined) {
+            roads[i] = room.memory.buildings.roads[i];
+        } else {
+            if (i > 0) {
+                for (const element of room.memory.layout.roads[i - 1].positions) {
+                    roads[i].push({
+                        pos: element,
+                        active: false
+                    });
+                }
+            }
+        }
+        //room.memory.layout.roads[0].po
+    }
+
+    // RAMPARTS
+
+    let ramparts: BuildingData<STRUCTURE_RAMPART>[] = [];
+    if (room.memory.buildings !== undefined) {
+        ramparts = room.memory.buildings.ramparts;
+    } else {
+        ramparts.push({
+            pos: room.memory.layout.controllerStore,
+            active: false
+        });
+
+        ramparts.push({
+            pos: packPosition(
+                offsetPositionByDirection(
+                    unpackPosition(room.memory.layout.sources[0].pos),
+                    room.memory.layout.sources[0].container
+                )
+            ),
+            active: false
+        });
+        ramparts.push({
+            pos: packPosition(
+                offsetPositionByDirection(
+                    offsetPositionByDirection(
+                        unpackPosition(room.memory.layout.sources[0].pos),
+                        room.memory.layout.sources[0].container
+                    ),
+                    room.memory.layout.sources[0].link
+                )
+            ),
+            active: false
+        });
+
+        if (room.memory.layout.sources.length > 1) {
+            ramparts.push({
+                pos: packPosition(
+                    offsetPositionByDirection(
+                        unpackPosition(room.memory.layout.sources[1].pos),
+                        room.memory.layout.sources[1].container
+                    )
+                ),
+                active: false
+            });
+            ramparts.push({
+                pos: packPosition(
+                    offsetPositionByDirection(
+                        offsetPositionByDirection(
+                            unpackPosition(room.memory.layout.sources[1].pos),
+                            room.memory.layout.sources[1].container
+                        ),
+                        room.memory.layout.sources[1].link
+                    )
+                ),
+                active: false
+            });
+        }
+
+        const terrain: RoomTerrain = room.getTerrain();
+        for (let dir: DirectionConstant = 1; dir <= 8; dir++) {
+            const pos: RoomPosition = offsetPositionByDirection(room.controller.pos, dir as DirectionConstant);
+            if (terrain.get(pos.x, pos.y) !== TERRAIN_MASK_WALL) {
+                ramparts.push({
+                    pos: packPosition(pos),
+                    active: false
+                });
+            }
+        }
+    }
+
+    // CONTAINERS
+
+    let containers: BuildingData<STRUCTURE_CONTAINER>[] = [];
+    if (room.memory.buildings !== undefined) {
+        containers = room.memory.buildings.containers;
+    } else {
+        containers.push({
+            pos: room.memory.layout.controllerStore,
+            active: false
+        });
+        containers.push({
+            pos: packPosition(
+                offsetPositionByDirection(
+                    unpackPosition(room.memory.layout.mineral.pos),
+                    room.memory.layout.mineral.container
+                )
+            ),
+            active: false
+        });
+        containers.push({
+            pos: packPosition(
+                offsetPositionByDirection(
+                    unpackPosition(room.memory.layout.sources[0].pos),
+                    room.memory.layout.sources[0].container
+                )
+            ),
+            active: true
+        });
+        if (room.memory.layout.sources.length > 1) {
+            containers.push({
+                pos: packPosition(
+                    offsetPositionByDirection(
+                        unpackPosition(room.memory.layout.sources[1].pos),
+                        room.memory.layout.sources[1].container
+                    )
+                ),
+                active: true
+            });
+        }
+    }
+
+    // LINKS
+
+    let links: BuildingData<STRUCTURE_LINK>[] = [];
+    if (room.memory.buildings !== undefined) {
+        links = room.memory.buildings.links;
+    } else {
+        links.push({
+            pos: room.memory.layout.controllerStore,
+            active: false
+        });
+        links.push({
+            pos: packPosition(
+                offsetPositionByDirection(
+                    offsetPositionByDirection(
+                        unpackPosition(room.memory.layout.sources[0].pos),
+                        room.memory.layout.sources[0].container
+                    ),
+                    room.memory.layout.sources[0].link
+                )
+            ),
+            active: false
+        });
+        if (room.memory.layout.sources.length > 1) {
+            links.push({
+                pos: packPosition(
+                    offsetPositionByDirection(
+                        offsetPositionByDirection(
+                            unpackPosition(room.memory.layout.sources[1].pos),
+                            room.memory.layout.sources[1].container
+                        ),
+                        room.memory.layout.sources[1].link
+                    )
+                ),
+                active: false
+            });
+        }
+    }
+
+    // EXTRACTOR
+
+    let extractor: BuildingData<STRUCTURE_EXTRACTOR>;
+    if (room.memory.buildings !== undefined) {
+        extractor = room.memory.buildings.extractor;
+    } else {
+        extractor = {
+            pos: room.memory.layout.mineral.pos,
+            active: false
+        };
+    }
+
+    let extensions: BuildingData<STRUCTURE_EXTENSION>[] = [];
+    let labs: BuildingData<STRUCTURE_LAB>[] = [];
+    let spawns: BuildingData<STRUCTURE_SPAWN>[] = [];
+    let towers: BuildingData<STRUCTURE_TOWER>[] = [];
+    let storage: BuildingData<STRUCTURE_STORAGE> | undefined;
+    let terminal: BuildingData<STRUCTURE_TERMINAL> | undefined;
+    let factory: BuildingData<STRUCTURE_FACTORY> | undefined;
+    let powerspawn: BuildingData<STRUCTURE_POWER_SPAWN> | undefined;
+    let nuker: BuildingData<STRUCTURE_NUKER> | undefined;
+    let observer: BuildingData<STRUCTURE_OBSERVER> | undefined;
+    if (room.memory.buildings !== undefined) {
+        roads[0] = room.memory.buildings.roads[0];
+        extensions = room.memory.buildings.extensions;
+        labs = room.memory.buildings.labs;
+        spawns = room.memory.buildings.spawns;
+        towers = room.memory.buildings.towers;
+        storage = room.memory.buildings.storage;
+        terminal = room.memory.buildings.terminal;
+        factory = room.memory.buildings.factory;
+        powerspawn = room.memory.buildings.powerspawn;
+        nuker = room.memory.buildings.nuker;
+        observer = room.memory.buildings.observer;
+    } else {
+        const centerPos: RoomPosition = unpackPosition(room.memory.layout.baseCenter);
+
+        // BASE CENTER
+
+        for (let x = 0; x < baseCenterLayout.length; x++) {
+            for (const element of baseCenterLayout[x]) {
+                switch (element.type) {
+                    case STRUCTURE_ROAD:
+                        const posroad: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        roads[0].push({
+                            pos: packPosition(posroad),
+                            active: false
+                        });
+                        break;
+                    case STRUCTURE_RAMPART:
+                        const posrampart: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        ramparts.push({
+                            pos: packPosition(posrampart),
+                            active: false
+                        });
+                        break;
+                    case STRUCTURE_EXTENSION:
+                        const posextension: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        extensions.push({
+                            pos: packPosition(posextension),
+                            active: false
+                        });
+                        break;
+                    case STRUCTURE_LAB:
+                        const poslab: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        labs.push({
+                            pos: packPosition(poslab),
+                            active: false
+                        });
+                        break;
+                    case STRUCTURE_LINK:
+                        const poslink: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        links.push({
+                            pos: packPosition(poslink),
+                            active: false
+                        });
+                        break;
+                    case STRUCTURE_SPAWN:
+                        const posspawn: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        spawns.push({
+                            name: "{ROOM_NAME}-{INDEX}",
+                            pos: packPosition(posspawn),
+                            active: false
+                        });
+                        break;
+                    case STRUCTURE_CONTAINER:
+                        const poscontainer: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        containers.push({
+                            pos: packPosition(poscontainer),
+                            active: false
+                        });
+                        break;
+                    case STRUCTURE_TOWER:
+                        const postower: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        towers.push({
+                            pos: packPosition(postower),
+                            active: false
+                        });
+                        break;
+                    case STRUCTURE_STORAGE:
+                        const posstorage: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        storage = {
+                            pos: packPosition(posstorage),
+                            active: false
+                        };
+                        break;
+                    case STRUCTURE_TERMINAL:
+                        const posterminal: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        terminal = {
+                            pos: packPosition(posterminal),
+                            active: false
+                        };
+                        break;
+                    case STRUCTURE_FACTORY:
+                        const posfactory: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        factory = {
+                            pos: packPosition(posfactory),
+                            active: false
+                        };
+                        break;
+                    case STRUCTURE_POWER_SPAWN:
+                        const pospowerspawn: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        powerspawn = {
+                            pos: packPosition(pospowerspawn),
+                            active: false
+                        };
+                        break;
+                    case STRUCTURE_NUKER:
+                        const posnuker: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        nuker = {
+                            pos: packPosition(posnuker),
+                            active: false
+                        };
+                        break;
+                    case STRUCTURE_OBSERVER:
+                        const posobserver: RoomPosition = new RoomPosition(
+                            centerPos.x + element.x,
+                            centerPos.y + element.y,
+                            centerPos.roomName
+                        );
+                        observer = {
+                            pos: packPosition(posobserver),
+                            active: false
+                        };
+                        break;
+                    default:
+                        console.log("non handled structure : " + element.type);
+                        break;
+                }
+            }
+        }
+
+        // BUNKER / AUTO
+
+        if (room.memory.layout.baseType === "bunker") {
+            for (let x = 0; x < bunkerLayout.length; x++) {
+                for (const element of bunkerLayout[x]) {
+                    switch (element.type) {
+                        case STRUCTURE_ROAD:
+                            const posroad: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            roads[0].push({
+                                pos: packPosition(posroad),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_RAMPART:
+                            const posrampart: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            ramparts.push({
+                                pos: packPosition(posrampart),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_EXTENSION:
+                            const posextension: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            extensions.push({
+                                pos: packPosition(posextension),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_LAB:
+                            const poslab: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            labs.push({
+                                pos: packPosition(poslab),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_LINK:
+                            const poslink: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            links.push({
+                                pos: packPosition(poslink),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_SPAWN:
+                            const posspawn: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            spawns.push({
+                                name: "{ROOM_NAME}-{INDEX}",
+                                pos: packPosition(posspawn),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_CONTAINER:
+                            const poscontainer: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            containers.push({
+                                pos: packPosition(poscontainer),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_TOWER:
+                            const postower: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            towers.push({
+                                pos: packPosition(postower),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_STORAGE:
+                            const posstorage: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            storage = {
+                                pos: packPosition(posstorage),
+                                active: false
+                            };
+                            break;
+                        case STRUCTURE_TERMINAL:
+                            const posterminal: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            terminal = {
+                                pos: packPosition(posterminal),
+                                active: false
+                            };
+                            break;
+                        case STRUCTURE_FACTORY:
+                            const posfactory: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            factory = {
+                                pos: packPosition(posfactory),
+                                active: false
+                            };
+                            break;
+                        case STRUCTURE_POWER_SPAWN:
+                            const pospowerspawn: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            powerspawn = {
+                                pos: packPosition(pospowerspawn),
+                                active: false
+                            };
+                            break;
+                        case STRUCTURE_NUKER:
+                            const posnuker: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            nuker = {
+                                pos: packPosition(posnuker),
+                                active: false
+                            };
+                            break;
+                        case STRUCTURE_OBSERVER:
+                            const posobserver: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x,
+                                centerPos.y + element.y,
+                                centerPos.roomName
+                            );
+                            observer = {
+                                pos: packPosition(posobserver),
+                                active: false
+                            };
+                            break;
+                        default:
+                            console.log("non handled structure : " + element.type);
+                            break;
+                    }
+                }
+            }
+        } else if (room.memory.layout.baseType === "auto") {
+            const memory = room.memory.layout as AutoLayoutData;
+            const rotation = memory.labDirection;
+
+            // LABS
+
+            for (let i = 0; i < autoLabsLayout.length; i++) {
+                for (const element of autoLabsLayout[i]) {
+                    switch (element.type) {
+                        case STRUCTURE_ROAD:
+                            const posroad: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            roads[0].push({
+                                pos: packPosition(posroad),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_RAMPART:
+                            const posrampart: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            ramparts.push({
+                                pos: packPosition(posrampart),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_EXTENSION:
+                            const posextension: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            extensions.push({
+                                pos: packPosition(posextension),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_LAB:
+                            const poslab: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            labs.push({
+                                pos: packPosition(poslab),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_LINK:
+                            const poslink: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            links.push({
+                                pos: packPosition(poslink),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_SPAWN:
+                            const posspawn: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            spawns.push({
+                                pos: packPosition(posspawn),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_CONTAINER:
+                            const poscontainer: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            containers.push({
+                                pos: packPosition(poscontainer),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_TOWER:
+                            const postower: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            towers.push({
+                                pos: packPosition(postower),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_STORAGE:
+                            const posstorage: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            storage = {
+                                pos: packPosition(posstorage),
+                                active: false
+                            };
+                            break;
+                        case STRUCTURE_TERMINAL:
+                            const posterminal: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            terminal = {
+                                pos: packPosition(posterminal),
+                                active: false
+                            };
+                            break;
+                        case STRUCTURE_FACTORY:
+                            const posfactory: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            factory = {
+                                pos: packPosition(posfactory),
+                                active: false
+                            };
+                            break;
+                        case STRUCTURE_POWER_SPAWN:
+                            const pospowerspawn: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            powerspawn = {
+                                pos: packPosition(pospowerspawn),
+                                active: false
+                            };
+                            break;
+                        case STRUCTURE_NUKER:
+                            const posnuker: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            nuker = {
+                                pos: packPosition(posnuker),
+                                active: false
+                            };
+                            break;
+                        case STRUCTURE_OBSERVER:
+                            const posobserver: RoomPosition = new RoomPosition(
+                                centerPos.x + element.x * autoLabsRotationGuide[rotation].mx,
+                                centerPos.y + element.y * autoLabsRotationGuide[rotation].my,
+                                centerPos.roomName
+                            );
+                            observer = {
+                                pos: packPosition(posobserver),
+                                active: false
+                            };
+                            break;
+                        default:
+                            console.log("non handled structure : " + element.type);
+                            break;
+                    }
+                }
+            }
+
+            // EXTENSIONS
+
+            for (let i = 0; i < memory.extensions.length; i++) {
+                const position = unpackPosition(memory.extensions[i]);
+
+                const node = i < 2 ? autoExtensionSpawnNode : autoExtensionNode;
+
+                for (const element of node) {
+                    switch (element.type) {
+                        case STRUCTURE_ROAD:
+                            const posroad: RoomPosition = new RoomPosition(
+                                position.x + element.x,
+                                position.y + element.y,
+                                position.roomName
+                            );
+                            roads[0].push({
+                                pos: packPosition(posroad),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_RAMPART:
+                            const posrampart: RoomPosition = new RoomPosition(
+                                position.x + element.x,
+                                position.y + element.y,
+                                position.roomName
+                            );
+                            ramparts.push({
+                                pos: packPosition(posrampart),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_EXTENSION:
+                            const posextension: RoomPosition = new RoomPosition(
+                                position.x + element.x,
+                                position.y + element.y,
+                                position.roomName
+                            );
+                            extensions.push({
+                                pos: packPosition(posextension),
+                                active: false
+                            });
+                            break;
+                        case STRUCTURE_SPAWN:
+                            const posspawn: RoomPosition = new RoomPosition(
+                                position.x + element.x,
+                                position.y + element.y,
+                                position.roomName
+                            );
+                            spawns.push({
+                                name: "{ROOM_NAME}-{INDEX}",
+                                pos: packPosition(posspawn),
+                                active: false
+                            });
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            // SOURCE EXTENSIONS
+
+            for (const source of memory.sources) {
+                if (source.extensions.length > 0) {
+                    for (const extension of source.extensions) {
+                        extensions.push({
+                            pos: packPosition(
+                                offsetPositionByDirection(
+                                    offsetPositionByDirection(unpackPosition(source.pos), source.container),
+                                    extension
+                                )
+                            ),
+                            active: false
+                        });
+                    }
+                }
+            }
+
+            // RAMPARTS
+
+            for (const element of memory.ramparts) {
+                ramparts.push({
+                    pos: element,
+                    active: false
+                });
+            }
+        }
+    }
+
+    if (
+        storage !== undefined &&
+        terminal !== undefined &&
+        factory !== undefined &&
+        powerspawn !== undefined &&
+        nuker !== undefined &&
+        observer !== undefined
+    ) {
+        room.memory.buildings = {
+            roads,
+            ramparts,
+            extensions,
+            towers,
+            labs,
+            links,
+            spawns,
+            containers,
+            storage,
+            terminal,
+            factory,
+            powerspawn,
+            nuker,
+            observer,
+            extractor
+        };
+    } else {
+        console.log("error in generate buildings, undefined variables");
+        console.log(
+            (storage !== undefined) +
+                "-" +
+                (terminal !== undefined) +
+                "-" +
+                (factory !== undefined) +
+                "-" +
+                (powerspawn !== undefined) +
+                "-" +
+                (nuker !== undefined) +
+                "-" +
+                (observer !== undefined)
+        );
+    }
+}
+// UpdateBuildings(room)
+// Activates and deactivates buildings
+
+function _UpdateBuildings(room: Room) {
+    if (room.memory.buildings === undefined || room.controller === undefined) {
+        return;
+    }
+
+    // ROADS
+
+    const roadsActive: boolean =
+        room.find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === STRUCTURE_EXTENSION }).length >= 5;
+
+    if (roadsActive) {
+        for (let i = 1; i < room.memory.buildings.roads.length; i++) {
+            if (i === 2 && room.controller.level < 6) {
+                continue;
+            }
+            for (let road of room.memory.buildings.roads[i]) {
+                road.active = true;
+            }
+        }
+    }
+
+    // CONTAINERS
+
+    if (room.controller.level > 0 && room.controller.level < 5) {
+        room.memory.buildings.containers[0].active = true;
+    } else {
+        room.memory.buildings.containers[0].active = false;
+    }
+    if (room.controller.level > 5) {
+        room.memory.buildings.containers[1].active = true;
+    }
+
+    // LINKS
+
+    if (room.controller.level > 4) {
+        room.memory.buildings.links[0].active = true;
+        room.memory.buildings.ramparts[0].active = true;
+
+        const terrain: RoomTerrain = room.getTerrain();
+        let i = 5;
+        for (let dir: DirectionConstant = 1; dir <= 8; dir++) {
+            const pos: RoomPosition = offsetPositionByDirection(room.controller.pos, dir as DirectionConstant);
+            if (terrain.get(pos.x, pos.y) !== TERRAIN_MASK_WALL) {
+                room.memory.buildings.ramparts[i].active = true;
+                i++;
+            }
+        }
+    }
+    if (room.controller.level > 5) {
+        room.memory.buildings.links[1].active = true;
+        room.memory.buildings.ramparts[1].active = true;
+        room.memory.buildings.ramparts[2].active = true;
+    }
+    if (room.controller.level > 6 && room.memory.layout.sources.length >= 2) {
+        room.memory.buildings.links[2].active = true;
+        room.memory.buildings.ramparts[3].active = true;
+        room.memory.buildings.ramparts[4].active = true;
+    }
+
+    // EXTRACTOR
+
+    if (room.controller.level > 5) {
+        room.memory.buildings.extractor.active = true;
+    }
+
+    const counts: { [key in BuildableStructureConstant]?: number } = {};
+
+    // BASE CENTER
+
+    for (let x = 0; x < baseCenterLayout.length; x++) {
+        for (const element of baseCenterLayout[x]) {
+            switch (element.type) {
+                case STRUCTURE_ROAD:
+                    if (!roadsActive) {
+                        break;
+                    }
+                    if (counts[STRUCTURE_ROAD] === undefined) {
+                        counts[STRUCTURE_ROAD] = 0;
+                    }
+                    if (room.controller.level < x) {
+                        counts[STRUCTURE_ROAD]! += 1;
+                        break;
+                    }
+                    room.memory.buildings.roads[0][counts[STRUCTURE_ROAD]!].active = true;
+                    counts[STRUCTURE_ROAD]! += 1;
+                    break;
+                case STRUCTURE_RAMPART:
+                    if (counts[STRUCTURE_RAMPART] === undefined) {
+                        const terrain: RoomTerrain = room.getTerrain();
+                        let i = 5;
+                        for (let dir: DirectionConstant = 1; dir <= 8; dir++) {
+                            const pos: RoomPosition = offsetPositionByDirection(
+                                room.controller.pos,
+                                dir as DirectionConstant
+                            );
+                            if (terrain.get(pos.x, pos.y) !== TERRAIN_MASK_WALL) {
+                                i++;
+                            }
+                        }
+                        counts[STRUCTURE_RAMPART] = i;
+                    }
+                    if (room.controller.level < x) {
+                        counts[STRUCTURE_RAMPART]! += 1;
+                        break;
+                    }
+                    room.memory.buildings.ramparts[counts[STRUCTURE_RAMPART]!].active = true;
+                    counts[STRUCTURE_RAMPART]! += 1;
+                    break;
+                case STRUCTURE_EXTENSION:
+                    if (counts[STRUCTURE_EXTENSION] === undefined) {
+                        counts[STRUCTURE_EXTENSION] = 0;
+                    }
+                    if (room.controller.level < x) {
+                        counts[STRUCTURE_EXTENSION]! += 1;
+                        break;
+                    }
+                    room.memory.buildings.extensions[counts[STRUCTURE_EXTENSION]!].active = true;
+                    counts[STRUCTURE_EXTENSION]! += 1;
+                    break;
+                case STRUCTURE_LAB:
+                    if (counts[STRUCTURE_LAB] === undefined) {
+                        counts[STRUCTURE_LAB] = 0;
+                    }
+                    if (room.controller.level < x) {
+                        counts[STRUCTURE_LAB]! += 1;
+                        break;
+                    }
+                    room.memory.buildings.labs[counts[STRUCTURE_LAB]!].active = true;
+                    counts[STRUCTURE_LAB]! += 1;
+                    break;
+                case STRUCTURE_LINK:
+                    if (counts[STRUCTURE_LINK] === undefined) {
+                        counts[STRUCTURE_LINK] = 3;
+                    }
+                    if (room.controller.level < x) {
+                        counts[STRUCTURE_LINK]! += 1;
+                        break;
+                    }
+                    room.memory.buildings.links[counts[STRUCTURE_LINK]!].active = true;
+                    counts[STRUCTURE_LINK]! += 1;
+                    break;
+                case STRUCTURE_SPAWN:
+                    if (counts[STRUCTURE_SPAWN] === undefined) {
+                        counts[STRUCTURE_SPAWN] = 0;
+                    }
+                    if (room.controller.level < x) {
+                        counts[STRUCTURE_SPAWN]! += 1;
+                        break;
+                    }
+                    room.memory.buildings.spawns[counts[STRUCTURE_SPAWN]!].active = true;
+                    counts[STRUCTURE_SPAWN]! += 1;
+                    break;
+                case STRUCTURE_CONTAINER:
+                    if (counts[STRUCTURE_CONTAINER] === undefined) {
+                        counts[STRUCTURE_CONTAINER] = 4;
+                    }
+                    if (room.controller.level < x) {
+                        counts[STRUCTURE_CONTAINER]! += 1;
+                        break;
+                    }
+                    room.memory.buildings.containers[counts[STRUCTURE_CONTAINER]!].active = true;
+                    counts[STRUCTURE_CONTAINER]! += 1;
+                    break;
+                case STRUCTURE_TOWER:
+                    if (counts[STRUCTURE_TOWER] === undefined) {
+                        counts[STRUCTURE_TOWER] = 0;
+                    }
+                    if (room.controller.level < x) {
+                        counts[STRUCTURE_TOWER]! += 1;
+                        break;
+                    }
+                    room.memory.buildings.towers[counts[STRUCTURE_TOWER]!].active = true;
+                    counts[STRUCTURE_TOWER]! += 1;
+                    break;
+                case STRUCTURE_STORAGE:
+                    if (room.controller.level < x) {
+                        break;
+                    }
+                    room.memory.buildings.storage.active = true;
+                    break;
+                case STRUCTURE_TERMINAL:
+                    if (room.controller.level < x) {
+                        break;
+                    }
+                    room.memory.buildings.terminal.active = true;
+                    break;
+                case STRUCTURE_FACTORY:
+                    if (room.controller.level < x) {
+                        break;
+                    }
+                    room.memory.buildings.factory.active = true;
+                    break;
+                case STRUCTURE_POWER_SPAWN:
+                    if (room.controller.level < x) {
+                        break;
+                    }
+                    room.memory.buildings.powerspawn.active = true;
+                    break;
+                case STRUCTURE_NUKER:
+                    if (room.controller.level < x) {
+                        break;
+                    }
+                    room.memory.buildings.nuker.active = true;
+                    break;
+                case STRUCTURE_OBSERVER:
+                    if (room.controller.level < x) {
+                        break;
+                    }
+                    room.memory.buildings.observer.active = true;
+                    break;
+                default:
+                    console.log("non handled structure : " + element.type);
+                    break;
+            }
+        }
+    }
+
+    // BUNKER / AUTO
+
+    const baseType: BaseType = room.memory.layout.baseType;
+
+    if (baseType === "bunker") {
+        for (let i = 0; i <= Math.min(room.controller.level, bunkerLayout.length - 1); i++) {
+            for (const element of bunkerLayout[i]) {
+                switch (element.type) {
+                    case STRUCTURE_ROAD:
+                        if (!roadsActive) {
+                            break;
+                        }
+                        if (counts[STRUCTURE_ROAD] === undefined) {
+                            counts[STRUCTURE_ROAD] = 0;
+                        }
+                        room.memory.buildings.roads[0][counts[STRUCTURE_ROAD]!].active = true;
+                        counts[STRUCTURE_ROAD]! += 1;
+                        break;
+                    case STRUCTURE_RAMPART:
+                        if (counts[STRUCTURE_RAMPART] === undefined) {
+                            const terrain: RoomTerrain = room.getTerrain();
+                            let i = 5;
+                            for (let dir: DirectionConstant = 1; dir <= 8; dir++) {
+                                const pos: RoomPosition = offsetPositionByDirection(
+                                    room.controller.pos,
+                                    dir as DirectionConstant
+                                );
+                                if (terrain.get(pos.x, pos.y) !== TERRAIN_MASK_WALL) {
+                                    i++;
+                                }
+                            }
+                            counts[STRUCTURE_RAMPART] = i;
+                        }
+                        room.memory.buildings.ramparts[counts[STRUCTURE_RAMPART]!].active = true;
+                        counts[STRUCTURE_RAMPART]! += 1;
+                        break;
+                    case STRUCTURE_EXTENSION:
+                        if (counts[STRUCTURE_EXTENSION] === undefined) {
+                            counts[STRUCTURE_EXTENSION] = 0;
+                        }
+                        room.memory.buildings.extensions[counts[STRUCTURE_EXTENSION]!].active = true;
+                        counts[STRUCTURE_EXTENSION]! += 1;
+                        break;
+                    case STRUCTURE_LAB:
+                        if (counts[STRUCTURE_LAB] === undefined) {
+                            counts[STRUCTURE_LAB] = 0;
+                        }
+                        room.memory.buildings.labs[counts[STRUCTURE_LAB]!].active = true;
+                        counts[STRUCTURE_LAB]! += 1;
+                        break;
+                    case STRUCTURE_LINK:
+                        if (counts[STRUCTURE_LINK] === undefined) {
+                            counts[STRUCTURE_LINK] = 3;
+                        }
+                        room.memory.buildings.links[counts[STRUCTURE_LINK]!].active = true;
+                        counts[STRUCTURE_LINK]! += 1;
+                        break;
+                    case STRUCTURE_SPAWN:
+                        if (counts[STRUCTURE_SPAWN] === undefined) {
+                            counts[STRUCTURE_SPAWN] = 0;
+                        }
+                        room.memory.buildings.spawns[counts[STRUCTURE_SPAWN]!].active = true;
+                        counts[STRUCTURE_SPAWN]! += 1;
+                        break;
+                    case STRUCTURE_CONTAINER:
+                        if (counts[STRUCTURE_CONTAINER] === undefined) {
+                            counts[STRUCTURE_CONTAINER] = 4;
+                        }
+                        room.memory.buildings.containers[counts[STRUCTURE_CONTAINER]!].active = true;
+                        counts[STRUCTURE_CONTAINER]! += 1;
+                        break;
+                    case STRUCTURE_TOWER:
+                        if (counts[STRUCTURE_TOWER] === undefined) {
+                            counts[STRUCTURE_TOWER] = 0;
+                        }
+                        room.memory.buildings.towers[counts[STRUCTURE_TOWER]!].active = true;
+                        counts[STRUCTURE_TOWER]! += 1;
+                        break;
+                    case STRUCTURE_STORAGE:
+                        room.memory.buildings.storage.active = true;
+                        break;
+                    case STRUCTURE_TERMINAL:
+                        room.memory.buildings.terminal.active = true;
+                        break;
+                    case STRUCTURE_FACTORY:
+                        room.memory.buildings.factory.active = true;
+                        break;
+                    case STRUCTURE_POWER_SPAWN:
+                        room.memory.buildings.powerspawn.active = true;
+                        break;
+                    case STRUCTURE_NUKER:
+                        room.memory.buildings.nuker.active = true;
+                        break;
+                    case STRUCTURE_OBSERVER:
+                        room.memory.buildings.observer.active = true;
+                        break;
+                    default:
+                        console.log("non handled structure : " + element.type);
+                        break;
+                }
+            }
+        }
+    } else if (baseType === "auto") {
+        const memory = room.memory.layout as AutoLayoutData;
+
+        // LABS
+
+        for (let x = 0; x < autoLabsLayout.length; x++) {
+            for (const element of autoLabsLayout[x]) {
+                switch (element.type) {
+                    case STRUCTURE_ROAD:
+                        if (!roadsActive) {
+                            break;
+                        }
+                        if (counts[STRUCTURE_ROAD] === undefined) {
+                            counts[STRUCTURE_ROAD] = 0;
+                        }
+                        if (room.controller.level < x) {
+                            counts[STRUCTURE_ROAD]! += 1;
+                            break;
+                        }
+                        room.memory.buildings.roads[0][counts[STRUCTURE_ROAD]!].active = true;
+                        counts[STRUCTURE_ROAD]! += 1;
+                        break;
+                    case STRUCTURE_RAMPART:
+                        if (counts[STRUCTURE_RAMPART] === undefined) {
+                            const terrain: RoomTerrain = room.getTerrain();
+                            let i = 5;
+                            for (let dir: DirectionConstant = 1; dir <= 8; dir++) {
+                                const pos: RoomPosition = offsetPositionByDirection(
+                                    room.controller.pos,
+                                    dir as DirectionConstant
+                                );
+                                if (terrain.get(pos.x, pos.y) !== TERRAIN_MASK_WALL) {
+                                    i++;
+                                }
+                            }
+                            counts[STRUCTURE_RAMPART] = i;
+                        }
+                        if (room.controller.level < x) {
+                            counts[STRUCTURE_RAMPART]! += 1;
+                            break;
+                        }
+                        room.memory.buildings.ramparts[counts[STRUCTURE_RAMPART]!].active = true;
+                        counts[STRUCTURE_RAMPART]! += 1;
+                        break;
+                    case STRUCTURE_EXTENSION:
+                        if (counts[STRUCTURE_EXTENSION] === undefined) {
+                            counts[STRUCTURE_EXTENSION] = 0;
+                        }
+                        if (room.controller.level < x) {
+                            counts[STRUCTURE_EXTENSION]! += 1;
+                            break;
+                        }
+                        room.memory.buildings.extensions[counts[STRUCTURE_EXTENSION]!].active = true;
+                        counts[STRUCTURE_EXTENSION]! += 1;
+                        break;
+                    case STRUCTURE_LAB:
+                        if (counts[STRUCTURE_LAB] === undefined) {
+                            counts[STRUCTURE_LAB] = 0;
+                        }
+                        if (room.controller.level < x) {
+                            counts[STRUCTURE_LAB]! += 1;
+                            break;
+                        }
+                        room.memory.buildings.labs[counts[STRUCTURE_LAB]!].active = true;
+                        counts[STRUCTURE_LAB]! += 1;
+                        break;
+                    case STRUCTURE_LINK:
+                        if (counts[STRUCTURE_LINK] === undefined) {
+                            counts[STRUCTURE_LINK] = 3;
+                        }
+                        if (room.controller.level < x) {
+                            counts[STRUCTURE_LINK]! += 1;
+                            break;
+                        }
+                        room.memory.buildings.links[counts[STRUCTURE_LINK]!].active = true;
+                        counts[STRUCTURE_LINK]! += 1;
+                        break;
+                    case STRUCTURE_SPAWN:
+                        if (counts[STRUCTURE_SPAWN] === undefined) {
+                            counts[STRUCTURE_SPAWN] = 0;
+                        }
+                        if (room.controller.level < x) {
+                            counts[STRUCTURE_SPAWN]! += 1;
+                            break;
+                        }
+                        room.memory.buildings.spawns[counts[STRUCTURE_SPAWN]!].active = true;
+                        counts[STRUCTURE_SPAWN]! += 1;
+                        break;
+                    case STRUCTURE_CONTAINER:
+                        if (counts[STRUCTURE_CONTAINER] === undefined) {
+                            counts[STRUCTURE_CONTAINER] = 4;
+                        }
+                        if (room.controller.level < x) {
+                            counts[STRUCTURE_CONTAINER]! += 1;
+                            break;
+                        }
+                        room.memory.buildings.containers[counts[STRUCTURE_CONTAINER]!].active = true;
+                        counts[STRUCTURE_CONTAINER]! += 1;
+                        break;
+                    case STRUCTURE_TOWER:
+                        if (counts[STRUCTURE_TOWER] === undefined) {
+                            counts[STRUCTURE_TOWER] = 0;
+                        }
+                        if (room.controller.level < x) {
+                            counts[STRUCTURE_TOWER]! += 1;
+                            break;
+                        }
+                        room.memory.buildings.towers[counts[STRUCTURE_TOWER]!].active = true;
+                        counts[STRUCTURE_TOWER]! += 1;
+                        break;
+                    case STRUCTURE_STORAGE:
+                        if (room.controller.level < x) {
+                            break;
+                        }
+                        room.memory.buildings.storage.active = true;
+                        break;
+                    case STRUCTURE_TERMINAL:
+                        if (room.controller.level < x) {
+                            break;
+                        }
+                        room.memory.buildings.terminal.active = true;
+                        break;
+                    case STRUCTURE_FACTORY:
+                        if (room.controller.level < x) {
+                            break;
+                        }
+                        room.memory.buildings.factory.active = true;
+                        break;
+                    case STRUCTURE_POWER_SPAWN:
+                        if (room.controller.level < x) {
+                            break;
+                        }
+                        room.memory.buildings.powerspawn.active = true;
+                        break;
+                    case STRUCTURE_NUKER:
+                        if (room.controller.level < x) {
+                            break;
+                        }
+                        room.memory.buildings.nuker.active = true;
+                        break;
+                    case STRUCTURE_OBSERVER:
+                        if (room.controller.level < x) {
+                            break;
+                        }
+                        room.memory.buildings.observer.active = true;
+                        break;
+                    default:
+                        console.log("non handled structure : " + element.type);
+                        break;
+                }
+            }
+        }
+
+        // EXTENSIONS
+
+        for (let x = 0; x < memory.extensions.length; x++) {
+            const node = x < 2 ? autoExtensionSpawnNode : autoExtensionNode;
+            for (const element of node) {
+                switch (element.type) {
+                    case STRUCTURE_ROAD:
+                        if (!roadsActive) {
+                            break;
+                        }
+                        if (counts[STRUCTURE_ROAD] === undefined) {
+                            counts[STRUCTURE_ROAD] = 0;
+                        }
+                        if (autoExtensionNodeCount[room.controller.level] <= x) {
+                            counts[STRUCTURE_ROAD]! += 1;
+                            break;
+                        }
+                        room.memory.buildings.roads[0][counts[STRUCTURE_ROAD]!].active = true;
+                        counts[STRUCTURE_ROAD]! += 1;
+                        break;
+                    case STRUCTURE_RAMPART:
+                        if (counts[STRUCTURE_RAMPART] === undefined) {
+                            const terrain: RoomTerrain = room.getTerrain();
+                            let i = 5;
+                            for (let dir: DirectionConstant = 1; dir <= 8; dir++) {
+                                const pos: RoomPosition = offsetPositionByDirection(
+                                    room.controller.pos,
+                                    dir as DirectionConstant
+                                );
+                                if (terrain.get(pos.x, pos.y) !== TERRAIN_MASK_WALL) {
+                                    i++;
+                                }
+                            }
+                            counts[STRUCTURE_RAMPART] = i;
+                        }
+                        if (autoExtensionNodeCount[room.controller.level] <= x) {
+                            counts[STRUCTURE_RAMPART]! += 1;
+                            break;
+                        }
+                        room.memory.buildings.ramparts[counts[STRUCTURE_RAMPART]!].active = true;
+                        counts[STRUCTURE_RAMPART]! += 1;
+                        break;
+                    case STRUCTURE_EXTENSION:
+                        if (counts[STRUCTURE_EXTENSION] === undefined) {
+                            counts[STRUCTURE_EXTENSION] = 0;
+                        }
+                        if (autoExtensionNodeCount[room.controller.level] <= x) {
+                            counts[STRUCTURE_EXTENSION]! += 1;
+                            break;
+                        }
+                        room.memory.buildings.extensions[counts[STRUCTURE_EXTENSION]!].active = true;
+                        counts[STRUCTURE_EXTENSION]! += 1;
+                        break;
+                    case STRUCTURE_SPAWN:
+                        if (counts[STRUCTURE_SPAWN] === undefined) {
+                            counts[STRUCTURE_SPAWN] = 0;
+                        }
+                        if (autoExtensionNodeCount[room.controller.level] <= x) {
+                            counts[STRUCTURE_SPAWN]! += 1;
+                            break;
+                        }
+                        room.memory.buildings.spawns[counts[STRUCTURE_SPAWN]!].active = true;
+                        counts[STRUCTURE_SPAWN]! += 1;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        // SOURCE EXTENSIONS
+        let x = 0;
+        for (const source of memory.sources) {
+            if (source.extensions.length > 0) {
+                for (const extension of source.extensions) {
+                    if ((room.controller.level >= 2 && x === 0) || (room.controller.level >= 3 && x === 1)) {
+                        room.memory.buildings.extensions[counts[STRUCTURE_EXTENSION]!].active = true;
+                    }
+                    counts[STRUCTURE_EXTENSION]! += 1;
+                    x++;
+                }
+            }
+        }
+
+        // RAMPARTS
+
+        for (const element of memory.ramparts) {
+            if (counts[STRUCTURE_RAMPART] === undefined) {
+                const terrain: RoomTerrain = room.getTerrain();
+                let i = 5;
+                for (let dir: DirectionConstant = 1; dir <= 8; dir++) {
+                    const pos: RoomPosition = offsetPositionByDirection(room.controller.pos, dir as DirectionConstant);
+                    if (terrain.get(pos.x, pos.y) !== TERRAIN_MASK_WALL) {
+                        i++;
+                    }
+                }
+                counts[STRUCTURE_RAMPART] = i;
+            }
+            if (room.controller.level < 5) {
+                //Hardcoded level for rampart bulding start
+                counts[STRUCTURE_RAMPART]! += 1;
+                break;
+            }
+            room.memory.buildings.ramparts[counts[STRUCTURE_RAMPART]!].active = true;
+            counts[STRUCTURE_RAMPART]! += 1;
+        }
+    }
+}
+
+// BuildBuildings(room)
+// Creates constructions sites and updates ids
+// Removes inactive buildings
+
+function _BuildBuildings(room: Room) {
+    if (room.memory.buildings === undefined) {
+        return;
+    }
+    for (const roads of room.memory.buildings.roads) {
+        for (let road of roads) {
+            _BuildBuilding(road, STRUCTURE_ROAD);
+        }
+    }
+    let rampartsLeft = 10 - room.find(FIND_CONSTRUCTION_SITES).length;
+    //TODO change 10 into a constant
+    for (const rampart of room.memory.buildings.ramparts) {
+        if (rampartsLeft <= 0) {
+            break;
+        }
+        const res = _BuildBuilding(rampart, STRUCTURE_RAMPART);
+        if (res) {
+            rampartsLeft--;
+        }
+    }
+    for (const extension of room.memory.buildings.extensions) {
+        _BuildBuilding(extension, STRUCTURE_EXTENSION);
+    }
+    for (const tower of room.memory.buildings.towers) {
+        _BuildBuilding(tower, STRUCTURE_TOWER);
+    }
+    for (const lab of room.memory.buildings.labs) {
+        _BuildBuilding(lab, STRUCTURE_LAB);
+    }
+    for (const link of room.memory.buildings.links) {
+        _BuildBuilding(link, STRUCTURE_LINK);
+    }
+    for (const spawn of room.memory.buildings.spawns) {
+        _BuildBuilding(spawn, STRUCTURE_SPAWN);
+    }
+    for (const container of room.memory.buildings.containers) {
+        _BuildBuilding(container, STRUCTURE_CONTAINER);
+    }
+    _BuildBuilding(room.memory.buildings.storage, STRUCTURE_STORAGE);
+    _BuildBuilding(room.memory.buildings.terminal, STRUCTURE_TERMINAL);
+    _BuildBuilding(room.memory.buildings.factory, STRUCTURE_FACTORY);
+    _BuildBuilding(room.memory.buildings.powerspawn, STRUCTURE_POWER_SPAWN);
+    _BuildBuilding(room.memory.buildings.nuker, STRUCTURE_NUKER);
+    _BuildBuilding(room.memory.buildings.observer, STRUCTURE_OBSERVER);
+    _BuildBuilding(room.memory.buildings.extractor, STRUCTURE_EXTRACTOR);
+}
+
+function _BuildBuilding<T extends BuildableStructureConstant>(
+    building: BuildingData<T>,
+    type: BuildableStructureConstant
+): boolean {
+    if (building.active === false) {
+        if (building.id !== undefined && Game.rooms[unpackPosition(building.pos).roomName] !== undefined) {
+            const object = Game.getObjectById(building.id);
+            if (object !== null) {
+                if (object instanceof Structure) {
+                    object.destroy();
+                } else {
+                    object.remove();
+                }
+            }
+            building.id = undefined;
+        }
+        return false;
+    }
+    if (building.id !== undefined) {
+        if (Game.getObjectById(building.id) !== null) {
+            // we already have a structure/constructionSite for this building
+            return false;
+        }
+        building.id = undefined;
+    }
+    const pos: RoomPosition = unpackPosition(building.pos);
+    const room: Room = Game.rooms[pos.roomName];
+    if (room === undefined) {
+        return false;
+    }
+    const structures: Structure<StructureConstant>[] = pos.lookFor(LOOK_STRUCTURES);
+    for (const structure of structures) {
+        if (structure.structureType === type) {
+            building.id = structure.id as Id<Structure<T>>;
+            return false;
+        }
+    }
+    const constructionSites: ConstructionSite<BuildableStructureConstant>[] = pos.lookFor(LOOK_CONSTRUCTION_SITES);
+    for (const site of constructionSites) {
+        if (site.structureType === type) {
+            building.id = site.id as Id<ConstructionSite<T>>;
+            return false;
+        }
+    }
+
+    if (type === STRUCTURE_SPAWN && building.name !== undefined) {
+        let name = building.name || "";
+        name = name.replace("{ROOM_NAME}", room.name);
+
+        let i = 1;
+        const done: boolean = false;
+        while (!done) {
+            const potentialName = name.replace("{INDEX}", i.toString());
+
+            const res = room.createConstructionSite(pos.x, pos.y, type, potentialName);
+
+            if (res === OK) {
+                return true;
+            }
+            i++;
+            if (i > 5) {
+                break;
+            }
+        }
+        return false;
+    } else {
+        room.createConstructionSite(pos, type);
+        return true;
+    }
 }
