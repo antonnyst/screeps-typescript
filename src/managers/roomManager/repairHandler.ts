@@ -1,7 +1,13 @@
 import * as C from "../../config/constants";
+import { BuildingData } from "./layoutHandler";
 
 export function RepairHandler(room: Room): void {
-    if (room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
+    if (
+        room.controller !== undefined &&
+        room.memory.buildings !== undefined &&
+        room.controller.my &&
+        room.memory.roomLevel === 2
+    ) {
         if (room.memory.repairTargets === undefined) {
             room.memory.repairTargets = {};
         }
@@ -12,27 +18,43 @@ export function RepairHandler(room: Room): void {
             }
         }
 
-        let remoteStructures: Structure[] = [];
-
-        for (const r in room.memory.remotes) {
-            const remote: string = room.memory.remotes[r];
-            if (Game.rooms[remote] !== undefined) {
-                remoteStructures = remoteStructures.concat(
-                    Game.rooms[remote].find(FIND_STRUCTURES, {
-                        filter: (s) =>
-                            s.hits !== undefined &&
-                            s.structureType !== STRUCTURE_WALL &&
-                            s.structureType !== STRUCTURE_INVADER_CORE
-                    })
-                );
-            }
-        }
-
-        const structures: Structure[] = remoteStructures.concat(
-            room.find(FIND_STRUCTURES, {
-                filter: (s) => s.hits !== undefined
-            })
+        const buildings: BuildingData<BuildableStructureConstant>[] = (room.memory.buildings.roads.reduce(
+            (prev, curr) => {
+                return prev.concat(curr);
+            },
+            []
+        ) as BuildingData<BuildableStructureConstant>[]).concat(
+            room.memory.buildings.ramparts,
+            room.memory.buildings.extensions,
+            room.memory.buildings.towers,
+            room.memory.buildings.labs,
+            room.memory.buildings.links,
+            room.memory.buildings.spawns,
+            room.memory.buildings.containers,
+            room.memory.buildings.storage,
+            room.memory.buildings.terminal,
+            room.memory.buildings.factory,
+            room.memory.buildings.powerspawn,
+            room.memory.buildings.nuker,
+            room.memory.buildings.observer,
+            room.memory.buildings.extractor
         );
+
+        const structures: Structure[] = _.compact(
+            buildings.map((value) => {
+                if (value.id !== undefined) {
+                    const result = Game.getObjectById(value.id);
+
+                    if (result instanceof ConstructionSite) {
+                        return null;
+                    } else {
+                        return result;
+                    }
+                } else {
+                    return null;
+                }
+            })
+        ) as Structure[];
 
         const ramparts = [];
         const already = [];
@@ -97,14 +119,15 @@ export function RepairHandler(room: Room): void {
                     }
                 }
                 if (amt < 6) {
-                    ramparts.sort((a, b) => a.hits - b.hits);
-                    for (const r of ramparts) {
-                        if (r.hits < r.hitsMax * C.RAMPART_PERCENTAGE_MIN) {
-                            room.memory.repairTargets[r.id] = r.pos;
+                    while (amt < 6 && ramparts.length > 0) {
+                        const rampart = _.min(ramparts, (r) => r.hits);
+                        ramparts.splice(
+                            _.findIndex(ramparts, (r) => r.id === rampart.id),
+                            1
+                        );
+                        if (rampart.hits < rampart.hitsMax * C.RAMPART_PERCENTAGE_MIN) {
+                            room.memory.repairTargets[rampart.id] = rampart.pos;
                             amt++;
-                            if (amt >= 6) {
-                                break;
-                            }
                         }
                     }
                 }
