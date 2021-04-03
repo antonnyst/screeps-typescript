@@ -1,5 +1,6 @@
 import { autoLabsInLabsLocation, autoLabsRotationGuide } from "config/base/auto";
 import { AutoLayoutData } from "dataInterfaces/layoutData";
+import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
 import { LabsData, LabData } from "../../dataInterfaces/labsData";
 import { unpackPosition } from "../../utils/RoomPositionPacker";
 
@@ -9,9 +10,6 @@ export function LabHandler(room: Room): void {
 
 function runLabData(room: Room): void {
     if (room.controller === undefined || !room.controller.my) {
-        return;
-    }
-    if (room.memory.layout && room.memory.layout.baseType !== "bunker") {
         return;
     }
     if (room.controller.level < 6) {
@@ -87,7 +85,7 @@ function GenerateLabsData(room: Room): LabsData {
         .find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === STRUCTURE_LAB })
         .map((l) => {
             return {
-                id: l.id,
+                id: l.id as Id<StructureLab>,
                 targetResource: null
             };
         });
@@ -104,17 +102,21 @@ function GenerateLabsData(room: Room): LabsData {
     if (room.memory.layout.baseType === "auto") {
         ipos = [
             new RoomPosition(
-                autoLabsInLabsLocation[0].x *
-                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
-                autoLabsInLabsLocation[0].y *
-                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
+                cpos.x +
+                    autoLabsInLabsLocation[0].x *
+                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
+                cpos.y +
+                    autoLabsInLabsLocation[0].y *
+                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
                 cpos.roomName
             ),
             new RoomPosition(
-                autoLabsInLabsLocation[1].x *
-                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
-                autoLabsInLabsLocation[1].y *
-                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
+                cpos.x +
+                    autoLabsInLabsLocation[1].x *
+                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
+                cpos.y +
+                    autoLabsInLabsLocation[1].y *
+                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
                 cpos.roomName
             )
         ];
@@ -170,17 +172,21 @@ function UpdateLabData(room: Room) {
     if (room.memory.layout.baseType === "auto") {
         ipos = [
             new RoomPosition(
-                autoLabsInLabsLocation[0].x *
-                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
-                autoLabsInLabsLocation[0].y *
-                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
+                cpos.x +
+                    autoLabsInLabsLocation[0].x *
+                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
+                cpos.y +
+                    autoLabsInLabsLocation[0].y *
+                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
                 cpos.roomName
             ),
             new RoomPosition(
-                autoLabsInLabsLocation[1].x *
-                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
-                autoLabsInLabsLocation[1].y *
-                    autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
+                cpos.x +
+                    autoLabsInLabsLocation[1].x *
+                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
+                cpos.y +
+                    autoLabsInLabsLocation[1].y *
+                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
                 cpos.roomName
             )
         ];

@@ -2,6 +2,7 @@ import { CreepRole } from "./creepRole";
 import { saveToCache, getFromCache } from "../utils/Cache";
 import { unpackPosition } from "../utils/RoomPositionPacker";
 import { EXTRA_ENERGY_FILL_ENERGY_NEEDED } from "config/constants";
+import { LabHandler } from "managers/roomManager/labHandler";
 
 declare global {
     interface CreepMemory {
@@ -362,6 +363,91 @@ export class FillerRole extends CreepRole {
                 };
 
                 return;
+            }
+        }
+
+        if (
+            this.creep.room.memory.labs &&
+            this.creep.room.memory.labs.status !== "react" &&
+            this.creep.room.memory.buildings?.terminal.id !== undefined
+        ) {
+            for (const labData of this.creep.room.memory.labs?.labs) {
+                const lab: StructureLab | null = Game.getObjectById<StructureLab>(labData.id);
+                if (lab !== null) {
+                    //Empty a lab
+                    if (lab.mineralType != undefined && lab.mineralType !== labData.targetResource) {
+                        const terminal = Game.getObjectById(this.creep.room.memory.buildings?.terminal.id);
+                        if (terminal instanceof StructureTerminal) {
+                            const creepCapactiy = this.creep.store.getFreeCapacity();
+                            const terminalCapacity = terminal.store.getFreeCapacity();
+                            const emptyNeeded = lab.store.getUsedCapacity(lab.mineralType);
+
+                            const transferAmount = Math.min(creepCapactiy, terminalCapacity, emptyNeeded);
+
+                            if (transferAmount > 0) {
+                                this.creep.memory.filler = {
+                                    transfer: [
+                                        {
+                                            id: terminal.id,
+                                            resourceType: lab.mineralType,
+                                            amount: transferAmount
+                                        }
+                                    ],
+                                    withdraw: [
+                                        {
+                                            id: labData.id,
+                                            resourceType: lab.mineralType,
+                                            amount: transferAmount
+                                        }
+                                    ],
+                                    pickup: [],
+                                    cooldown: 0
+                                };
+                                return;
+                            }
+                        }
+                    }
+
+                    //Fill a lab
+                    if (
+                        (lab.mineralType == undefined && labData.targetResource !== null) ||
+                        (lab.mineralType != null &&
+                            lab.mineralType == labData.targetResource &&
+                            lab.store.getFreeCapacity(lab.mineralType) > 0)
+                    ) {
+                        const terminal = Game.getObjectById(this.creep.room.memory.buildings?.terminal.id);
+                        if (terminal instanceof StructureTerminal) {
+                            const creepCapactiy = this.creep.store.getFreeCapacity();
+                            const terminalAmount = terminal.store.getUsedCapacity(labData.targetResource);
+                            const fillNeeded = lab.store.getFreeCapacity(labData.targetResource);
+
+                            if (fillNeeded !== null) {
+                                const transferAmount = Math.min(creepCapactiy, terminalAmount, fillNeeded);
+                                if (transferAmount > 0) {
+                                    this.creep.memory.filler = {
+                                        transfer: [
+                                            {
+                                                id: labData.id,
+                                                resourceType: labData.targetResource,
+                                                amount: transferAmount
+                                            }
+                                        ],
+                                        withdraw: [
+                                            {
+                                                id: terminal.id,
+                                                resourceType: labData.targetResource,
+                                                amount: transferAmount
+                                            }
+                                        ],
+                                        pickup: [],
+                                        cooldown: 0
+                                    };
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
