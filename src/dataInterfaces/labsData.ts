@@ -5,6 +5,6 @@ export interface LabsData {
     outLabs: number[];
 }
 export interface LabData {
-    id: string;
+    id: Id<StructureLab>;
     targetResource: ResourceConstant | null;
 }
