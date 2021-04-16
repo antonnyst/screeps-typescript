@@ -68,7 +68,10 @@ interface Memory {
 interface Stats {
     time: number;
     globalReset: number;
-    creeps: number;
+    creeps: {
+        total: number;
+        roles: { [key in string]: number };
+    };
     cpu: {
         used: number;
         limit: number;
