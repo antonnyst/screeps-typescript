@@ -67,36 +67,22 @@ export class RemoteHaulerRole extends CreepRole {
                 }
             }
         } else {
-            const container: StructureContainer = _.filter(
-                unpackPosition(Game.rooms[this.creep.memory.home].memory.layout.controllerStore).lookFor(
-                    LOOK_STRUCTURES
-                ),
-                (s: Structure) => s.structureType === STRUCTURE_CONTAINER
-            )[0] as StructureContainer;
-            let target: StructureContainer | StructureStorage | StructureLink | undefined;
+            let target: AnyStoreStructure | undefined = undefined;
 
-            if (
-                container !== undefined &&
-                container.store.getFreeCapacity(RESOURCE_ENERGY) > CONTAINER_CAPACITY * 0.25
-            ) {
-                target = container;
+            if (Memory.rooms[this.creep.memory.home].buildings?.storage?.id !== undefined) {
+                const storage = Game.getObjectById(Memory.rooms[this.creep.memory.home].buildings!.storage.id!);
+                if (storage instanceof StructureStorage) {
+                    target = storage;
+                }
             }
 
-            if (target === undefined && Game.rooms[this.creep.memory.home].storage !== undefined) {
-                const storage: StructureStorage | undefined = Game.rooms[this.creep.memory.home].storage;
-                if (storage !== undefined && storage.store.getUsedCapacity(RESOURCE_ENERGY) > 100000) {
-                    const cpos = unpackPosition(Memory.rooms[this.creep.memory.home].layout.baseCenter);
-                    const link: StructureLink = _.filter(
-                        new RoomPosition(cpos.x + 1, cpos.y, cpos.roomName).lookFor(LOOK_STRUCTURES),
-                        (s: Structure) => s.structureType === STRUCTURE_LINK
-                    )[0] as StructureLink;
-
-                    if (link !== undefined && (link.store.getFreeCapacity(RESOURCE_ENERGY) as number) > 0) {
-                        target = link;
-                    }
-                }
-                if (target === undefined) {
-                    target = Game.rooms[this.creep.memory.home].storage;
+            if (
+                target === undefined &&
+                Memory.rooms[this.creep.memory.home].buildings?.containers[0].id !== undefined
+            ) {
+                const container = Game.getObjectById(Memory.rooms[this.creep.memory.home].buildings!.containers[0].id!);
+                if (container instanceof StructureContainer) {
+                    target = container;
                 }
             }
 
