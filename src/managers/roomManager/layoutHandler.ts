@@ -1132,10 +1132,16 @@ function getRemoteLayout(orgRoomName: string, roomName: string, centerLocation: 
     }
     const sources: RemoteSourceData[] = [];
     for (const sourceData of basicLayout.sources) {
-        const search: PathFinderPath = PathFinder.search(centerLocation, {
-            pos: unpackPosition(sourceData.pos),
-            range: 1
-        });
+        const search: PathFinderPath = PathFinder.search(
+            centerLocation,
+            {
+                pos: unpackPosition(sourceData.pos),
+                range: 1
+            },
+            {
+                maxOps: 20000
+            }
+        );
         const path: RoomPosition[] = search.path;
 
         const containerPos = path[path.length - 1];
