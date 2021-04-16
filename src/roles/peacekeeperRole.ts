@@ -51,14 +51,15 @@ export class PeacekeeperRole extends CreepRole {
 
             const hostile: Creep | null = this.creep.pos.findClosestByRange(hostiles);
 
-            if (this.creep.getActiveBodyparts(HEAL) > 0) {
-                this.creep.heal(this.creep);
-            }
             if (hostile != null) {
                 this.creep.rangedAttack(hostile);
                 this.setMovementData(hostile.pos, 1, false, false);
                 if (this.creep.pos.isNearTo(hostile.pos)) {
                     this.creep.attack(hostile);
+                } else {
+                    if (this.creep.getActiveBodyparts(HEAL) > 0) {
+                        this.creep.heal(this.creep);
+                    }
                 }
             }
         } else if (cores.length > 0) {
