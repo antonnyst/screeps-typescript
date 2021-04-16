@@ -48,7 +48,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
     Memory.stats = {
         time: Game.time,
         globalReset: globalStartTick,
-        creeps: Object.keys(Game.creeps).length,
+        creeps: {
+            total: Object.keys(Game.creeps).length,
+            roles: _.countBy(Game.creeps, (c) => c.memory.role)
+        },
         cpu: {
             used: uTime,
             limit: Game.cpu.limit,
