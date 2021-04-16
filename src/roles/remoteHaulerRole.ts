@@ -9,7 +9,8 @@ export class RemoteHaulerRole extends CreepRole {
             this.creep === null ||
             this.creep.memory.roleData === undefined ||
             this.creep.memory.roleData.target === undefined ||
-            Memory.rooms[this.creep.memory.home].layout === undefined
+            Memory.rooms[this.creep.memory.home].layout === undefined ||
+            Memory.rooms[this.creep.memory.roleData.target].remoteLayout === undefined
         ) {
             return;
         }
@@ -40,6 +41,13 @@ export class RemoteHaulerRole extends CreepRole {
         const minerPos: RoomPosition = offsetPositionByDirection(unpackPosition(sourceData.pos), sourceData.container);
 
         if (this.creep.memory.roleData.hasEnergy === false) {
+            if (this.creep.ticksToLive !== undefined && this.creep.ticksToLive < sourceData.dist * 2) {
+                //we do not have enough time to live
+                //so we should recycle ourself!
+                this.creep.memory.role = "garbage";
+                return;
+            }
+
             this.setMovementData(minerPos, 1, false, false);
             if (this.creep.pos.isNearTo(minerPos)) {
                 let container: StructureContainer | null = null;
