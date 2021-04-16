@@ -8,7 +8,8 @@ export class RemoteMinerRole extends CreepRole {
         if (
             this.creep === null ||
             this.creep.memory.roleData === undefined ||
-            this.creep.memory.roleData.target === undefined
+            this.creep.memory.roleData.target === undefined ||
+            Memory.rooms[this.creep.memory.roleData.target].remoteLayout === undefined
         ) {
             return;
         }
