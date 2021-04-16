@@ -73,12 +73,12 @@ export const autoLabsRotationGuide: { mx: number; my: number }[] = [
 
 export const autoLabsInLabsLocation: { x: number; y: number }[] = [
     {
-        x: 4,
-        y: -5
+        x: 3,
+        y: -4
     },
     {
-        x: 5,
-        y: -5
+        x: 4,
+        y: -3
     }
 ];
 
