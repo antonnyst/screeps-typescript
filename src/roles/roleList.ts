@@ -7,6 +7,7 @@ import { ClaimerRole } from "./claimerRole";
 import { DismantlerRole } from "./dismantlerRole";
 import { FillerRole } from "./fillerRole";
 import { FootRole } from "./footRole";
+import { GarbageRole } from "./garbageRole";
 import { HaulerRole } from "./haulerRole";
 import { LabradorRole } from "./labradorRole";
 import { ManagerRole } from "./managerRole";
@@ -29,6 +30,7 @@ export const roleList: { [role: string]: CreepRole } = {
     dismantler: new DismantlerRole(),
     filler: new FillerRole(),
     foot: new FootRole(),
+    garbage: new GarbageRole(),
     hauler: new HaulerRole(),
     labrador: new LabradorRole(),
     manager: new ManagerRole(),
