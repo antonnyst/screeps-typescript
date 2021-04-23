@@ -61,46 +61,9 @@ interface Memory {
     msplit: { [key in string]: number };
     cacheHits: number;
     totalQueries: number;
-    stats: Stats;
     marketData: import("./dataInterfaces/marketData").MarketData;
 }
 
-interface Stats {
-    time: number;
-    globalReset: number;
-    creeps: {
-        total: number;
-        roles: { [key in string]: number };
-    };
-    cpu: {
-        used: number;
-        limit: number;
-        bucket: number;
-        msplit: { [key in string]: number };
-    };
-    gcl: {
-        progress: number;
-        progressTotal: number;
-        level: number;
-    };
-    rooms: {
-        [key in string]: RoomStats;
-    };
-    pathfinding: {
-        cacheHits: number;
-        totalQueries: number;
-    };
-    accountResources: {
-        [key in InterShardResourceConstant]: number;
-    };
-    credits: number;
-    prices: {
-        [key in MarketResourceConstant]?: {
-            sell: number;
-            buy: number;
-        };
-    };
-}
 
 interface RoomStats {
     energystored: number;
