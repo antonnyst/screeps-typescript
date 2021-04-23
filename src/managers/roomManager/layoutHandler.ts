@@ -1151,6 +1151,9 @@ function getRemoteLayout(orgRoomName: string, roomName: string, centerLocation: 
             {
                 pos: containerPos,
                 range: 1
+            },
+            {
+                maxOps: 20000
             }
         ).path.length;
 
@@ -3087,7 +3090,6 @@ function _BuildBuilding<T extends BuildableStructureConstant>(
         }
         return false;
     } else {
-        room.createConstructionSite(pos, type);
-        return true;
+        return room.createConstructionSite(pos, type) === 0;
     }
 }
