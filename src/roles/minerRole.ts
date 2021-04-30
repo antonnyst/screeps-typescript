@@ -36,8 +36,6 @@ export class MinerRole extends CreepRole {
         this.setMovementData(minerPos, 0, false, true);
 
         if (this.creep.pos.isEqualTo(minerPos)) {
-            this.creep.harvest(source);
-
             if (this.creep.getActiveBodyparts(CARRY) > 0 && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
                 if (sourceData.extensions.length > 0 && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) >= 50) {
                     if (this.creep.memory.roleData.anyStore.extensionId === undefined) {
@@ -60,12 +58,12 @@ export class MinerRole extends CreepRole {
                     }
                 }
 
-                const container: Structure | null =
+                const container: StructureContainer | null =
                     this.creep.memory.roleData.anyStore.containerId === undefined
-                        ? _.filter(
+                        ? (_.filter(
                               minerPos.lookFor(LOOK_STRUCTURES),
                               (s: Structure) => s.structureType === STRUCTURE_CONTAINER
-                          )[0]
+                          )[0] as StructureContainer)
                         : Game.getObjectById(this.creep.memory.roleData.anyStore.containerId);
 
                 if (container !== undefined && container !== null) {
@@ -82,6 +80,15 @@ export class MinerRole extends CreepRole {
                     this.creep.store.getUsedCapacity(RESOURCE_ENERGY) <= 20
                 ) {
                     this.creep.withdraw(container, RESOURCE_ENERGY);
+                }
+
+                if (
+                    container === undefined ||
+                    container === null ||
+                    this.creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0 ||
+                    container.store.getFreeCapacity(RESOURCE_ENERGY) >= this.creep.getActiveBodyparts(WORK) * 5
+                ) {
+                    this.creep.harvest(source);
                 }
 
                 if (this.creep.room.controller && this.creep.room.controller.level > 5) {
@@ -104,6 +111,8 @@ export class MinerRole extends CreepRole {
                         }
                     }
                 }
+            } else {
+                this.creep.harvest(source);
             }
         }
     }
