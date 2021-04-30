@@ -1,4 +1,4 @@
-import { isPositionEdge } from "utils/RoomPositionHelpers";
+import { directionFromEdge, isPositionEdge } from "utils/RoomPositionHelpers";
 import { CreepRole } from "./creepRole";
 
 export class BuilderRole extends CreepRole {
@@ -42,26 +42,31 @@ export class BuilderRole extends CreepRole {
             }
 
             if (target !== null) {
-                if (target.pos.roomName !== this.creep.room.name || isPositionEdge(this.creep.pos)) {
-                    this.setMovementData(new RoomPosition(25, 25, target.pos.roomName), 20, false, false);
+                if (this.creep.room.name !== target.pos.roomName) {
+                    this.setMovementData(target.pos, 0, false, false);
                 } else {
                     this.setMovementData(target.pos, 3, false, false);
+                }
 
-                    if (this.creep.pos.inRangeTo(target.pos, 3)) {
-                        if (target instanceof ConstructionSite) {
-                            this.creep.build(target);
+                if (this.creep.pos.inRangeTo(target.pos, 3)) {
+                    if (isPositionEdge(this.creep.pos)) {
+                        this.creep.move(directionFromEdge(this.creep.pos));
+                    }
+
+                    if (target instanceof ConstructionSite) {
+                        this.creep.build(target);
+                    } else {
+                        if (target.hits === target.hitsMax) {
+                            this.creep.memory.roleData.targetId = undefined;
+                            target = findTarget(this.creep);
+                            if (target !== null) {
+                                this.creep.memory.roleData.targetId = target.id;
+                                this.setMovementData(target.pos, 3, false, false);
+                            }
                         } else {
-                            if (target.hits === target.hitsMax) {
+                            const res = this.creep.repair(target);
+                            if (res !== OK || Game.time % 10 === 0) {
                                 this.creep.memory.roleData.targetId = undefined;
-                                target = findTarget(this.creep);
-                                if (target !== null) {
-                                    this.creep.memory.roleData.targetId = target.id;
-                                }
-                            } else {
-                                const res = this.creep.repair(target);
-                                if (res !== OK || Game.time % 10 === 0) {
-                                    this.creep.memory.roleData.targetId = undefined;
-                                }
                             }
                         }
                     }
