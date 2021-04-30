@@ -122,7 +122,7 @@ export class MovementManager implements Manager {
                                         roomCallback,
                                         swampCost: 10,
                                         plainCost: 2,
-                                        maxOps: 5000,
+                                        maxOps: 20000,
                                         maxRooms: creep.pos.roomName === targetPos.roomName ? 1 : 32
                                     }
                                 ).path;
