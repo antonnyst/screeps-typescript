@@ -1,18 +1,20 @@
 import * as C from "../../config/constants";
 import * as Config from "../../config/config";
 import { getFromCache, saveToCache } from "../../utils/Cache";
+import { unpackPosition } from "utils/RoomPositionPacker";
 
 export function VisualHandler(room: Room, speed: number): void {
     if (Config.roomVisuals && room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
         let data: string | null = getFromCache("visualhandlerdata" + room.name, 10 / speed);
         if (data === null) {
-            room.visual.text("Repair Targets: " + Object.values(room.memory.repairTargets).length, 1, 1.275, {
+            room.visual.text("Repair Targets: " + Object.values(room.memory.repair).length, 1, 1.275, {
                 align: "left",
                 font: "0.8"
             });
-            for (const site of Object.values(room.memory.repairTargets)) {
-                if (site.roomName === room.name) {
-                    room.visual.circle(site.x, site.y, {
+            for (const site of Object.values(room.memory.repair)) {
+                const pos = unpackPosition(site.pos);
+                if (pos.roomName === room.name) {
+                    room.visual.circle(pos.x, pos.y, {
                         fill: "#ff1111"
                     });
                 }

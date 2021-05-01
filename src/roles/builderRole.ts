@@ -1,4 +1,5 @@
 import { directionFromEdge, isPositionEdge } from "utils/RoomPositionHelpers";
+import { unpackPosition } from "utils/RoomPositionPacker";
 import { CreepRole } from "./creepRole";
 
 export class BuilderRole extends CreepRole {
@@ -84,25 +85,26 @@ export class BuilderRole extends CreepRole {
 function findTarget(creep: Creep): Structure | ConstructionSite | null {
     let target: Structure | ConstructionSite | null = null;
 
-    if (Object.keys(Game.rooms[creep.memory.home].memory.repairTargets).length > 0) {
-        const tid = Object.keys(Game.rooms[creep.memory.home].memory.repairTargets).sort(
-            (a, b) =>
-                creep.pos.getRangeTo(
-                    new RoomPosition(
-                        Game.rooms[creep.memory.home].memory.repairTargets[a].x,
-                        Game.rooms[creep.memory.home].memory.repairTargets[a].y,
-                        Game.rooms[creep.memory.home].memory.repairTargets[a].roomName
-                    )
-                ) -
-                creep.pos.getRangeTo(
-                    new RoomPosition(
-                        Game.rooms[creep.memory.home].memory.repairTargets[b].x,
-                        Game.rooms[creep.memory.home].memory.repairTargets[b].y,
-                        Game.rooms[creep.memory.home].memory.repairTargets[b].roomName
-                    )
-                )
-        )[0];
-        target = Game.getObjectById(tid);
+    if (Object.keys(Game.rooms[creep.memory.home].memory.repair).length > 0) {
+        let closestTarget: Structure<StructureConstant> | null = null;
+        let closestRange: number = Infinity;
+        for (const target in Game.rooms[creep.memory.home].memory.repair) {
+            const object = Game.getObjectById(Game.rooms[creep.memory.home].memory.repair[target].id);
+            if (object !== null) {
+                if (object.hits < object.hitsMax) {
+                    const range = creep.pos.getRangeTo(object.pos);
+                    if (closestTarget === null || range < closestRange) {
+                        closestTarget = object;
+                        closestRange = range;
+                        if (range <= 2) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        target = closestTarget;
     }
 
     if (target === null && Object.keys(Game.rooms[creep.memory.home].memory.constructionSites).length > 0) {

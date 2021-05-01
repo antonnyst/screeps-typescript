@@ -43,7 +43,6 @@ interface RoomMemory {
     waitingCreep?: import("./dataInterfaces/spawnData").SpawnData;
     spawnAttempts?: number;
     constructionSites: { [site: string]: RoomPosition };
-    repairTargets: { [id: string]: RoomPosition };
     remotes: string[];
     remoteSupportRooms: string[];
     basicLayout: import("./dataInterfaces/layoutData").BasicLayoutData;
@@ -63,7 +62,6 @@ interface Memory {
     totalQueries: number;
     marketData: import("./dataInterfaces/marketData").MarketData;
 }
-
 
 interface RoomStats {
     energystored: number;
