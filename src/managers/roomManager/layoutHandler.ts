@@ -1433,7 +1433,7 @@ function executeSmartBuild(room: Room) {
         if (site.type === STRUCTURE_RAMPART) {
             if (
                 amtOfRampart >= 4 ||
-                (room.memory.repairTargets !== undefined && Object.keys(room.memory.repairTargets).length > 0)
+                (room.memory.repair !== undefined && Object.keys(room.memory.repair).length > 0)
             ) {
                 continue;
             }
