@@ -3,7 +3,7 @@ import * as Config from "./config/config";
 import { runAllManagers } from "./managerRunner";
 import { ErrorMapper } from "./utils/ErrorMapper";
 import { RunEvery } from "./utils/RunEvery";
-import { saveInit, saveTick } from "stats/stats";
+import { saveInit, saveRooms, saveTick } from "stats/stats";
 
 saveInit();
 
@@ -48,5 +48,8 @@ export const loop = ErrorMapper.wrapLoop(() => {
     }
     if (Config.cpuLog) console.log("t => " + Game.cpu.getUsed());
 
+    if (Game.time % 50 === 0) {
+        saveRooms();
+    }
     saveTick();
 });

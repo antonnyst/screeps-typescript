@@ -63,21 +63,6 @@ interface Memory {
     marketData: import("./dataInterfaces/marketData").MarketData;
 }
 
-interface RoomStats {
-    energystored: number;
-    controller: {
-        level: number;
-        progress: number;
-        progressTotal: number;
-    };
-    rampartavg: number;
-    rampartmin: number;
-    rampartmax: number;
-    resources?: {
-        [key in ResourceConstant]: number;
-    };
-}
-
 declare type LinkStatus = "fill" | "empty";
 declare type ActionType = "transfer" | "withdraw" | "pickup";
 
