@@ -13,8 +13,9 @@ export function VisualHandler(room: Room, speed: number): void {
             });
             for (const site of Object.values(room.memory.repair)) {
                 const pos = unpackPosition(site.pos);
-                if (pos.roomName === room.name) {
-                    room.visual.circle(pos.x, pos.y, {
+                const r = Game.rooms[pos.roomName];
+                if (r !== undefined) {
+                    r.visual.circle(pos.x, pos.y, {
                         fill: "#ff1111"
                     });
                 }
