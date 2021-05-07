@@ -1,13 +1,14 @@
 import { Manager } from "./manager";
 import { SpawnData } from "../dataInterfaces/spawnData";
 import { GenerateBodyFromPattern, bodySortingValues, rolePatterns } from "../utils/CreepBodyGenerator";
-import { packPosition, unpackPosition } from "../utils/RoomPositionPacker";
+import { unpackPosition } from "../utils/RoomPositionPacker";
 import { roomTotalStoredEnergy } from "utils/RoomCalc";
 import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
 import * as C from "../config/constants";
 import { MineralData } from "dataInterfaces/mineralData";
 import { roleList } from "roles/roleList";
 import { RunEvery } from "utils/RunEvery";
+import { generateName } from "utils/CreepNames";
 
 // Spawning system
 // check waitingCreep and try to spawn it
@@ -666,10 +667,3 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     }
 ];
-
-function generateName(room: Room): string {
-    return (packPosition(new RoomPosition(25, 25, room.name)).toString(16) + (Game.time % 100000).toString(16)).replace(
-        "-",
-        "a"
-    );
-}
