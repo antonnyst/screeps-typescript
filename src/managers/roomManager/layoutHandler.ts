@@ -59,10 +59,19 @@ function getBasicLayout(room: Room): BasicLayoutData {
     const basicMineral: BasicMineralData | undefined =
         mineral !== undefined ? { id: mineral.id, pos: packPosition(mineral.pos) } : undefined;
 
+    const keeperLairs = room.find(FIND_HOSTILE_STRUCTURES, {
+        filter: (s) => s.structureType === STRUCTURE_KEEPER_LAIR
+    });
+    let lairs: number[] | undefined = undefined;
+    if (keeperLairs.length > 0) {
+        lairs = keeperLairs.map((v) => packPosition(v.pos));
+    }
+
     return {
         controller: controller !== undefined ? packPosition(controller.pos) : undefined,
         sources: basicSources,
-        mineral: basicMineral
+        mineral: basicMineral,
+        lairs
     };
 }
 function getLayout(room: Room): LayoutData | null {
