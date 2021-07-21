@@ -4,3 +4,4 @@ export const burnForPixels = false;
 export const mapVisuals = true;
 export const roomVisuals = false;
 export const bucketTarget = 6000;
+export const pushGCL = true;

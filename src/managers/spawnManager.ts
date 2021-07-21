@@ -9,6 +9,7 @@ import { MineralData } from "dataInterfaces/mineralData";
 import { roleList } from "roles/roleList";
 import { RunEvery } from "utils/RunEvery";
 import { generateName } from "utils/CreepNames";
+import { bucketTarget, pushGCL } from "config/config";
 
 // Spawning system
 // check waitingCreep and try to spawn it
@@ -503,6 +504,13 @@ const needChecks: CreepNeedCheckFunction[] = [
         let upgraderTarget = 4;
         if (room.controller.level === 8) {
             if (room.controller.ticksToDowngrade < 100000) {
+                upgraderTarget = 1;
+            } else if (
+                pushGCL &&
+                Game.cpu.bucket > bucketTarget &&
+                room.memory.resources &&
+                room.memory.resources.total[RESOURCE_ENERGY] > C.ROOM_ENERGY_EXPORT_LIMIT * 0.95
+            ) {
                 upgraderTarget = 1;
             } else {
                 upgraderTarget = 0;
