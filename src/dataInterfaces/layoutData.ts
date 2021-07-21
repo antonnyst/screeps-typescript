@@ -24,4 +24,5 @@ export interface BasicLayoutData {
     controller: number | undefined;
     sources: BasicSourceData[];
     mineral: BasicMineralData | undefined;
+    lairs: number[] | undefined;
 }

@@ -328,10 +328,6 @@ const roomCallback = (roomName: string): boolean | CostMatrix => {
         return cache;
     }
 
-    if (describeRoom(roomName) === "source_keeper") {
-        //return false;
-    }
-
     const room = Game.rooms[roomName];
     if (room === undefined) {
         const lazyMatrix: CostMatrix | null = getFromCache("rccostmatrixlazy" + roomName, 10000);
@@ -382,6 +378,37 @@ const roomCallback = (roomName: string): boolean | CostMatrix => {
         if (room.controller?.my && room.controller.level === 8 && room.memory.layout !== undefined) {
             const cpos = unpackPosition(room.memory.layout.baseCenter);
             lazyMatrix.set(cpos.x, cpos.y - 1, 255);
+        }
+        if (describeRoom(roomName) === "source_keeper") {
+            if (Memory.rooms[roomName].basicLayout.lairs !== undefined) {
+                for (const lair of Memory.rooms[roomName].basicLayout.lairs!) {
+                    const pos = unpackPosition(lair);
+                    for (let dx = -3; dx <= 3; dx++) {
+                        for (let dy = 0; dy <= 3; dy++) {
+                            if (pos.x + dx < 0 || pos.x + dx > 49 || pos.y + dy < 0 || pos.y + dy > 49) {
+                                continue;
+                            }
+                            lazyMatrix.set(pos.x + dx, pos.y + dy, 128);
+                        }
+                    }
+                }
+            }
+            if (Object.keys(Memory.rooms[roomName].hostiles).length > 0) {
+                for (const hostile in Memory.rooms[roomName].hostiles) {
+                    const hostileData = Memory.rooms[roomName].hostiles[hostile];
+                    const pos = new RoomPosition(hostileData.pos.x, hostileData.pos.y, hostileData.pos.roomName);
+                    for (let dx = -3; dx <= 3; dx++) {
+                        for (let dy = 0; dy <= 3; dy++) {
+                            if (pos.x + dx < 0 || pos.x + dx > 49 || pos.y + dy < 0 || pos.y + dy > 49) {
+                                continue;
+                            }
+                            if (lazyMatrix.get(pos.x + dx, pos.y + dy) < 128) {
+                                lazyMatrix.set(pos.x + dx, pos.y + dy, 128);
+                            }
+                        }
+                    }
+                }
+            }
         }
         saveToCache("rccostmatrixlazy" + roomName, lazyMatrix);
     }
