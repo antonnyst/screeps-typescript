@@ -1440,10 +1440,7 @@ function executeSmartBuild(room: Room) {
     for (const site of smartBuildData) {
         const room: Room = Game.rooms[site.pos.roomName];
         if (site.type === STRUCTURE_RAMPART) {
-            if (
-                amtOfRampart >= 4 ||
-                (room.memory.repair !== undefined && Object.keys(room.memory.repair).length > 0)
-            ) {
+            if (amtOfRampart >= 4 || (room.memory.repair !== undefined && Object.keys(room.memory.repair).length > 0)) {
                 continue;
             }
 
