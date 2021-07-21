@@ -80,7 +80,22 @@ export class MovementManager implements Manager {
                             if (creep.pos.roomName !== unpackPosition(creep.memory.movementData.targetPos).roomName) {
                                 const route = Game.map.findRoute(
                                     creep.pos.roomName,
-                                    unpackPosition(creep.memory.movementData.targetPos).roomName
+                                    unpackPosition(creep.memory.movementData.targetPos).roomName,
+                                    {
+                                        routeCallback: (roomName, fromRoomName) => {
+                                            if (Memory.rooms[roomName]?.roomLevel === -2) {
+                                                return 25;
+                                            }
+                                            if (Memory.rooms[roomName]?.roomLevel === -1) {
+                                                return 2;
+                                            }
+                                            if (describeRoom(roomName) === "source_keeper") {
+                                                return 2;
+                                            }
+
+                                            return 1;
+                                        }
+                                    }
                                 );
                                 if (route !== -2) {
                                     if (route.length > 3) {
