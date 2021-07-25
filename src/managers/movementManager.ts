@@ -386,16 +386,16 @@ const roomCallback = (roomName: string): boolean | CostMatrix => {
                 lazyMatrix.set(constructionSite.pos.x, constructionSite.pos.y, 255);
             }
         }
-        if (room.controller?.my && room.controller.level >= 5 && room.memory.layout !== undefined) {
-            const cpos = unpackPosition(room.memory.layout.baseCenter);
+        if (room.controller?.my && room.controller.level >= 5 && room.memory.genLayout !== undefined) {
+            const cpos = new RoomPosition(
+                room.memory.genLayout.prefabs[0].x,
+                room.memory.genLayout.prefabs[0].y,
+                room.name
+            );
             lazyMatrix.set(cpos.x, cpos.y + 1, 255);
         }
-        if (room.controller?.my && room.controller.level === 8 && room.memory.layout !== undefined) {
-            const cpos = unpackPosition(room.memory.layout.baseCenter);
-            lazyMatrix.set(cpos.x, cpos.y - 1, 255);
-        }
         if (describeRoom(roomName) === "source_keeper") {
-            if (Memory.rooms[roomName].basicLayout.lairs !== undefined) {
+            /*if (Memory.rooms[roomName].ba.lairs !== undefined) {
                 for (const lair of Memory.rooms[roomName].basicLayout.lairs!) {
                     const pos = unpackPosition(lair);
                     for (let dx = -3; dx <= 3; dx++) {
@@ -407,7 +407,7 @@ const roomCallback = (roomName: string): boolean | CostMatrix => {
                         }
                     }
                 }
-            }
+            }*/
             if (Object.keys(Memory.rooms[roomName].hostiles).length > 0) {
                 for (const hostile in Memory.rooms[roomName].hostiles) {
                     const hostileData = Memory.rooms[roomName].hostiles[hostile];

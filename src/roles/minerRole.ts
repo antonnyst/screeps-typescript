@@ -1,5 +1,4 @@
 import { CreepRole } from "./creepRole";
-import { SourceData } from "../dataInterfaces/sourceData";
 import { offsetPositionByDirection } from "../utils/RoomPositionHelpers";
 import { unpackPosition } from "../utils/RoomPositionPacker";
 
@@ -19,15 +18,19 @@ export class MinerRole extends CreepRole {
             return;
         }
 
-        const sourceData: SourceData = Memory.rooms[this.creep.memory.home].layout.sources[parseInt(sourceIndex, 10)];
-        if (sourceData === undefined) {
+        const sourceData = Memory.rooms[this.creep.memory.home].genLayout!.sources[parseInt(sourceIndex, 10)];
+        const basicSourceData = Memory.rooms[this.creep.memory.home].basicRoomData.sources[parseInt(sourceIndex, 10)];
+        if (sourceData === undefined || basicSourceData === undefined) {
             console.log("invalid sourceData");
             return;
         }
 
-        const minerPos: RoomPosition = offsetPositionByDirection(unpackPosition(sourceData.pos), sourceData.container);
+        const minerPos: RoomPosition = offsetPositionByDirection(
+            unpackPosition(basicSourceData.pos),
+            sourceData.container
+        );
 
-        const source: Source | null = Game.getObjectById(sourceData.id);
+        const source: Source | null = Game.getObjectById(basicSourceData.id);
         if (source === null) {
             console.log("invalid source");
             return;
@@ -37,7 +40,7 @@ export class MinerRole extends CreepRole {
 
         if (this.creep.pos.isEqualTo(minerPos)) {
             if (this.creep.getActiveBodyparts(CARRY) > 0 && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-                if (sourceData.extensions.length > 0 && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) >= 50) {
+                /*if (sourceData.extensions.length > 0 && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) >= 50) {
                     if (this.creep.memory.roleData.anyStore.extensionId === undefined) {
                         this.creep.memory.roleData.anyStore.extensionId = [];
                     }
@@ -56,7 +59,7 @@ export class MinerRole extends CreepRole {
                             this.creep.transfer(extension, RESOURCE_ENERGY);
                         }
                     }
-                }
+                }*/
 
                 const container: StructureContainer | null =
                     this.creep.memory.roleData.anyStore.containerId === undefined

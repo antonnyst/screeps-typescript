@@ -12,10 +12,10 @@ export class MineralMinerRole extends CreepRole {
         }
 
         const minerPos = offsetPositionByDirection(
-            unpackPosition(Memory.rooms[this.creep.memory.home].layout.mineral.pos),
-            Memory.rooms[this.creep.memory.home].layout.mineral.container
+            unpackPosition(Memory.rooms[this.creep.memory.home].basicRoomData.mineral!.pos),
+            Memory.rooms[this.creep.memory.home].genLayout!.mineral.container
         );
-        const mineral = Game.getObjectById(Memory.rooms[this.creep.memory.home].layout.mineral.id) as Mineral;
+        const mineral = Game.getObjectById(Memory.rooms[this.creep.memory.home].basicRoomData.mineral!.id) as Mineral;
 
         let container: StructureContainer | null = null;
 

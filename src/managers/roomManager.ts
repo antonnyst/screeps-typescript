@@ -7,6 +7,14 @@ import { LabHandler } from "./roomManager/labHandler";
 import { ResourceHandler } from "./roomManager/resourceHandler";
 import { RunEvery, RunNow } from "utils/RunEvery";
 import { VisualHandler } from "./roomManager/visualHandler";
+import { BasicRoomData, generateBasicRoomData } from "layout/layout";
+import { RemoteHandler } from "./roomManager/remoteHandler";
+
+declare global {
+    interface RoomMemory {
+        basicRoomData: BasicRoomData;
+    }
+}
 
 export class RoomManager implements Manager {
     minSpeed = 0.2;
@@ -38,15 +46,23 @@ function roomLogic(roomName: string, speed: number): void {
         10 / speed
     );
 
-    if (room.memory.roomLevel === 2 && room.memory.remotes === undefined) {
-        room.memory.remotes = [];
-    }
     if (room.memory.roomLevel === 2 && room.memory.remoteSupportRooms === undefined) {
         room.memory.remoteSupportRooms = [];
     }
 
     //Update room hostiles
     RunEvery(updateRoomHostiles, "roomlogicupdateroomhostiles" + roomName, 3 / speed, room);
+
+    //Get basic room data
+    RunEvery(
+        () => {
+            if (room.memory.basicRoomData === undefined) {
+                room.memory.basicRoomData = generateBasicRoomData(room);
+            }
+        },
+        "roomlogicgeneratebasicroomdata" + roomName,
+        100 / speed
+    );
 
     //Update room reservation
     RunEvery(
@@ -79,6 +95,9 @@ function roomLogic(roomName: string, speed: number): void {
 
     //VisualHandler
     VisualHandler(room, speed);
+
+    //RemoteHandler
+    RunEvery(RemoteHandler, "roomlogicremotehandler" + roomName, 750 / speed, room);
 }
 
 function getRoomLevel(room: Room): number {

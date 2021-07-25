@@ -4,7 +4,11 @@ import { unpackPosition } from "../utils/RoomPositionPacker";
 
 export class MineralHaulerRole extends CreepRole {
     runRole() {
-        if (this.creep === null) {
+        if (
+            this.creep === null ||
+            Memory.rooms[this.creep.memory.home].genLayout === undefined ||
+            Memory.rooms[this.creep.memory.home].basicRoomData === undefined
+        ) {
             return;
         }
         if (this.creep.memory.roleData === undefined) {
@@ -28,10 +32,11 @@ export class MineralHaulerRole extends CreepRole {
         }
 
         const minerPos = offsetPositionByDirection(
-            unpackPosition(Memory.rooms[this.creep.memory.home].layout.mineral.pos),
-            Memory.rooms[this.creep.memory.home].layout.mineral.container
+            unpackPosition(Memory.rooms[this.creep.memory.home].basicRoomData.mineral!.pos),
+            Memory.rooms[this.creep.memory.home].genLayout!.mineral.container
         );
-        const res = (Game.getObjectById(Memory.rooms[this.creep.memory.home].layout.mineral.id) as Mineral).mineralType;
+        const res = (Game.getObjectById(Memory.rooms[this.creep.memory.home].basicRoomData.mineral!.id) as Mineral)
+            .mineralType;
 
         if (this.creep.memory.roleData.hasEnergy === false) {
             // get from designated source

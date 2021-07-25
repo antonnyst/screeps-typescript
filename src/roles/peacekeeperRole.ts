@@ -1,5 +1,4 @@
 import { CreepRole } from "./creepRole";
-import { unpackPosition } from "../utils/RoomPositionPacker";
 
 export class PeacekeeperRole extends CreepRole {
     runRole() {
@@ -76,11 +75,17 @@ export class PeacekeeperRole extends CreepRole {
             this.creep.room.name === this.creep.memory.home &&
             this.creep.memory.roleData.target === this.creep.memory.home
         ) {
-            const cpos = unpackPosition(this.creep.room.memory.layout.baseCenter);
-            if (this.creep.pos.getRangeTo(cpos) === 1) {
-                this.setMovementData(cpos, 2, true, false);
-            } else {
-                this.setMovementData(cpos, 3, false, false);
+            if (Memory.rooms[this.creep.memory.home].genLayout !== undefined) {
+                const cpos = new RoomPosition(
+                    Memory.rooms[this.creep.memory.home].genLayout!.prefabs[0].x,
+                    Memory.rooms[this.creep.memory.home].genLayout!.prefabs[0].y,
+                    this.creep.memory.home
+                );
+                if (this.creep.pos.getRangeTo(cpos) === 1) {
+                    this.setMovementData(cpos, 2, true, false);
+                } else {
+                    this.setMovementData(cpos, 3, false, false);
+                }
             }
         }
     }

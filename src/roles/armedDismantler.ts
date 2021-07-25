@@ -9,17 +9,15 @@ export class ArmedDismantlerRole extends CreepRole {
         ) {
             return;
         }
-
+        let b = false;
+        if (this.creep.getActiveBodyparts(HEAL) > 0 && this.creep.hits < this.creep.hitsMax) {
+            this.creep.heal(this.creep);
+            b = true;
+        }
         if (this.creep.room.name !== this.creep.memory.roleData.target) {
             this.setMovementData(new RoomPosition(25, 25, this.creep.memory.roleData.target), 20, false, false);
         } else {
             const target: Structure | null = Game.getObjectById(this.creep.memory.roleData.targetId as string);
-
-            let b = false;
-            if (this.creep.getActiveBodyparts(HEAL) > 0 && this.creep.hits < this.creep.hitsMax) {
-                this.creep.heal(this.creep);
-                b = true;
-            }
 
             if (target != null) {
                 this.setMovementData(target.pos, 1, false, false);

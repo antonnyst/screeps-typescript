@@ -6,10 +6,7 @@ export class FootRole extends CreepRole {
             return;
         }
 
-        if (
-            Memory.rooms[this.creep.memory.home] === undefined ||
-            Memory.rooms[this.creep.memory.home].layout === undefined
-        ) {
+        if (Memory.rooms[this.creep.memory.home] === undefined) {
             return;
         }
 

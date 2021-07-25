@@ -11,7 +11,14 @@ export class ReserverRole extends CreepRole {
             return;
         }
 
-        const cPos = unpackPosition(Memory.rooms[this.creep.memory.roleData.target].basicLayout.controller);
+        const p = Memory.rooms[this.creep.memory.roleData.target].basicRoomData.controller;
+
+        if (p === null) {
+            return;
+        }
+
+        const cPos = unpackPosition(p);
+
         this.setMovementData(cPos, 1, false, false);
         if (this.creep.pos.isNearTo(cPos)) {
             if (this.creep.room.controller !== undefined) {

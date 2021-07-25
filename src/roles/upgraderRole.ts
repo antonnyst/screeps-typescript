@@ -3,17 +3,17 @@ import { unpackPosition } from "../utils/RoomPositionPacker";
 
 export class UpgraderRole extends CreepRole {
     runRole() {
-        if (this.creep === null) {
+        if (this.creep === null || this.creep.room.memory.genLayout === undefined) {
             return;
         }
 
         if (this.creep.room.controller && this.creep.room.controller.level >= 7) {
-            const cpos = unpackPosition(this.creep.room.memory.layout.controllerStore);
+            const cpos = unpackPosition(this.creep.room.memory.genLayout.controller);
             this.setMovementData(cpos, 1, false, false);
             if (this.creep.pos.isNearTo(cpos)) {
                 if (this.creep.store.getUsedCapacity(RESOURCE_ENERGY) <= this.creep.getActiveBodyparts(WORK)) {
                     const link = _.filter(
-                        unpackPosition(this.creep.room.memory.layout.controllerStore).lookFor(LOOK_STRUCTURES),
+                        unpackPosition(this.creep.room.memory.genLayout.controller).lookFor(LOOK_STRUCTURES),
                         (s: Structure) => s.structureType === STRUCTURE_LINK
                     )[0];
 
