@@ -11,7 +11,6 @@ import { FootRole } from "./footRole";
 import { GarbageRole } from "./garbageRole";
 import { HaulerRole } from "./haulerRole";
 import { HealerRole } from "./healerRole";
-import { LabradorRole } from "./labradorRole";
 import { ManagerRole } from "./managerRole";
 import { MinerRole } from "./minerRole";
 import { MineralHaulerRole } from "./mineralHauler";
@@ -36,7 +35,6 @@ export const roleList: { [role: string]: CreepRole } = {
     garbage: new GarbageRole(),
     hauler: new HaulerRole(),
     healer: new HealerRole(),
-    labrador: new LabradorRole(),
     manager: new ManagerRole(),
     miner: new MinerRole(),
     mineralHauler: new MineralHaulerRole(),
