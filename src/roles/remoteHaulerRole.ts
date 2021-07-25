@@ -9,8 +9,8 @@ export class RemoteHaulerRole extends CreepRole {
             this.creep === null ||
             this.creep.memory.roleData === undefined ||
             this.creep.memory.roleData.target === undefined ||
-            Memory.rooms[this.creep.memory.home].layout === undefined ||
-            Memory.rooms[this.creep.memory.roleData.target].remoteLayout === undefined
+            Memory.rooms[this.creep.memory.home].genLayout === undefined ||
+            Memory.rooms[this.creep.memory.home].remoteData?.data[this.creep.memory.roleData.target] === undefined
         ) {
             return;
         }
@@ -32,8 +32,8 @@ export class RemoteHaulerRole extends CreepRole {
             console.log("invalid sourceIndex");
             return;
         }
-        const sourceData: RemoteSourceData =
-            Memory.rooms[this.creep.memory.roleData.target].remoteLayout.sources[parseInt(sourceIndex, 10)];
+        const sourceData = Memory.rooms[this.creep.memory.home].remoteData!.data[this.creep.memory.roleData.target]
+            .sources[parseInt(sourceIndex, 10)];
         if (sourceData === undefined) {
             console.log("invalid sourceData");
             return;
@@ -59,7 +59,10 @@ export class RemoteHaulerRole extends CreepRole {
                     )[0] as StructureContainer;
                 }
 
-                if (container.store.getUsedCapacity() > container.store.getUsedCapacity(RESOURCE_ENERGY)) {
+                if (
+                    container != null &&
+                    container.store.getUsedCapacity() > container.store.getUsedCapacity(RESOURCE_ENERGY)
+                ) {
                     this.creep.withdraw(
                         container,
                         _.filter(Object.keys(container.store), (s) => s !== "energy")[0] as ResourceConstant
@@ -74,8 +77,8 @@ export class RemoteHaulerRole extends CreepRole {
         } else {
             let target: AnyStoreStructure | undefined = undefined;
 
-            if (Memory.rooms[this.creep.memory.home].buildings?.storage?.id !== undefined) {
-                const storage = Game.getObjectById(Memory.rooms[this.creep.memory.home].buildings!.storage.id!);
+            if (Memory.rooms[this.creep.memory.home].genBuildings?.storage?.id !== undefined) {
+                const storage = Game.getObjectById(Memory.rooms[this.creep.memory.home].genBuildings!.storage.id!);
                 if (storage instanceof StructureStorage) {
                     target = storage;
                 }
@@ -83,10 +86,12 @@ export class RemoteHaulerRole extends CreepRole {
 
             if (
                 target === undefined &&
-                Memory.rooms[this.creep.memory.home].buildings?.containers[0].id !== undefined
+                Memory.rooms[this.creep.memory.home].genBuildings?.containers[0].id !== undefined
             ) {
-                const container = Game.getObjectById(Memory.rooms[this.creep.memory.home].buildings!.containers[0].id!);
-                if (container instanceof StructureContainer) {
+                const container = Game.getObjectById(
+                    Memory.rooms[this.creep.memory.home].genBuildings!.containers[0].id!
+                );
+                if (container instanceof StructureContainer && container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
                     target = container;
                 }
             }

@@ -1,12 +1,85 @@
-import { unpackPosition } from "../../utils/RoomPositionPacker";
-import * as C from "../../config/constants";
-
 export function LinkHandler(room: Room): void {
     if (room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
-        if (room.controller.level < 5) {
+        if (room.controller.level < 5 || room.memory.genBuildings === undefined) {
             return;
         }
 
+        const fillLinks: StructureLink[] = [];
+        let centerLink: StructureLink | null = null;
+        const minerLinks: StructureLink[] = [];
+
+        for (let i = 0; i < room.memory.genBuildings.links.length; i++) {
+            if (room.memory.genBuildings.links[i].id !== undefined) {
+                const linkObject = Game.getObjectById(room.memory.genBuildings.links[i].id!);
+                if (linkObject !== null && linkObject instanceof Structure) {
+                    switch (i) {
+                        case 0:
+                            fillLinks.push(linkObject as StructureLink);
+                            break;
+                        case 1:
+                            centerLink = linkObject as StructureLink;
+                            break;
+                        case 2:
+                            fillLinks.push(linkObject as StructureLink);
+                            break;
+                        default:
+                            minerLinks.push(linkObject as StructureLink);
+                            break;
+                    }
+                }
+            }
+        }
+
+        let fillNeeds: boolean = false;
+
+        // Fill fillLinks if they need to be filled
+        for (const link of fillLinks) {
+            if (link.store.getFreeCapacity(RESOURCE_ENERGY) > 50) {
+                fillNeeds = true;
+                let supplyLink: StructureLink | null = null;
+                let need: number = link.store.getFreeCapacity(RESOURCE_ENERGY);
+
+                for (const mlink of minerLinks) {
+                    if (mlink.store.getUsedCapacity(RESOURCE_ENERGY) >= need) {
+                        supplyLink = mlink;
+                        break;
+                    }
+                }
+
+                if (supplyLink === null && centerLink !== null) {
+                    if (centerLink.store.getUsedCapacity(RESOURCE_ENERGY) >= need) {
+                        supplyLink = centerLink;
+                    }
+                }
+
+                if (supplyLink !== null) {
+                    supplyLink.transferEnergy(link, need);
+                    break;
+                }
+            }
+        }
+
+        if (!fillNeeds) {
+            if (centerLink !== null) {
+                let capacity = centerLink.store.getFreeCapacity(RESOURCE_ENERGY);
+                for (const mlink of minerLinks) {
+                    if (mlink.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+                        if (capacity > centerLink.store.getCapacity(RESOURCE_ENERGY) / 2) {
+                            mlink.transferEnergy(centerLink);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (fillNeeds) {
+            room.memory.linkStatus = "fill";
+        } else {
+            room.memory.linkStatus = "empty";
+        }
+
+        /*
         const storage = room.storage;
         const controllerLink: StructureLink | null = _.filter(
             unpackPosition(room.memory.layout.controllerStore).lookFor(LOOK_STRUCTURES),
@@ -102,6 +175,6 @@ export function LinkHandler(room: Room): void {
                     }
                 }
             }
-        }
+        }*/
     }
 }

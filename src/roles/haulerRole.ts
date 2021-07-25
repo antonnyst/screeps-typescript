@@ -1,11 +1,16 @@
 import { CreepRole } from "./creepRole";
-import { SourceData } from "../dataInterfaces/sourceData";
 import { offsetPositionByDirection } from "../utils/RoomPositionHelpers";
 import { unpackPosition } from "../utils/RoomPositionPacker";
+import { throws } from "assert";
 
 export class HaulerRole extends CreepRole {
     runRole() {
-        if (this.creep === null || this.creep.memory.roleData === undefined) {
+        if (
+            this.creep === null ||
+            this.creep.memory.roleData === undefined ||
+            this.creep.room.memory.genLayout === undefined ||
+            this.creep.room.memory.genBuildings === undefined
+        ) {
             return;
         }
 
@@ -14,12 +19,16 @@ export class HaulerRole extends CreepRole {
             console.log("invalid sourceIndex");
             return;
         }
-        const sourceData: SourceData = Memory.rooms[this.creep.memory.home].layout.sources[parseInt(sourceIndex, 10)];
-        if (sourceData === undefined) {
+        const sourceData = Memory.rooms[this.creep.memory.home].genLayout!.sources[parseInt(sourceIndex, 10)];
+        const basicSourceData = Memory.rooms[this.creep.memory.home].basicRoomData.sources[parseInt(sourceIndex, 10)];
+        if (sourceData === undefined || basicSourceData === undefined) {
             console.log("invalid sourceData");
             return;
         }
-        const minerPos: RoomPosition = offsetPositionByDirection(unpackPosition(sourceData.pos), sourceData.container);
+        const minerPos: RoomPosition = offsetPositionByDirection(
+            unpackPosition(basicSourceData.pos),
+            sourceData.container
+        );
 
         if (this.creep.memory.roleData.hasEnergy === undefined) {
             this.creep.memory.roleData.hasEnergy = false;
@@ -61,7 +70,7 @@ export class HaulerRole extends CreepRole {
             }
         } else {
             const container: StructureContainer = _.filter(
-                unpackPosition(Memory.rooms[this.creep.memory.home].layout.controllerStore).lookFor(LOOK_STRUCTURES),
+                unpackPosition(Memory.rooms[this.creep.memory.home].genLayout!.controller).lookFor(LOOK_STRUCTURES),
                 (s: Structure) => s.structureType === STRUCTURE_CONTAINER
             )[0] as StructureContainer;
             let target: StructureContainer | StructureStorage | StructureLink | null = null;
@@ -71,20 +80,7 @@ export class HaulerRole extends CreepRole {
             }
 
             if (target === null && this.creep.room.storage !== undefined) {
-                if (this.creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 100000) {
-                    const cpos = unpackPosition(Memory.rooms[this.creep.memory.home].layout.baseCenter);
-                    const link: StructureLink = _.filter(
-                        new RoomPosition(cpos.x + 1, cpos.y, cpos.roomName).lookFor(LOOK_STRUCTURES),
-                        (s: Structure) => s.structureType === STRUCTURE_LINK
-                    )[0] as StructureLink;
-
-                    if (link != null && (link.store.getFreeCapacity(RESOURCE_ENERGY) as number) > 0) {
-                        target = link;
-                    }
-                }
-                if (target === null) {
-                    target = this.creep.room.storage;
-                }
+                target = this.creep.room.storage;
             }
 
             if (target != null) {

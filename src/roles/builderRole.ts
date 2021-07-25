@@ -8,10 +8,7 @@ export class BuilderRole extends CreepRole {
             return;
         }
 
-        if (
-            Memory.rooms[this.creep.memory.home] === undefined ||
-            Memory.rooms[this.creep.memory.home].layout === undefined
-        ) {
+        if (Memory.rooms[this.creep.memory.home] === undefined) {
             return;
         }
 
@@ -38,11 +35,11 @@ export class BuilderRole extends CreepRole {
                 this.creep.memory.roleData.targetId as string
             );
 
-            if (target === null) {
+            if (target === null || target === undefined) {
                 target = findTarget(this.creep);
             }
 
-            if (target !== null) {
+            if (target !== null && target !== undefined) {
                 if (this.creep.room.name !== target.pos.roomName) {
                     this.setMovementData(target.pos, 0, false, false);
                 } else {
@@ -90,7 +87,7 @@ function findTarget(creep: Creep): Structure | ConstructionSite | null {
         let closestRange: number = Infinity;
         for (const target in Game.rooms[creep.memory.home].memory.repair) {
             const object = Game.getObjectById(Game.rooms[creep.memory.home].memory.repair[target].id);
-            if (object !== null) {
+            if (object !== null && object !== undefined) {
                 if (object.hits < object.hitsMax) {
                     const range = creep.pos.getRangeTo(object.pos);
                     if (closestTarget === null || range < closestRange) {
@@ -128,7 +125,7 @@ function findTarget(creep: Creep): Structure | ConstructionSite | null {
         target = Game.getObjectById(tid);
     }
 
-    if (target !== null && creep.memory.roleData !== undefined) {
+    if (target !== null && target !== undefined && creep.memory.roleData !== undefined) {
         creep.memory.roleData.targetId = target.id;
         return target;
     }

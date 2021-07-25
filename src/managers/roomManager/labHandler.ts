@@ -17,37 +17,38 @@ function runLabData(room: Room): void {
     } else {
         if (room.memory.labs === undefined) {
             room.memory.labs = GenerateLabsData(room);
-        }
-        UpdateLabData(room);
+        } else {
+            UpdateLabData(room);
 
-        RunLabs(room);
+            RunLabs(room);
 
-        if (room.memory.labs.status === "prepare-react") {
-            let ready: boolean = true;
+            if (room.memory.labs.status === "prepare-react") {
+                let ready: boolean = true;
 
-            for (const lab of room.memory.labs.labs) {
-                const labObj = Game.getObjectById(lab.id) as StructureLab;
-                if (lab.targetResource === null && labObj != null && labObj.mineralType == null) {
-                    // lab is ready
-                    continue;
+                for (const lab of room.memory.labs.labs) {
+                    const labObj = Game.getObjectById(lab.id) as StructureLab;
+                    if (lab.targetResource === null && labObj != null && labObj.mineralType == null) {
+                        // lab is ready
+                        continue;
+                    }
+
+                    if (
+                        lab.targetResource !== null &&
+                        labObj != null &&
+                        labObj.mineralType === lab.targetResource &&
+                        labObj.store.getFreeCapacity(labObj.mineralType) === 0
+                    ) {
+                        // lab is ready
+                        continue;
+                    }
+
+                    ready = false;
+                    break;
                 }
 
-                if (
-                    lab.targetResource !== null &&
-                    labObj != null &&
-                    labObj.mineralType === lab.targetResource &&
-                    labObj.store.getFreeCapacity(labObj.mineralType) === 0
-                ) {
-                    // lab is ready
-                    continue;
+                if (ready) {
+                    room.memory.labs.status = "react";
                 }
-
-                ready = false;
-                break;
-            }
-
-            if (ready) {
-                room.memory.labs.status = "react";
             }
         }
     }
@@ -80,7 +81,11 @@ function RunLabs(room: Room): void {
     }
 }
 
-function GenerateLabsData(room: Room): LabsData {
+function GenerateLabsData(room: Room): LabsData | undefined {
+    if (room.memory.genLayout === undefined) {
+        return undefined;
+    }
+
     const labs: LabData[] = room
         .find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === STRUCTURE_LAB })
         .map((l) => {
@@ -93,41 +98,26 @@ function GenerateLabsData(room: Room): LabsData {
     const inLabs: number[] = [];
     const outLabs: number[] = [];
 
-    const cpos = unpackPosition(room.memory.layout.baseCenter);
-    let ipos: RoomPosition[] = [
-        new RoomPosition(cpos.x, cpos.y + 4, cpos.roomName),
-        new RoomPosition(cpos.x, cpos.y + 5, cpos.roomName)
+    const ipos: RoomPosition[] = [
+        new RoomPosition(
+            room.memory.genLayout.prefabs[1].x + 1 * room.memory.genLayout.prefabs[1].rotx,
+            room.memory.genLayout.prefabs[1].y + -2 * room.memory.genLayout.prefabs[1].roty,
+            room.name
+        ),
+        new RoomPosition(
+            room.memory.genLayout.prefabs[1].x + 2 * room.memory.genLayout.prefabs[1].rotx,
+            room.memory.genLayout.prefabs[1].y + -1 * room.memory.genLayout.prefabs[1].roty,
+            room.name
+        )
     ];
 
-    if (room.memory.layout.baseType === "auto") {
-        ipos = [
-            new RoomPosition(
-                cpos.x +
-                    autoLabsInLabsLocation[0].x *
-                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
-                cpos.y +
-                    autoLabsInLabsLocation[0].y *
-                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
-                cpos.roomName
-            ),
-            new RoomPosition(
-                cpos.x +
-                    autoLabsInLabsLocation[1].x *
-                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
-                cpos.y +
-                    autoLabsInLabsLocation[1].y *
-                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
-                cpos.roomName
-            )
-        ];
-    }
-    for (const la in labs) {
-        const l = Game.getObjectById(labs[la].id) as StructureLab;
-        if (l != null) {
-            if (l.pos.isEqualTo(ipos[0]) || l.pos.isEqualTo(ipos[1])) {
-                inLabs.push(parseInt(la, 10));
+    for (let i = 0; i < labs.length; i++) {
+        const labObject = Game.getObjectById(labs[i].id);
+        if (labObject !== null) {
+            if (labObject.pos.isEqualTo(ipos[0]) || labObject.pos.isEqualTo(ipos[1])) {
+                inLabs.push(i);
             } else {
-                outLabs.push(parseInt(la, 10));
+                outLabs.push(i);
             }
         }
     }
@@ -140,7 +130,7 @@ function GenerateLabsData(room: Room): LabsData {
     };
 }
 function UpdateLabData(room: Room) {
-    if (room.memory.labs === undefined || room.memory.layout === undefined) {
+    if (room.memory.labs === undefined || room.memory.genLayout === undefined) {
         return;
     }
     const oldLabs = room.memory.labs.labs;
@@ -163,42 +153,26 @@ function UpdateLabData(room: Room) {
     const inLabs: number[] = [];
     const outLabs: number[] = [];
 
-    const cpos = unpackPosition(room.memory.layout.baseCenter);
-    let ipos: RoomPosition[] = [
-        new RoomPosition(cpos.x, cpos.y + 4, cpos.roomName),
-        new RoomPosition(cpos.x, cpos.y + 5, cpos.roomName)
+    const ipos: RoomPosition[] = [
+        new RoomPosition(
+            room.memory.genLayout.prefabs[1].x + 1 * room.memory.genLayout.prefabs[1].rotx,
+            room.memory.genLayout.prefabs[1].y + -2 * room.memory.genLayout.prefabs[1].roty,
+            room.name
+        ),
+        new RoomPosition(
+            room.memory.genLayout.prefabs[1].x + 2 * room.memory.genLayout.prefabs[1].rotx,
+            room.memory.genLayout.prefabs[1].y + -1 * room.memory.genLayout.prefabs[1].roty,
+            room.name
+        )
     ];
 
-    if (room.memory.layout.baseType === "auto") {
-        ipos = [
-            new RoomPosition(
-                cpos.x +
-                    autoLabsInLabsLocation[0].x *
-                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
-                cpos.y +
-                    autoLabsInLabsLocation[0].y *
-                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
-                cpos.roomName
-            ),
-            new RoomPosition(
-                cpos.x +
-                    autoLabsInLabsLocation[1].x *
-                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].mx,
-                cpos.y +
-                    autoLabsInLabsLocation[1].y *
-                        autoLabsRotationGuide[(room.memory.layout as AutoLayoutData).labDirection].my,
-                cpos.roomName
-            )
-        ];
-    }
-
-    for (const la in labs) {
-        const l = Game.getObjectById(labs[la].id) as StructureLab;
-        if (l != null) {
-            if (l.pos.isEqualTo(ipos[0]) || l.pos.isEqualTo(ipos[1])) {
-                inLabs.push(parseInt(la, 10));
+    for (let i = 0; i < labs.length; i++) {
+        const labObject = Game.getObjectById(labs[i].id);
+        if (labObject !== null) {
+            if (labObject.pos.isEqualTo(ipos[0]) || labObject.pos.isEqualTo(ipos[1])) {
+                inLabs.push(i);
             } else {
-                outLabs.push(parseInt(la, 10));
+                outLabs.push(i);
             }
         }
     }

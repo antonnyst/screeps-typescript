@@ -41,16 +41,16 @@ export class ManagerRole extends CreepRole {
             return;
         }
 
-        const cPos = unpackPosition(this.creep.room.memory.layout.baseCenter);
-        const lPos = new RoomPosition(cPos.x + 1, cPos.y, cPos.roomName);
-        const link: StructureLink | undefined = room.find(FIND_MY_STRUCTURES, {
-            filter: (s) => s.structureType === STRUCTURE_LINK && s.pos.isEqualTo(lPos)
-        })[0] as StructureLink;
+        const link: StructureLink | null =
+            room.memory.genBuildings?.links[1].id !== undefined &&
+            Game.getObjectById(room.memory.genBuildings?.links[1].id) instanceof StructureLink
+                ? (Game.getObjectById(room.memory.genBuildings?.links[1].id) as StructureLink)
+                : null;
 
         const terminal: StructureTerminal | undefined = room.terminal;
         const storage: StructureStorage | undefined = room.storage;
 
-        if (storage !== undefined && link !== undefined && room.memory.linkStatus !== undefined) {
+        if (storage !== undefined && link !== null && room.memory.linkStatus !== undefined) {
             if (room.memory.linkStatus === "fill" && link.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
                 // We should fill the link
                 const storageEnergy = storage.store.getUsedCapacity(RESOURCE_ENERGY);

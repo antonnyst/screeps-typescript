@@ -9,7 +9,7 @@ export class RemoteMinerRole extends CreepRole {
             this.creep === null ||
             this.creep.memory.roleData === undefined ||
             this.creep.memory.roleData.target === undefined ||
-            Memory.rooms[this.creep.memory.roleData.target].remoteLayout === undefined
+            Memory.rooms[this.creep.memory.home].remoteData?.data[this.creep.memory.roleData.target] === undefined
         ) {
             return;
         }
@@ -24,8 +24,8 @@ export class RemoteMinerRole extends CreepRole {
             console.log("invalid sourceIndex");
             return;
         }
-        const sourceData: RemoteSourceData =
-            Memory.rooms[this.creep.memory.roleData.target].remoteLayout.sources[parseInt(sourceIndex, 10)];
+        const sourceData = Memory.rooms[this.creep.memory.home].remoteData!.data[this.creep.memory.roleData.target]
+            .sources[parseInt(sourceIndex, 10)];
         if (sourceData === undefined) {
             console.log("invalid sourceData");
             return;

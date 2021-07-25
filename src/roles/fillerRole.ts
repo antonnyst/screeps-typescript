@@ -75,8 +75,8 @@ export class FillerRole extends CreepRole {
         const transfer: boolean = this.creep.memory.filler.transfer.length > 0;
 
         if (pickup) {
-            const resource: Resource | null = Game.getObjectById<Resource>(this.creep.memory.filler.pickup[0].id);
-            if (resource !== null) {
+            const resource: Resource | null = Game.getObjectById(this.creep.memory.filler.pickup[0].id);
+            if (resource !== null && resource !== undefined) {
                 this.setMovementData(resource.pos, 1, false, false);
                 if (this.creep.pos.isNearTo(resource.pos) && !follow) {
                     this.creep.pickup(resource);
@@ -126,7 +126,16 @@ export class FillerRole extends CreepRole {
                 this.doAction(true);
             }
         } else {
-            this.setMovementData(unpackPosition(this.creep.room.memory.layout.baseCenter), 4, false, false);
+            this.setMovementData(
+                new RoomPosition(
+                    this.creep.room.memory.genLayout!.prefabs[0].x,
+                    this.creep.room.memory.genLayout!.prefabs[0].y,
+                    this.creep.room.name
+                ),
+                4,
+                false,
+                false
+            );
         }
     }
     findActions(): void {
@@ -141,7 +150,7 @@ export class FillerRole extends CreepRole {
                 cooldown: 0
             };
         }
-        const cpos: RoomPosition = unpackPosition(this.creep.room.memory.layout.baseCenter);
+        //const cpos: RoomPosition = unpackPosition(this.creep.room.memory.layout.baseCenter);
         const energyStructures: (
             | StructureSpawn
             | StructureExtension
@@ -151,9 +160,7 @@ export class FillerRole extends CreepRole {
             filter: (s) =>
                 ((s.structureType === STRUCTURE_TOWER || s.structureType === STRUCTURE_EXTENSION) &&
                     s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) ||
-                (s.structureType === STRUCTURE_SPAWN &&
-                    s.store.getFreeCapacity(RESOURCE_ENERGY) > 0 &&
-                    !(s.pos.isEqualTo(cpos) && this.creep?.room.controller?.level === 8)) ||
+                (s.structureType === STRUCTURE_SPAWN && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) ||
                 (s.structureType === STRUCTURE_LAB && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
         }) as (StructureSpawn | StructureExtension | StructureTower | StructureLab)[];
 
@@ -179,7 +186,7 @@ export class FillerRole extends CreepRole {
                         });
                     }
                 } else {
-                    console.log("Filler Creep: stray resources but no storage");
+                    //console.log("Filler Creep: stray resources but no storage");
                 }
                 return;
             }
@@ -279,11 +286,11 @@ export class FillerRole extends CreepRole {
             this.creep.room.controller?.level === 8 &&
             this.creep.room.memory.resources?.total[RESOURCE_ENERGY] !== undefined &&
             this.creep.room.memory.resources?.total[RESOURCE_ENERGY] >= EXTRA_ENERGY_FILL_ENERGY_NEEDED &&
-            this.creep.room.memory.buildings?.nuker.id !== undefined &&
-            this.creep.room.memory.buildings?.terminal.id !== undefined
+            this.creep.room.memory.genBuildings?.nuker.id !== undefined &&
+            this.creep.room.memory.genBuildings?.terminal.id !== undefined
         ) {
-            const nuker = Game.getObjectById(this.creep.room.memory.buildings?.nuker.id);
-            const terminal = Game.getObjectById(this.creep.room.memory.buildings?.terminal.id);
+            const nuker = Game.getObjectById(this.creep.room.memory.genBuildings?.nuker.id);
+            const terminal = Game.getObjectById(this.creep.room.memory.genBuildings?.terminal.id);
             if (
                 nuker !== null &&
                 nuker instanceof StructureNuker &&
@@ -325,11 +332,11 @@ export class FillerRole extends CreepRole {
             this.creep.room.controller?.level === 8 &&
             this.creep.room.memory.resources?.total[RESOURCE_ENERGY] !== undefined &&
             this.creep.room.memory.resources?.total[RESOURCE_ENERGY] >= EXTRA_ENERGY_FILL_ENERGY_NEEDED &&
-            this.creep.room.memory.buildings?.powerspawn.id !== undefined &&
-            this.creep.room.memory.buildings?.terminal.id !== undefined
+            this.creep.room.memory.genBuildings?.powerspawn.id !== undefined &&
+            this.creep.room.memory.genBuildings?.terminal.id !== undefined
         ) {
-            const powerspawn = Game.getObjectById(this.creep.room.memory.buildings?.powerspawn.id);
-            const terminal = Game.getObjectById(this.creep.room.memory.buildings?.terminal.id);
+            const powerspawn = Game.getObjectById(this.creep.room.memory.genBuildings?.powerspawn.id);
+            const terminal = Game.getObjectById(this.creep.room.memory.genBuildings?.terminal.id);
             if (
                 powerspawn !== null &&
                 powerspawn instanceof StructurePowerSpawn &&
@@ -369,14 +376,14 @@ export class FillerRole extends CreepRole {
         if (
             this.creep.room.memory.labs &&
             this.creep.room.memory.labs.status !== "react" &&
-            this.creep.room.memory.buildings?.terminal.id !== undefined
+            this.creep.room.memory.genBuildings?.terminal.id !== undefined
         ) {
             for (const labData of this.creep.room.memory.labs?.labs) {
                 const lab: StructureLab | null = Game.getObjectById<StructureLab>(labData.id);
                 if (lab !== null) {
                     //Empty a lab
                     if (lab.mineralType != undefined && lab.mineralType !== labData.targetResource) {
-                        const terminal = Game.getObjectById(this.creep.room.memory.buildings?.terminal.id);
+                        const terminal = Game.getObjectById(this.creep.room.memory.genBuildings?.terminal.id);
                         if (terminal instanceof StructureTerminal) {
                             const creepCapactiy = this.creep.store.getFreeCapacity();
                             const terminalCapacity = terminal.store.getFreeCapacity();
@@ -415,7 +422,7 @@ export class FillerRole extends CreepRole {
                             lab.mineralType == labData.targetResource &&
                             lab.store.getFreeCapacity(lab.mineralType) > 0)
                     ) {
-                        const terminal = Game.getObjectById(this.creep.room.memory.buildings?.terminal.id);
+                        const terminal = Game.getObjectById(this.creep.room.memory.genBuildings?.terminal.id);
                         if (terminal instanceof StructureTerminal) {
                             const creepCapactiy = this.creep.store.getFreeCapacity();
                             const terminalAmount = terminal.store.getUsedCapacity(labData.targetResource);

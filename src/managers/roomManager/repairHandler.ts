@@ -20,7 +20,7 @@ declare global {
 export function RepairHandler(room: Room): void {
     if (
         room.controller !== undefined &&
-        room.memory.buildings !== undefined &&
+        room.memory.genBuildings !== undefined &&
         room.controller.my &&
         room.memory.roomLevel === 2
     ) {
@@ -44,6 +44,7 @@ export function RepairHandler(room: Room): void {
             const object = Game.getObjectById(room.memory.repair[repairId].id);
             if (
                 object === null ||
+                object === undefined ||
                 object.hits === object.hitsMax ||
                 (object.structureType === STRUCTURE_RAMPART && object.hits / object.hitsMax > RAMPART_MAX_THRESHOLD)
             ) {
@@ -55,41 +56,19 @@ export function RepairHandler(room: Room): void {
 
         ///// ROADS /////
 
-        for (const branch of room.memory.buildings.roads) {
-            for (const road of branch) {
-                if (road.id !== undefined) {
-                    const roadObject = Game.getObjectById(road.id);
-                    if (roadObject instanceof StructureRoad) {
-                        if (roadObject.hits / roadObject.hitsMax < ROAD_REPAIR_THRESHOLD) {
-                            // this roadObject needs repair
-                            // add all roadobjects from this branch to repairtargets
+        for (const road of room.memory.genBuildings.roads) {
+            if (road.id !== undefined) {
+                const roadObject = Game.getObjectById(road.id);
+                if (roadObject instanceof StructureRoad) {
+                    if (roadObject.hits / roadObject.hitsMax < ROAD_REPAIR_THRESHOLD) {
+                        // this roadObject needs repair
 
-                            // first check if this road is already being repaired
-                            if (room.memory.repair[road.id] !== undefined) {
-                                // this road is already being repaired
-                                // stop checking for this road
-                                break;
-                            }
+                        room.memory.repair[roadObject.id] = {
+                            id: roadObject.id,
+                            pos: packPosition(roadObject.pos)
+                        };
 
-                            for (const repairTarget of branch) {
-                                if (
-                                    repairTarget.id === undefined ||
-                                    room.memory.repair[repairTarget.id] !== undefined
-                                ) {
-                                    continue;
-                                }
-                                const repairTargetObject = Game.getObjectById(repairTarget.id);
-                                if (repairTargetObject instanceof StructureRoad) {
-                                    if (repairTargetObject.hits < repairTargetObject.hitsMax) {
-                                        room.memory.repair[repairTarget.id] = {
-                                            id: repairTargetObject.id,
-                                            pos: packPosition(repairTargetObject.pos)
-                                        };
-                                    }
-                                }
-                            }
-                            break;
-                        }
+                        break;
                     }
                 }
             }
@@ -97,7 +76,7 @@ export function RepairHandler(room: Room): void {
 
         ///// CONTAINERS /////
 
-        for (const container of room.memory.buildings.containers) {
+        for (const container of room.memory.genBuildings.containers) {
             if (container.id !== undefined && room.memory.repair[container.id] === undefined) {
                 const containerObject = Game.getObjectById(container.id);
                 if (containerObject instanceof StructureContainer) {
@@ -113,24 +92,28 @@ export function RepairHandler(room: Room): void {
 
         ///// THE REST /////
 
-        const buildings: BuildingData<BuildableStructureConstant>[] = (room.memory.buildings
+        const buildings: BuildingData<BuildableStructureConstant>[] = (room.memory.genBuildings
             .extensions as BuildingData<BuildableStructureConstant>[]).concat(
-            room.memory.buildings.towers,
-            room.memory.buildings.labs,
-            room.memory.buildings.links,
-            room.memory.buildings.spawns,
-            room.memory.buildings.storage,
-            room.memory.buildings.terminal,
-            room.memory.buildings.factory,
-            room.memory.buildings.powerspawn,
-            room.memory.buildings.nuker,
-            room.memory.buildings.observer,
-            room.memory.buildings.extractor
+            room.memory.genBuildings.towers,
+            room.memory.genBuildings.labs,
+            room.memory.genBuildings.links,
+            room.memory.genBuildings.spawns,
+            room.memory.genBuildings.storage,
+            room.memory.genBuildings.terminal,
+            room.memory.genBuildings.factory,
+            room.memory.genBuildings.powerspawn,
+            room.memory.genBuildings.nuker,
+            room.memory.genBuildings.observer,
+            room.memory.genBuildings.extractor
         );
         for (const building of buildings) {
             if (building.id !== undefined && room.memory.repair[building.id] === undefined) {
                 const buildingObject = Game.getObjectById(building.id);
-                if (!(buildingObject instanceof ConstructionSite) && buildingObject !== null) {
+                if (
+                    !(buildingObject instanceof ConstructionSite) &&
+                    buildingObject !== null &&
+                    buildingObject !== undefined
+                ) {
                     if (buildingObject.hits < buildingObject.hitsMax) {
                         room.memory.repair[buildingObject.id] = {
                             id: buildingObject.id,
@@ -143,15 +126,42 @@ export function RepairHandler(room: Room): void {
 
         ///// RAMPARTS /////
 
+        for (const rampart of room.memory.genBuildings.ramparts) {
+            if (rampart.id !== undefined) {
+                const rampartObject = Game.getObjectById(rampart.id);
+                if (rampartObject instanceof StructureRampart) {
+                    if (rampartObject.hits < 1000) {
+                        room.memory.repair[rampartObject.id] = {
+                            id: rampartObject.id,
+                            pos: packPosition(rampartObject.pos)
+                        };
+                    }
+                }
+            }
+        }
+
         if (
             !hasRampart &&
             Object.keys(room.memory.repair).length === 0 &&
             Object.keys(room.memory.constructionSites).length === 0
         ) {
             let lowestRampart: StructureRampart | null = null;
-            for (const rampart of room.memory.buildings.ramparts) {
+            for (const rampart of room.memory.genBuildings.ramparts) {
                 if (rampart.id !== undefined) {
                     const rampartObject = Game.getObjectById(rampart.id);
+                    if (rampartObject instanceof StructureRampart) {
+                        if (
+                            rampartObject.hits / rampartObject.hitsMax < RAMPART_REPAIR_THRESHOLD &&
+                            (lowestRampart == null || rampartObject.hits < lowestRampart.hits)
+                        ) {
+                            lowestRampart = rampartObject;
+                        }
+                    }
+                }
+            }
+            for (const building of buildings) {
+                if (building.rampart !== undefined && building.rampart.id !== undefined) {
+                    const rampartObject = Game.getObjectById(building.rampart.id);
                     if (rampartObject instanceof StructureRampart) {
                         if (
                             rampartObject.hits / rampartObject.hitsMax < RAMPART_REPAIR_THRESHOLD &&
@@ -175,7 +185,7 @@ export function RepairHandler(room: Room): void {
         ) {
             for (const repairId in room.memory.repair) {
                 const object = Game.getObjectById(room.memory.repair[repairId].id);
-                if (object !== null && object?.structureType === STRUCTURE_RAMPART) {
+                if (object !== null && object !== undefined && object?.structureType === STRUCTURE_RAMPART) {
                     delete room.memory.repair[repairId];
                 }
             }

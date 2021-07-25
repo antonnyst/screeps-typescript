@@ -112,7 +112,7 @@ export abstract class CreepRole implements CreepRoleInterface {
         if (target === null) {
             target = this.getEnergyTarget();
         }
-        if (target !== null) {
+        if (target !== null && target !== undefined) {
             // console.log("B");
             this.creep.memory.getEnergy.target = target.id;
             this.setMovementData(target.pos, 1, false, false);
@@ -149,7 +149,6 @@ export abstract class CreepRole implements CreepRoleInterface {
             return null;
         }
         const requiredAmount: number = 50;
-        const creep = this.creep;
 
         let targets: (Structure | Resource | Tombstone | Ruin)[] = getFromCache(
             "creepRole.energyTargets." + this.creep.memory.home,
@@ -179,15 +178,7 @@ export abstract class CreepRole implements CreepRoleInterface {
                             }
                         }
                         if (s.structureType === STRUCTURE_LINK) {
-                            if (s.pos.isEqualTo(unpackPosition(creep.room.memory.layout.controllerStore))) {
-                                if ((s.store.getUsedCapacity(RESOURCE_ENERGY) as number) >= requiredAmount) {
-                                    return true;
-                                } else {
-                                    return false;
-                                }
-                            } else {
-                                return false;
-                            }
+                            return true;
                         } else {
                             return false;
                         }
