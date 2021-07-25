@@ -9,6 +9,7 @@ import { RoomManager } from "./managers/roomManager";
 import { SpawnManager } from "./managers/spawnManager";
 import { MapManager } from "./managers/mapManager";
 import { MovementManager } from "managers/movementManager";
+import { LayoutManager } from "managers/layoutManager";
 
 const managers: Manager[] = [
     new FlagManager(),
@@ -19,7 +20,8 @@ const managers: Manager[] = [
     new SpawnManager(),
     new ResourceManager(),
     new MapManager(),
-    new OperationManager()
+    new OperationManager(),
+    new LayoutManager()
 ];
 
 export const runAllManagers = (): void => {
