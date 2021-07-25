@@ -6,4 +6,5 @@ export interface SpawnData {
     body?: BodyPartConstant[];
     directions?: DirectionConstant[];
     center?: boolean;
+    name?: string;
 }
