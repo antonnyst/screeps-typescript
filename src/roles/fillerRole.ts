@@ -48,6 +48,15 @@ export class FillerRole extends CreepRole {
         this.creep.memory.filler.cooldown -= 1;
 
         if (
+            this.creep.memory.filler.transfer.length > 0 &&
+            this.creep.memory.filler.withdraw.length === 0 &&
+            this.creep.memory.filler.pickup.length === 0 &&
+            this.creep.store.getUsedCapacity() === 0
+        ) {
+            this.creep.memory.filler.transfer = [];
+        }
+
+        if (
             this.creep.memory.filler.pickup.length === 0 &&
             this.creep.memory.filler.withdraw.length === 0 &&
             this.creep.memory.filler.transfer.length === 0 &&
@@ -150,7 +159,6 @@ export class FillerRole extends CreepRole {
                 cooldown: 0
             };
         }
-        //const cpos: RoomPosition = unpackPosition(this.creep.room.memory.layout.baseCenter);
         const energyStructures: (
             | StructureSpawn
             | StructureExtension
