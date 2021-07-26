@@ -1237,6 +1237,81 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
 
     yield null;
 
+    const basePos = new RoomPosition(
+        candidatesFitness[0].p.prefabs[0].x,
+        candidatesFitness[0].p.prefabs[0].y,
+        roomName
+    );
+    const roadCostMatrix = (roomN: string): boolean | CostMatrix => {
+        const room = Game.rooms[roomN];
+
+        if (roomN !== roomName) {
+            return false;
+        }
+
+        const costs = new PathFinder.CostMatrix();
+
+        for (const road of candidatesFitness[0].p.roads) {
+            const pos = unpackPosition(road);
+            if (pos.roomName === roomName) {
+                costs.set(pos.x, pos.y, 1);
+            }
+        }
+
+        for (const prefab of candidatesFitness[0].p.prefabs) {
+            for (const building of prefab.prefab.buildings) {
+                if (building.type !== STRUCTURE_ROAD) {
+                    costs.set(prefab.x + building.dx * prefab.rotx, prefab.y + building.dy * prefab.roty, 255);
+                }
+            }
+        }
+        for (const extension of candidatesFitness[0].p.extensions) {
+            const pos = unpackPosition(extension);
+            costs.set(pos.x, pos.y, 255);
+        }
+        for (const tower of candidatesFitness[0].p.towers) {
+            const pos = unpackPosition(tower);
+            costs.set(pos.x, pos.y, 255);
+        }
+        const mpos = offsetPositionByDirection(
+            unpackPosition(room.memory.basicRoomData.mineral!.pos),
+            candidatesFitness[0].p.mineral.container
+        );
+        costs.set(mpos.x, mpos.y, 255);
+        const cpos = unpackPosition(candidatesFitness[0].p.controller);
+        costs.set(cpos.x, cpos.y, 255);
+
+        return costs;
+    };
+
+    for (const sourceIndex in candidatesFitness[0].p.sources) {
+        const containerPos = offsetPositionByDirection(
+            unpackPosition(basicLayout.sources[sourceIndex].pos),
+            candidatesFitness[0].p.sources[sourceIndex].container
+        );
+
+        const search = PathFinder.search(
+            basePos,
+            {
+                pos: containerPos,
+                range: 1
+            },
+            {
+                roomCallback: roadCostMatrix,
+                plainCost: 2,
+                swampCost: 10
+            }
+        );
+
+        if (search.incomplete === true) {
+            continue;
+        }
+
+        candidatesFitness[0].p.sources[sourceIndex].dist = search.path.length;
+    }
+
+    yield null;
+
     candidatesFitness[0].p.ramparts = cutLayout(basicLayout, candidatesFitness[0].p, roomName).map((v) =>
         packPosition(new RoomPosition(v.x, v.y, roomName))
     );
