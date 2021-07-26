@@ -4,7 +4,12 @@ import { unpackPosition } from "../utils/RoomPositionPacker";
 
 export class MinerRole extends CreepRole {
     runRole() {
-        if (this.creep === null || this.creep.memory.roleData === undefined) {
+        if (
+            this.creep === null ||
+            this.creep.memory.roleData === undefined ||
+            this.creep.room.memory.genLayout === undefined ||
+            this.creep.room.memory.genBuildings === undefined
+        ) {
             return;
         }
 

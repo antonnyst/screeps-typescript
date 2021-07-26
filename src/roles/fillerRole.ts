@@ -32,7 +32,7 @@ const FillerCooldown = 5;
 
 export class FillerRole extends CreepRole {
     runRole() {
-        if (this.creep === null) {
+        if (this.creep === null || this.creep.room.memory.genLayout === undefined) {
             return;
         }
 
