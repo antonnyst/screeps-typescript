@@ -112,7 +112,7 @@ export function saveRooms(): void {
         if (
             room.controller &&
             room.controller.my &&
-            room.memory.buildings !== undefined &&
+            room.memory.genBuildings !== undefined &&
             room.memory.resources !== undefined
         ) {
             const energystored = room.memory.resources.total.energy;
@@ -123,7 +123,7 @@ export function saveRooms(): void {
             let rampartmin = Infinity;
             let rampartmax = 0;
 
-            for (const rampart of room.memory.buildings.ramparts) {
+            for (const rampart of room.memory.genBuildings.ramparts) {
                 if (rampart.id !== undefined) {
                     const rampartObject = Game.getObjectById(rampart.id);
                     if (rampartObject instanceof StructureRampart) {
