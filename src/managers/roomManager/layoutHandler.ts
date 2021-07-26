@@ -3722,7 +3722,7 @@ function BuildBuildings(room: Room): void {
         buildingSpotsLeft--;
     }
 
-    if (Object.keys(room.memory.repair).length > 0) {
+    if (room.memory.repair === undefined || Object.keys(room.memory.repair).length > 0) {
         return;
     }
 
