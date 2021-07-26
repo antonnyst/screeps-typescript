@@ -1,5 +1,4 @@
 import { directionFromEdge, isPositionEdge } from "utils/RoomPositionHelpers";
-import { unpackPosition } from "utils/RoomPositionPacker";
 import { CreepRole } from "./creepRole";
 
 export class BuilderRole extends CreepRole {
