@@ -1,4 +1,4 @@
-import { packPosition, unpackPosition } from "../utils/RoomPositionPacker";
+import { packPosition } from "../utils/RoomPositionPacker";
 import { getFromCache, saveToCache } from "../utils/Cache";
 
 export interface CreepRoleInterface {

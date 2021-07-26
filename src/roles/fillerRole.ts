@@ -1,8 +1,5 @@
 import { CreepRole } from "./creepRole";
-import { saveToCache, getFromCache } from "../utils/Cache";
-import { unpackPosition } from "../utils/RoomPositionPacker";
 import { EXTRA_ENERGY_FILL_ENERGY_NEEDED } from "config/constants";
-import { LabHandler } from "managers/roomManager/labHandler";
 
 declare global {
     interface CreepMemory {

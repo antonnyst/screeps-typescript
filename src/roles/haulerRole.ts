@@ -1,7 +1,6 @@
 import { CreepRole } from "./creepRole";
 import { offsetPositionByDirection } from "../utils/RoomPositionHelpers";
 import { unpackPosition } from "../utils/RoomPositionPacker";
-import { throws } from "assert";
 
 export class HaulerRole extends CreepRole {
     runRole() {
