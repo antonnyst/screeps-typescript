@@ -1310,6 +1310,27 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
         candidatesFitness[0].p.sources[sourceIndex].dist = search.path.length;
     }
 
+    const mineralContainerPos = offsetPositionByDirection(
+        unpackPosition(basicLayout.mineral!.pos),
+        candidatesFitness[0].p.mineral.container
+    );
+    const search = PathFinder.search(
+        basePos,
+        {
+            pos: mineralContainerPos,
+            range: 1
+        },
+        {
+            roomCallback: roadCostMatrix,
+            plainCost: 2,
+            swampCost: 10
+        }
+    );
+
+    if (search.incomplete === false) {
+        candidatesFitness[0].p.mineral.dist = search.path.length;
+    }
+
     yield null;
 
     candidatesFitness[0].p.ramparts = cutLayout(basicLayout, candidatesFitness[0].p, roomName).map((v) =>
