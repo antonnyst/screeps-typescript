@@ -31,11 +31,11 @@ export function RepairHandler(room: Room): void {
         // Containers are repaired when they pass an low threshold until they are fully repaired
         // The rest are repaired if not at full hitpoints
 
-        ///// REMOVE FULLY REPAIRED BUILDINGS AND RAMPARTS /////
-
         if (room.memory.repair === undefined) {
             room.memory.repair = {};
         }
+
+        ///// REMOVE FULLY REPAIRED BUILDINGS AND RAMPARTS /////
 
         let hasRampart: boolean = false;
         // Indicator to not add a rampart to repairtargets
@@ -129,7 +129,20 @@ export function RepairHandler(room: Room): void {
             if (rampart.id !== undefined) {
                 const rampartObject = Game.getObjectById(rampart.id);
                 if (rampartObject instanceof StructureRampart) {
-                    if (rampartObject.hits < 1000) {
+                    if (rampartObject.hits < 2000) {
+                        room.memory.repair[rampartObject.id] = {
+                            id: rampartObject.id,
+                            pos: packPosition(rampartObject.pos)
+                        };
+                    }
+                }
+            }
+        }
+        for (const building of buildings) {
+            if (building.rampart !== undefined && building.rampart.id !== undefined) {
+                const rampartObject = Game.getObjectById(building.rampart.id);
+                if (rampartObject instanceof StructureRampart) {
+                    if (rampartObject.hits < 2000) {
                         room.memory.repair[rampartObject.id] = {
                             id: rampartObject.id,
                             pos: packPosition(rampartObject.pos)
