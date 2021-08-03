@@ -10,6 +10,7 @@ import { SpawnManager } from "./managers/spawnManager";
 import { MapManager } from "./managers/mapManager";
 import { MovementManager } from "managers/movementManager";
 import { LayoutManager } from "managers/layoutManager";
+import { ErrorMapper } from "utils/ErrorMapper";
 
 const managers: Manager[] = [
     new FlagManager(),
@@ -30,7 +31,11 @@ export const runAllManagers = (): void => {
     for (let i = 0; i < managers.length; i++) {
         const a = Game.cpu.getUsed();
         const speed = managers[i].minSpeed + (managers[i].maxSpeed - managers[i].minSpeed) * globalSpeed;
-        managers[i].run(speed);
+        try {
+            managers[i].run(speed);
+        } catch (error) {
+            console.log(ErrorMapper.sourceMappedStackTrace(error));
+        }
         const b = Game.cpu.getUsed() - a;
         Memory.msplit[(managers[i] as Object).constructor.name] = b;
         if (Config.cpuLog) {
