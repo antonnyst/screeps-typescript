@@ -34,6 +34,7 @@ export const runAllManagers = (): void => {
         try {
             managers[i].run(speed);
         } catch (error) {
+            console.log("Error in " + (managers[i] as Object).constructor.name);
             console.log(ErrorMapper.sourceMappedStackTrace(error));
         }
         const b = Game.cpu.getUsed() - a;
