@@ -92,8 +92,7 @@ export function RepairHandler(room: Room): void {
 
         ///// THE REST /////
 
-        const buildings: BuildingData<BuildableStructureConstant>[] = (room.memory.genBuildings
-            .extensions as BuildingData<BuildableStructureConstant>[]).concat(
+        const buildings: BuildingData[] = (room.memory.genBuildings.extensions as BuildingData[]).concat(
             room.memory.genBuildings.towers,
             room.memory.genBuildings.labs,
             room.memory.genBuildings.links,
@@ -143,7 +142,7 @@ export function RepairHandler(room: Room): void {
         if (
             !hasRampart &&
             Object.keys(room.memory.repair).length === 0 &&
-            Object.keys(room.memory.constructionSites).length === 0
+            room.memory.placedCS.length + room.memory.plannedCS.length === 0
         ) {
             let lowestRampart: StructureRampart | null = null;
             for (const rampart of room.memory.genBuildings.ramparts) {
@@ -181,7 +180,8 @@ export function RepairHandler(room: Room): void {
             }
         } else if (
             hasRampart &&
-            (Object.keys(room.memory.repair).length > 1 || Object.keys(room.memory.constructionSites).length > 0)
+            (Object.keys(room.memory.repair).length > 1 ||
+                room.memory.placedCS.length + room.memory.plannedCS.length > 0)
         ) {
             for (const repairId in room.memory.repair) {
                 const object = Game.getObjectById(room.memory.repair[repairId].id);

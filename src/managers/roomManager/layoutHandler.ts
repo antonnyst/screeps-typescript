@@ -11,25 +11,25 @@ declare global {
     }
 }
 export interface GenBuildingsData {
-    roads: BuildingData<STRUCTURE_ROAD>[];
-    ramparts: BuildingData<STRUCTURE_RAMPART>[];
-    extensions: BuildingData<STRUCTURE_EXTENSION>[];
-    towers: BuildingData<STRUCTURE_TOWER>[];
-    labs: BuildingData<STRUCTURE_LAB>[];
-    links: BuildingData<STRUCTURE_LINK>[];
-    spawns: BuildingData<STRUCTURE_SPAWN>[];
-    containers: BuildingData<STRUCTURE_CONTAINER>[];
-    storage: BuildingData<STRUCTURE_STORAGE>;
-    terminal: BuildingData<STRUCTURE_TERMINAL>;
-    factory: BuildingData<STRUCTURE_FACTORY>;
-    powerspawn: BuildingData<STRUCTURE_POWER_SPAWN>;
-    nuker: BuildingData<STRUCTURE_NUKER>;
-    observer: BuildingData<STRUCTURE_OBSERVER>;
-    extractor: BuildingData<STRUCTURE_EXTRACTOR>;
+    roads: BuildingData[];
+    ramparts: BuildingData[];
+    extensions: BuildingData[];
+    towers: BuildingData[];
+    labs: BuildingData[];
+    links: BuildingData[];
+    spawns: BuildingData[];
+    containers: BuildingData[];
+    storage: BuildingData;
+    terminal: BuildingData;
+    factory: BuildingData;
+    powerspawn: BuildingData;
+    nuker: BuildingData;
+    observer: BuildingData;
+    extractor: BuildingData;
 }
-export interface BuildingData<T extends BuildableStructureConstant> {
+export interface BuildingData {
     pos: number;
-    id?: Id<Structure<T> | ConstructionSite<T>>;
+    id?: Id<Structure | ConstructionSite>;
     name?: string;
     active: boolean;
     rampart?: {
@@ -109,21 +109,21 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
         return undefined;
     }
 
-    let roads: BuildingData<STRUCTURE_ROAD>[] = [];
-    let ramparts: BuildingData<STRUCTURE_RAMPART>[] = [];
-    let extensions: BuildingData<STRUCTURE_EXTENSION>[] = [];
-    let towers: BuildingData<STRUCTURE_TOWER>[] = [];
-    let labs: BuildingData<STRUCTURE_LAB>[] = [];
-    let links: BuildingData<STRUCTURE_LINK>[] = [];
-    let spawns: BuildingData<STRUCTURE_SPAWN>[] = [];
-    let containers: BuildingData<STRUCTURE_CONTAINER>[] = [];
-    let storage: BuildingData<STRUCTURE_STORAGE> | undefined = undefined;
-    let terminal: BuildingData<STRUCTURE_TERMINAL> | undefined = undefined;
-    let factory: BuildingData<STRUCTURE_FACTORY> | undefined = undefined;
-    let powerspawn: BuildingData<STRUCTURE_POWER_SPAWN> | undefined = undefined;
-    let nuker: BuildingData<STRUCTURE_NUKER>;
-    let observer: BuildingData<STRUCTURE_OBSERVER>;
-    let extractor: BuildingData<STRUCTURE_EXTRACTOR>;
+    let roads: BuildingData[] = [];
+    let ramparts: BuildingData[] = [];
+    let extensions: BuildingData[] = [];
+    let towers: BuildingData[] = [];
+    let labs: BuildingData[] = [];
+    let links: BuildingData[] = [];
+    let spawns: BuildingData[] = [];
+    let containers: BuildingData[] = [];
+    let storage: BuildingData | undefined = undefined;
+    let terminal: BuildingData | undefined = undefined;
+    let factory: BuildingData | undefined = undefined;
+    let powerspawn: BuildingData | undefined = undefined;
+    let nuker: BuildingData;
+    let observer: BuildingData;
+    let extractor: BuildingData;
 
     let spawnIndex = 0;
 
@@ -515,157 +515,52 @@ function UpdateBuildingsData(room: Room): void {
     }
 }
 
-const MAX_SITES_PER_COLONY = 3;
-
 function BuildBuildings(room: Room): void {
     if (room.memory.genBuildings === undefined) {
         return;
     }
 
-    //let massLeft = (Object.keys(room.memory.repair).length > 0 ? 0 : 2) - ;
-
-    let buildingSpotsLeft = MAX_SITES_PER_COLONY - room.find(FIND_CONSTRUCTION_SITES).length;
-
     for (const extension of room.memory.genBuildings.extensions) {
-        if (buildingSpotsLeft <= 0) {
-            return;
-        }
-        const res = BuildBuilding(extension, STRUCTURE_EXTENSION);
-        if (res) {
-            buildingSpotsLeft--;
-        }
+        BuildBuilding(extension, STRUCTURE_EXTENSION, room.name);
     }
     for (const tower of room.memory.genBuildings.towers) {
-        if (buildingSpotsLeft <= 0) {
-            return;
-        }
-        const res = BuildBuilding(tower, STRUCTURE_TOWER);
-        if (res) {
-            buildingSpotsLeft--;
-        }
+        BuildBuilding(tower, STRUCTURE_TOWER, room.name);
     }
     for (const lab of room.memory.genBuildings.labs) {
-        if (buildingSpotsLeft <= 0) {
-            return;
-        }
-        const res = BuildBuilding(lab, STRUCTURE_LAB);
-        if (res) {
-            buildingSpotsLeft--;
-        }
+        BuildBuilding(lab, STRUCTURE_LAB, room.name);
     }
     for (const link of room.memory.genBuildings.links) {
-        if (buildingSpotsLeft <= 0) {
-            return;
-        }
-        const res = BuildBuilding(link, STRUCTURE_LINK);
-        if (res) {
-            buildingSpotsLeft--;
-        }
+        BuildBuilding(link, STRUCTURE_LINK, room.name);
     }
     for (const spawn of room.memory.genBuildings.spawns) {
-        if (buildingSpotsLeft <= 0) {
-            return;
-        }
-        const res = BuildBuilding(spawn, STRUCTURE_SPAWN);
-        if (res) {
-            buildingSpotsLeft--;
-        }
+        BuildBuilding(spawn, STRUCTURE_SPAWN, room.name);
     }
     for (const container of room.memory.genBuildings.containers) {
-        if (buildingSpotsLeft <= 0) {
-            return;
-        }
-        const res = BuildBuilding(container, STRUCTURE_CONTAINER);
-        if (res) {
-            buildingSpotsLeft--;
-        }
+        BuildBuilding(container, STRUCTURE_CONTAINER, room.name);
     }
 
-    if (buildingSpotsLeft <= 0) {
-        return;
-    }
-    let res = BuildBuilding(room.memory.genBuildings.storage, STRUCTURE_STORAGE);
-    if (res) {
-        buildingSpotsLeft--;
-    }
-
-    if (buildingSpotsLeft <= 0) {
-        return;
-    }
-    res = BuildBuilding(room.memory.genBuildings.terminal, STRUCTURE_TERMINAL);
-    if (res) {
-        buildingSpotsLeft--;
-    }
-
-    if (buildingSpotsLeft <= 0) {
-        return;
-    }
-    res = BuildBuilding(room.memory.genBuildings.factory, STRUCTURE_FACTORY);
-    if (res) {
-        buildingSpotsLeft--;
-    }
-
-    if (buildingSpotsLeft <= 0) {
-        return;
-    }
-    res = BuildBuilding(room.memory.genBuildings.powerspawn, STRUCTURE_POWER_SPAWN);
-    if (res) {
-        buildingSpotsLeft--;
-    }
-
-    if (buildingSpotsLeft <= 0) {
-        return;
-    }
-    res = BuildBuilding(room.memory.genBuildings.nuker, STRUCTURE_NUKER);
-    if (res) {
-        buildingSpotsLeft--;
-    }
-
-    if (buildingSpotsLeft <= 0) {
-        return;
-    }
-    res = BuildBuilding(room.memory.genBuildings.observer, STRUCTURE_OBSERVER);
-    if (res) {
-        buildingSpotsLeft--;
-    }
-
-    if (buildingSpotsLeft <= 0) {
-        return;
-    }
-    res = BuildBuilding(room.memory.genBuildings.extractor, STRUCTURE_EXTRACTOR);
-    if (res) {
-        buildingSpotsLeft--;
-    }
-
-    if (room.memory.repair === undefined || Object.keys(room.memory.repair).length > 0) {
-        return;
-    }
+    BuildBuilding(room.memory.genBuildings.storage, STRUCTURE_STORAGE, room.name);
+    BuildBuilding(room.memory.genBuildings.terminal, STRUCTURE_TERMINAL, room.name);
+    BuildBuilding(room.memory.genBuildings.factory, STRUCTURE_FACTORY, room.name);
+    BuildBuilding(room.memory.genBuildings.powerspawn, STRUCTURE_POWER_SPAWN, room.name);
+    BuildBuilding(room.memory.genBuildings.nuker, STRUCTURE_NUKER, room.name);
+    BuildBuilding(room.memory.genBuildings.observer, STRUCTURE_OBSERVER, room.name);
+    BuildBuilding(room.memory.genBuildings.extractor, STRUCTURE_EXTRACTOR, room.name);
 
     for (const road of room.memory.genBuildings.roads) {
-        if (buildingSpotsLeft <= 0) {
-            return;
-        }
-        const res = BuildBuilding(road, STRUCTURE_ROAD);
-        if (res) {
-            buildingSpotsLeft--;
-        }
+        BuildBuilding(road, STRUCTURE_ROAD, room.name);
     }
 
     for (const rampart of room.memory.genBuildings.ramparts) {
-        if (buildingSpotsLeft <= 0) {
-            return;
-        }
-        const res = BuildBuilding(rampart, STRUCTURE_RAMPART);
-        if (res) {
-            buildingSpotsLeft--;
-        }
+        BuildBuilding(rampart, STRUCTURE_RAMPART, room.name);
     }
 }
 
 function BuildBuilding<T extends BuildableStructureConstant>(
-    building: BuildingData<T>,
-    type: BuildableStructureConstant
-): boolean {
+    building: BuildingData,
+    type: BuildableStructureConstant,
+    roomName: string
+): void {
     if (building.active === false) {
         if (building.id !== undefined && Game.rooms[unpackPosition(building.pos).roomName] !== undefined) {
             const object = Game.getObjectById(building.id);
@@ -678,9 +573,19 @@ function BuildBuilding<T extends BuildableStructureConstant>(
             }
             building.id = undefined;
         }
-        return false;
+        return;
     }
-    if (building.rampart !== undefined) {
+    const baseRoom = Game.rooms[roomName];
+    if (baseRoom === undefined) {
+        return;
+    }
+    const pos: RoomPosition = unpackPosition(building.pos);
+    const room: Room = Game.rooms[pos.roomName];
+    if (room === undefined) {
+        return;
+    }
+
+    if (building.rampart !== undefined && Object.keys(Game.spawns).length > 0) {
         if (building.rampart.id !== undefined) {
             if (
                 Game.rooms[unpackPosition(building.pos).roomName] !== undefined &&
@@ -690,64 +595,80 @@ function BuildBuilding<T extends BuildableStructureConstant>(
             }
         }
         if (building.rampart.id === undefined) {
-            const pos: RoomPosition = unpackPosition(building.pos);
-            const room: Room = Game.rooms[pos.roomName];
-            if (room === undefined) {
-                return false;
-            }
             const structures: Structure<StructureConstant>[] = pos.lookFor(LOOK_STRUCTURES);
             for (const structure of structures) {
                 if (structure.structureType === STRUCTURE_RAMPART) {
                     building.rampart.id = structure.id as Id<Structure<STRUCTURE_RAMPART>>;
-                    return false;
+                    return;
                 }
             }
-            const constructionSites: ConstructionSite<BuildableStructureConstant>[] = pos.lookFor(
-                LOOK_CONSTRUCTION_SITES
-            );
-            for (const site of constructionSites) {
-                if (site.structureType === STRUCTURE_RAMPART) {
-                    building.rampart.id = site.id as Id<ConstructionSite<STRUCTURE_RAMPART>>;
-                    return false;
+
+            const placedCS = room.memory.placedCS;
+            const plannedCS = room.memory.plannedCS;
+
+            for (const site of placedCS) {
+                if (site.pos === building.pos && site.type === STRUCTURE_RAMPART) {
+                    building.id = site.id;
+                    return;
                 }
             }
-            return room.createConstructionSite(pos, STRUCTURE_RAMPART) === 0;
+            for (const site of plannedCS) {
+                if (site.pos === building.pos && site.type === STRUCTURE_RAMPART) {
+                    return;
+                }
+            }
+
+            room.memory.plannedCS.push({
+                pos: building.pos,
+                type: STRUCTURE_RAMPART
+            });
+            return;
         }
     }
     if (building.id !== undefined) {
         if (Game.rooms[unpackPosition(building.pos).roomName] === undefined) {
-            return false;
+            return;
         }
 
         if (Game.getObjectById(building.id) !== null) {
             // we already have a structure/constructionSite for this building
-            return false;
+            return;
         }
         building.id = undefined;
     }
-    const pos: RoomPosition = unpackPosition(building.pos);
-    const room: Room = Game.rooms[pos.roomName];
-    if (room === undefined) {
-        return false;
-    }
+
     const structures: Structure<StructureConstant>[] = pos.lookFor(LOOK_STRUCTURES);
     for (const structure of structures) {
         if (structure.structureType === type) {
             building.id = structure.id as Id<Structure<T>>;
-            return false;
-        }
-    }
-    const constructionSites: ConstructionSite<BuildableStructureConstant>[] = pos.lookFor(LOOK_CONSTRUCTION_SITES);
-    for (const site of constructionSites) {
-        if (site.structureType === type) {
-            building.id = site.id as Id<ConstructionSite<T>>;
-            return false;
+            return;
         }
     }
 
+    const placedCS = room.memory.placedCS;
+    const plannedCS = room.memory.plannedCS;
+
+    for (const site of placedCS) {
+        if (site.pos === building.pos && site.type === type) {
+            building.id = site.id;
+            return;
+        }
+    }
+    for (const site of plannedCS) {
+        if (site.pos === building.pos && site.type === type) {
+            return;
+        }
+    }
+
+    room.memory.plannedCS.push({
+        pos: building.pos,
+        type: type,
+        name: building.name
+    });
+
+    /*
     if (type === STRUCTURE_SPAWN && building.name !== undefined) {
         let name = building.name || "";
-        name = name.replace("{ROOM_NAME}", room.name);
 
         let i = 1;
         const done: boolean = false;
@@ -757,20 +678,20 @@ function BuildBuilding<T extends BuildableStructureConstant>(
             const res = room.createConstructionSite(pos.x, pos.y, type, potentialName);
 
             if (res === OK) {
-                return true;
+                return;
             }
             i++;
             if (i > 5) {
                 break;
             }
         }
-        return false;
+        return;
     } else {
-        return room.createConstructionSite(pos, type) === 0;
-    }
+        room.createConstructionSite(pos, type) === 0;
+    }*/
 }
 
-function removeDuplicates<T extends BuildableStructureConstant>(array: BuildingData<T>[]): BuildingData<T>[] {
+function removeDuplicates(array: BuildingData[]): BuildingData[] {
     let seen: { [key in string]: boolean } = {};
     return array.filter((value) => {
         return seen.hasOwnProperty(value.pos) ? false : (seen[value.pos] = true);
