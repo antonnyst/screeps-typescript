@@ -178,7 +178,11 @@ export abstract class CreepRole implements CreepRoleInterface {
                             }
                         }
                         if (s.structureType === STRUCTURE_LINK) {
-                            return true;
+                            if (s.store.getUsedCapacity(RESOURCE_ENERGY) >= requiredAmount) {
+                                return true;
+                            } else {
+                                return false;
+                            }
                         } else {
                             return false;
                         }
