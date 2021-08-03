@@ -83,7 +83,7 @@ export function LayoutHandler(room: Room): void {
                 6000
             );
 
-            // Update buildings data every 750 ticks
+            // Update buildings data every 500 ticks
             RunEvery(
                 () => {
                     UpdateBuildingsData(room);
@@ -92,13 +92,13 @@ export function LayoutHandler(room: Room): void {
                 500
             );
 
-            // Build buildings every 75 ticks
+            // Build buildings every 50 ticks
             RunEvery(
                 () => {
                     BuildBuildings(room);
                 },
                 "layouthandlerbuildbuildings" + room.name,
-                75
+                50
             );
         }
     }
@@ -486,7 +486,7 @@ function UpdateBuildingsData(room: Room): void {
         room.memory.genBuildings.containers[i].active = true;
     }
     if (room.controller.level >= 5) {
-        room.memory.genBuildings.containers[2].active = false;
+        room.memory.genBuildings.containers[0].active = false;
     }
     if (room.controller.level >= 6) {
         room.memory.genBuildings.containers[room.memory.genBuildings.containers.length - 1].active = true;
@@ -630,7 +630,18 @@ function BuildBuilding<T extends BuildableStructureConstant>(
             return;
         }
 
-        if (Game.getObjectById(building.id) !== null) {
+        const obj = Game.getObjectById(building.id);
+
+        if (obj !== null) {
+            if (obj instanceof ConstructionSite) {
+                const structures: Structure<StructureConstant>[] = pos.lookFor(LOOK_STRUCTURES);
+                for (const structure of structures) {
+                    if (structure.structureType === type) {
+                        building.id = structure.id as Id<Structure<T>>;
+                        return;
+                    }
+                }
+            }
             // we already have a structure/constructionSite for this building
             return;
         }
@@ -645,9 +656,8 @@ function BuildBuilding<T extends BuildableStructureConstant>(
         }
     }
 
-    const placedCS = room.memory.placedCS;
-    const plannedCS = room.memory.plannedCS;
-
+    const placedCS = baseRoom.memory.placedCS;
+    const plannedCS = baseRoom.memory.plannedCS;
     for (const site of placedCS) {
         if (site.pos === building.pos && site.type === type) {
             building.id = site.id;
@@ -660,7 +670,7 @@ function BuildBuilding<T extends BuildableStructureConstant>(
         }
     }
 
-    room.memory.plannedCS.push({
+    baseRoom.memory.plannedCS.push({
         pos: building.pos,
         type: type,
         name: building.name
