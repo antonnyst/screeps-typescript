@@ -91,7 +91,7 @@ function findTarget(creep: Creep): Structure | ConstructionSite | null {
             const object = Game.getObjectById(Game.rooms[creep.memory.home].memory.repair[target].id);
             if (object !== null && object !== undefined) {
                 if (object.hits < object.hitsMax) {
-                    const range = creep.pos.getRangeTo(object.pos);
+                    const range = GetRange(object.pos, creep.pos);
                     if (closestTarget === null || range < closestRange) {
                         closestTarget = object;
                         closestRange = range;
@@ -117,7 +117,7 @@ function findTarget(creep: Creep): Structure | ConstructionSite | null {
 
             for (const site of Game.rooms[creep.memory.home].memory.placedCS) {
                 if (site.type === type) {
-                    const range = unpackPosition(site.pos).getRangeTo(creep.pos);
+                    const range = GetRange(unpackPosition(site.pos), creep.pos);
                     if (range < closestRange) {
                         closestRange = range;
                         closestID = site.id;
@@ -136,7 +136,7 @@ function findTarget(creep: Creep): Structure | ConstructionSite | null {
         let closestRange = Infinity;
 
         for (const site of Game.rooms[creep.memory.home].memory.placedCS) {
-            const range = unpackPosition(site.pos).getRangeTo(creep.pos);
+            const range = GetRange(unpackPosition(site.pos), creep.pos);
             if (range < closestRange) {
                 closestRange = range;
                 closestID = site.id;
@@ -152,4 +152,12 @@ function findTarget(creep: Creep): Structure | ConstructionSite | null {
         return target;
     }
     return null;
+}
+
+function GetRange(pos1: RoomPosition, pos2: RoomPosition): number {
+    if (pos1.roomName === pos2.roomName) {
+        return pos1.getRangeTo(pos2);
+    } else {
+        return Game.map.getRoomLinearDistance(pos1.roomName, pos2.roomName) * 50;
+    }
 }
