@@ -42,12 +42,8 @@ interface RoomMemory {
     spawnQueue: import("./dataInterfaces/spawnData").SpawnData[];
     waitingCreep?: import("./dataInterfaces/spawnData").SpawnData;
     spawnAttempts?: number;
-    constructionSites: { [site: string]: RoomPosition };
     remotes: string[];
     remoteSupportRooms: string[];
-    //basicLayout: import("./dataInterfaces/layoutData").BasicLayoutData;
-    //remoteLayout: import("./dataInterfaces/layoutData").RemoteLayoutData;
-    //layout: import("./dataInterfaces/layoutData").LayoutData;
     linkStatus: LinkStatus;
     labs?: import("./dataInterfaces/labsData").LabsData;
     resources?: import("./dataInterfaces/resourcesData").ResourcesData;
