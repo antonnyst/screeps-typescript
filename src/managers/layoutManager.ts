@@ -24,7 +24,7 @@ export class LayoutManager implements Manager {
                 let request = workQueue.shift();
 
                 if (request !== undefined) {
-                    console.log("Starting new work!");
+                    console.log("Starting new work for room " + request.room);
                     currentWork = {
                         generator: generateLayout(request.basicRoomData, request.room),
                         request
@@ -36,9 +36,8 @@ export class LayoutManager implements Manager {
                     () => {
                         while (Game.cpu.getUsed() < Game.cpu.limit) {
                             const res = currentWork!.generator.next();
-                            console.log(res.value);
                             if (res.done) {
-                                console.log("Done with work!");
+                                console.log("Done with work for room " + currentWork!.request.room);
                                 if (res.value !== undefined) {
                                     currentWork!.request.callback(res.value);
                                 }
