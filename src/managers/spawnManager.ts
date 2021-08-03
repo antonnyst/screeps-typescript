@@ -341,7 +341,8 @@ const needChecks: CreepNeedCheckFunction[] = [
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (
             counts["builder"] === 0 &&
-            (Object.keys(room.memory.constructionSites).length > 0 || Object.keys(room.memory.repair).length > 0)
+            (room.memory.placedCS.length > 0 ||
+                (room.memory.repair !== undefined && Object.keys(room.memory.repair).length > 0))
         ) {
             return {
                 role: "builder",
@@ -597,7 +598,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         let builderTarget = Math.max(
             Math.ceil(
-                Object.keys(room.memory.constructionSites).length /
+                (room.memory.placedCS.length + room.memory.plannedCS.length) /
                     (Math.min(room.energyCapacityAvailable, 3000) * 0.00167)
             ),
             Math.min(
