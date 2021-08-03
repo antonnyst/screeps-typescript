@@ -143,6 +143,21 @@ export class MovementManager implements Manager {
                                 ).path;
 
                                 if (path.length !== 0) {
+                                    for (let i = path.length - 1; i >= 1; i--) {
+                                        if (
+                                            (path[i].x === 0 ||
+                                                path[i].x === 49 ||
+                                                path[i].y === 0 ||
+                                                path[i].y === 49) &&
+                                            (path[i - 1].x === 0 ||
+                                                path[i - 1].x === 49 ||
+                                                path[i - 1].y === 0 ||
+                                                path[i - 1].y === 49)
+                                        ) {
+                                            path.splice(i, 1);
+                                        }
+                                    }
+
                                     serializedPath = serializePath(path);
                                     savePath(pathName, serializedPath);
                                 } else {
@@ -304,13 +319,20 @@ export class MovementManager implements Manager {
                 if (data[creep.name] && data[creep.name].needsToMove && data[creep.name].nextLocation) {
                     if (creep.fatigue === 0) {
                         if (creep.pos.getRangeTo(data[creep.name].nextLocation!) !== 1 && creep.memory.movementData) {
+                            console.log("fail move");
                             console.log(creep.memory.movementData._path);
+                            console.log(
+                                creep.name +
+                                    " " +
+                                    "fail move currentPos " +
+                                    creep.pos +
+                                    " trying to move to " +
+                                    data[creep.name].nextLocation!
+                            );
                             creep.memory.movementData._path = undefined;
-                            console.log(creep.name + " " + "fail move " + creep.pos + data[creep.name].nextLocation!);
-                            creep.say("fail move");
+
                             if (creep.memory.movementData._pathName !== undefined) {
                                 removePath(creep.memory.movementData._pathName);
-                                console.log("removed path");
                             }
                             continue;
                         }
