@@ -74,7 +74,7 @@ export function ConstructionHandler(room: Room): void {
                 } else {
                     res = unpackPosition(plcs.pos).createConstructionSite(plcs.type);
                 }
-                if (res !== 0) {
+                if (res !== 0 && res !== -7) {
                     room.memory.plannedCS.push(plcs);
                 }
             }
