@@ -1,5 +1,8 @@
 import { directionFromEdge, isPositionEdge } from "utils/RoomPositionHelpers";
+import { unpackPosition } from "utils/RoomPositionPacker";
 import { CreepRole } from "./creepRole";
+
+const builderPriority: BuildableStructureConstant[] = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_CONTAINER];
 
 export class BuilderRole extends CreepRole {
     runRole() {
@@ -103,25 +106,45 @@ function findTarget(creep: Creep): Structure | ConstructionSite | null {
         target = closestTarget;
     }
 
-    if (target === null && Object.keys(Game.rooms[creep.memory.home].memory.constructionSites).length > 0) {
-        const tid = Object.keys(Game.rooms[creep.memory.home].memory.constructionSites).sort(
-            (a, b) =>
-                creep.pos.getRangeTo(
-                    new RoomPosition(
-                        Game.rooms[creep.memory.home].memory.constructionSites[a].x,
-                        Game.rooms[creep.memory.home].memory.constructionSites[a].y,
-                        Game.rooms[creep.memory.home].memory.constructionSites[a].roomName
-                    )
-                ) -
-                creep.pos.getRangeTo(
-                    new RoomPosition(
-                        Game.rooms[creep.memory.home].memory.constructionSites[b].x,
-                        Game.rooms[creep.memory.home].memory.constructionSites[b].y,
-                        Game.rooms[creep.memory.home].memory.constructionSites[b].roomName
-                    )
-                )
-        )[0];
-        target = Game.getObjectById(tid);
+    // Find closest priority sites
+    if (target === null && Game.rooms[creep.memory.home].memory.placedCS?.length > 0) {
+        for (const type of builderPriority) {
+            if (target !== null) {
+                break;
+            }
+            let closestID = undefined;
+            let closestRange = Infinity;
+
+            for (const site of Game.rooms[creep.memory.home].memory.placedCS) {
+                if (site.type === type) {
+                    const range = unpackPosition(site.pos).getRangeTo(creep.pos);
+                    if (range < closestRange) {
+                        closestRange = range;
+                        closestID = site.id;
+                    }
+                }
+            }
+            if (closestID !== undefined) {
+                target = Game.getObjectById(closestID);
+            }
+        }
+    }
+
+    // Find closest
+    if (target === null && Game.rooms[creep.memory.home].memory.placedCS?.length > 0) {
+        let closestID = undefined;
+        let closestRange = Infinity;
+
+        for (const site of Game.rooms[creep.memory.home].memory.placedCS) {
+            const range = unpackPosition(site.pos).getRangeTo(creep.pos);
+            if (range < closestRange) {
+                closestRange = range;
+                closestID = site.id;
+            }
+        }
+        if (closestID !== undefined) {
+            target = Game.getObjectById(closestID);
+        }
     }
 
     if (target !== null && target !== undefined && creep.memory.roleData !== undefined) {
