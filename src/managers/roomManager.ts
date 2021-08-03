@@ -79,7 +79,7 @@ function roomLogic(roomName: string, speed: number): void {
     RunEvery(ResourceHandler, "roomlogicresourcehandler" + roomName, 5 / speed, room);
 
     //LayoutHandler
-    RunEvery(LayoutHandler, "roomlogiclayouthandler" + roomName, 50 / speed, room, speed);
+    RunEvery(LayoutHandler, "roomlogiclayouthandler" + roomName, 10 / speed, room, speed);
 
     //LabHandler
     RunEvery(LabHandler, "roomlogiclabhandler" + roomName, 5 / speed, room);
