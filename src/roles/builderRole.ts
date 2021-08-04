@@ -136,7 +136,13 @@ function findTarget(creep: Creep): Structure | ConstructionSite | null {
         let closestRange = Infinity;
 
         for (const site of Game.rooms[creep.memory.home].memory.placedCS) {
-            const range = GetRange(unpackPosition(site.pos), creep.pos);
+            let priorityMultiplier = 0;
+            if (builderPriority.includes(site.type)) {
+                priorityMultiplier = builderPriority.findIndex((v) => site.type === v) + 1;
+            } else {
+                priorityMultiplier = builderPriority.length;
+            }
+            const range = GetRange(unpackPosition(site.pos), creep.pos) * priorityMultiplier;
             if (range < closestRange) {
                 closestRange = range;
                 closestID = site.id;
