@@ -20,7 +20,7 @@ interface PlacedConstructionData {
 
 const PLACED_SITES_AMOUNT = 3;
 
-////// LAYOUT HANDLER //////
+////// CONSTRUCTION HANDLER //////
 // The ConstructionHandler should populate the placed construction site data and place new data based on the plannedCS data
 
 export function ConstructionHandler(room: Room): void {
