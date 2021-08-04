@@ -220,11 +220,11 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
     const roadCostMatrix = (roomName: string): boolean | CostMatrix => {
         const room = Game.rooms[roomName];
 
+        let isRemote = false;
         if (roomName !== basePos.roomName) {
             if (Memory.rooms[basePos.roomName].remotes === undefined) {
                 return false;
             }
-            let isRemote = false;
             for (const r of Memory.rooms[basePos.roomName].remotes) {
                 if (r === roomName) {
                     isRemote = true;
@@ -246,7 +246,7 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
             }
         }
 
-        if (room.memory.genLayout !== undefined) {
+        if (!isRemote && room.memory.genLayout !== undefined) {
             for (const prefab of room.memory.genLayout.prefabs) {
                 for (const building of prefab.prefab.buildings) {
                     if (building.type !== STRUCTURE_ROAD) {
@@ -595,34 +595,42 @@ function BuildBuilding<T extends BuildableStructureConstant>(
             }
         }
         if (building.rampart.id === undefined) {
+            let hasRampart: boolean = false;
             const structures: Structure<StructureConstant>[] = pos.lookFor(LOOK_STRUCTURES);
             for (const structure of structures) {
                 if (structure.structureType === STRUCTURE_RAMPART) {
                     building.rampart.id = structure.id as Id<Structure<STRUCTURE_RAMPART>>;
-                    return;
+                    hasRampart = true;
+                    break;
                 }
             }
 
-            const placedCS = room.memory.placedCS;
-            const plannedCS = room.memory.plannedCS;
+            if (!hasRampart) {
+                const placedCS = baseRoom.memory.placedCS;
+                const plannedCS = baseRoom.memory.plannedCS;
 
-            for (const site of placedCS) {
-                if (site.pos === building.pos && site.type === STRUCTURE_RAMPART) {
-                    building.id = site.id;
-                    return;
+                for (const site of placedCS) {
+                    if (site.pos === building.pos && site.type === STRUCTURE_RAMPART) {
+                        building.rampart.id = site.id as Id<ConstructionSite<STRUCTURE_RAMPART>>;
+                        hasRampart = true;
+                        break;
+                    }
+                }
+                for (const site of plannedCS) {
+                    if (site.pos === building.pos && site.type === STRUCTURE_RAMPART) {
+                        hasRampart = true;
+                        break;
+                    }
                 }
             }
-            for (const site of plannedCS) {
-                if (site.pos === building.pos && site.type === STRUCTURE_RAMPART) {
-                    return;
-                }
-            }
 
-            room.memory.plannedCS.push({
-                pos: building.pos,
-                type: STRUCTURE_RAMPART
-            });
-            return;
+            if (!hasRampart) {
+                room.memory.plannedCS.push({
+                    pos: building.pos,
+                    type: STRUCTURE_RAMPART
+                });
+                return;
+            }
         }
     }
     if (building.id !== undefined) {
