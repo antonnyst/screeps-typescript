@@ -55,5 +55,23 @@ export function VisualHandler(room: Room, speed: number): void {
         } else {
             room.visual.import(data);
         }
+
+        if (room.memory.defenseData !== undefined) {
+            for (const hostile of room.memory.defenseData.hostiles) {
+                const pos = unpackPosition(hostile.pos);
+                const topPos = new RoomPosition(pos.x, Math.max(0, pos.y), pos.roomName);
+                const botPos = new RoomPosition(pos.x, Math.min(49, pos.y + 0.5), pos.roomName);
+                room.visual.text(hostile.potentialDamage.toString(), pos, {
+                    align: "left",
+                    font: 0.5,
+                    color: "#ff0000"
+                });
+                room.visual.text(hostile.potentialHeal.toString(), pos, {
+                    align: "right",
+                    font: 0.5,
+                    color: "#00ff00"
+                });
+            }
+        }
     }
 }
