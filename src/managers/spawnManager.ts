@@ -22,7 +22,7 @@ interface SpawnData {
     memory?: CreepMemory;
     body?: BodyPartConstant[];
     index?: number;
-    directions?: DirectionConstant[];
+    inside?: boolean;
     name?: string;
 }
 type CreepNeedCheckFunction = (
@@ -162,7 +162,22 @@ export class SpawnManager implements Manager {
                     return false;
                 }
             }
-            return spawns[spawner].spawnCreep(body, name, { memory, directions: spawnData.directions }) === OK;
+
+            let directions: DirectionConstant[] | undefined = undefined;
+
+            if (Memory.rooms[room.name].genBuildings !== undefined && Memory.rooms[room.name].genLayout !== undefined) {
+                const index =
+                    spawnData.index ||
+                    _.findIndex(room.memory.genBuildings!.spawns, (i) =>
+                        unpackPosition(i.pos).isEqualTo(spawns[spawner].pos)
+                    );
+
+                const { rotx: crx, roty: cry } = room.memory.genLayout!.prefabs[0];
+                const { rotx: qrx, roty: qry } = room.memory.genLayout!.prefabs[2];
+
+                directions = spawnDirection(spawnData.inside ?? false, index, crx, cry, qrx, qry);
+            }
+            return spawns[spawner].spawnCreep(body, name, { memory, directions }) === OK;
         }
     }
 }
@@ -695,66 +710,127 @@ const needChecks: CreepNeedCheckFunction[] = [
                 pattern: rolePatterns["manager"],
                 energy: room.energyCapacityAvailable,
                 index: 0,
-                directions: [
-                    RotationToSpawnDirection(
-                        0,
-                        room.memory.genLayout.prefabs[0].rotx,
-                        room.memory.genLayout.prefabs[0].roty
-                    )
-                ]
+                inside: true
             };
         }
         return null;
     }
 ];
 
-function RotationToSpawnDirection(index: number, rx: number, ry: number): DirectionConstant {
+function spawnDirection(
+    inside: boolean,
+    index: number,
+    crx: number = 0,
+    cry: number = 0,
+    qrx: number = 0,
+    qry: number = 0
+): DirectionConstant[] {
+    let { rx, ry } = index === 0 ? { rx: crx, ry: cry } : { rx: qrx, ry: qry };
+    if (inside) {
+        return spawnDirectionInside(index, rx, ry);
+    } else {
+        return spawnDirectionOutside(index, rx, ry);
+    }
+}
+
+function spawnDirectionInside(index: number, rx: number, ry: number): DirectionConstant[] {
     const string = (rx === 1 ? "1" : "0") + (ry === 1 ? "1" : "0");
     if (index === 0) {
         switch (string) {
             case "11":
-                return TOP_RIGHT;
+                return [TOP_RIGHT];
             case "01":
-                return TOP_LEFT;
+                return [TOP_LEFT];
             case "10":
-                return BOTTOM_RIGHT;
+                return [BOTTOM_RIGHT];
             case "00":
-                return BOTTOM_LEFT;
+                return [BOTTOM_LEFT];
             default:
-                console.log("RotationToSpawnDirection(): invalid direction");
-                return TOP;
+                console.log("spawnDirectionInside(): invalid rotation");
+                return [TOP];
         }
     }
     if (index === 1) {
         switch (string) {
             case "11":
-                return TOP_RIGHT;
+                return [BOTTOM_LEFT, BOTTOM_RIGHT];
             case "01":
-                return TOP_LEFT;
+                return [BOTTOM_LEFT, BOTTOM_RIGHT];
             case "10":
-                return BOTTOM_RIGHT;
+                return [TOP_LEFT, TOP_RIGHT];
             case "00":
-                return BOTTOM_LEFT;
+                return [TOP_LEFT, TOP_RIGHT];
             default:
-                console.log("RotationToSpawnDirection(): invalid direction");
-                return TOP;
+                console.log("spawnDirectionInside(): invalid rotation");
+                return [TOP];
         }
     }
     if (index === 2) {
         switch (string) {
             case "11":
-                return TOP_RIGHT;
+                return [TOP_LEFT, TOP_RIGHT];
             case "01":
-                return TOP_LEFT;
+                return [TOP_LEFT, TOP_RIGHT];
             case "10":
-                return BOTTOM_RIGHT;
+                return [BOTTOM_LEFT, BOTTOM_RIGHT];
             case "00":
-                return BOTTOM_LEFT;
+                return [BOTTOM_LEFT, BOTTOM_RIGHT];
             default:
-                console.log("RotationToSpawnDirection(): invalid direction");
-                return TOP;
+                console.log("spawnDirectionInside(): invalid rotation");
+                return [TOP];
         }
     }
-    console.log("RotationToSpawnDirection(): invalid index");
-    return TOP;
+    console.log("spawnDirectionInside(): invalid index");
+    return [TOP];
+}
+
+function spawnDirectionOutside(index: number, rx: number, ry: number): DirectionConstant[] {
+    const string = (rx === 1 ? "1" : "0") + (ry === 1 ? "1" : "0");
+    if (index === 0) {
+        switch (string) {
+            case "11":
+                return [TOP_LEFT, LEFT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT];
+            case "01":
+                return [TOP_RIGHT, RIGHT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT];
+            case "10":
+                return [BOTTOM_LEFT, LEFT, TOP_LEFT, TOP, TOP_RIGHT];
+            case "00":
+                return [BOTTOM_RIGHT, RIGHT, TOP_LEFT, TOP, TOP_RIGHT];
+            default:
+                console.log("spawnDirectionOutside(): invalid rotation");
+                return [TOP];
+        }
+    }
+    if (index === 1) {
+        switch (string) {
+            case "11":
+                return [TOP_LEFT, TOP, TOP_RIGHT];
+            case "01":
+                return [TOP_LEFT, TOP, TOP_RIGHT];
+            case "10":
+                return [BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT];
+            case "00":
+                return [BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT];
+            default:
+                console.log("spawnDirectionOutside(): invalid rotation");
+                return [TOP];
+        }
+    }
+    if (index === 2) {
+        switch (string) {
+            case "11":
+                return [BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT];
+            case "01":
+                return [BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT];
+            case "10":
+                return [TOP_LEFT, TOP, TOP_RIGHT];
+            case "00":
+                return [TOP_LEFT, TOP, TOP_RIGHT];
+            default:
+                console.log("spawnDirectionOutside(): invalid rotation");
+                return [TOP];
+        }
+    }
+    console.log("spawnDirectionOutside(): invalid index");
+    return [TOP];
 }
