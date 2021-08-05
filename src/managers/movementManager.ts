@@ -5,6 +5,21 @@ import { isPositionEdge, offsetPositionByDirection } from "utils/RoomPositionHel
 import { describeRoom } from "utils/RoomCalc";
 import { RunEvery } from "utils/RunEvery";
 
+declare global {
+    interface CreepMemory {
+        movementData?: MovementData;
+    }
+}
+
+export interface MovementData {
+    targetPos: number;
+    range: number;
+    flee: boolean;
+    heavy: boolean;
+    _path?: string;
+    _pathName?: string;
+}
+
 //  group creeps by rooms
 //  loop by rooms
 //      set all creeps current position and nextposition based on needs

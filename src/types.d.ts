@@ -32,7 +32,6 @@ interface CreepMemory {
         task: LabradorTask | undefined;
         qtask: LabradorTask[];
     };
-    movementData?: import("./dataInterfaces/movementData").MovementData;
 }
 
 interface RoomMemory {
@@ -54,7 +53,6 @@ interface Memory {
     msplit: { [key in string]: number };
     cacheHits: number;
     totalQueries: number;
-    
 }
 
 declare type LinkStatus = "fill" | "empty";
