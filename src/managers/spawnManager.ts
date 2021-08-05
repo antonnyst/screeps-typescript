@@ -624,6 +624,27 @@ const needChecks: CreepNeedCheckFunction[] = [
         }
         return null;
     },
+    //Check manager
+    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+        if (
+            room.controller &&
+            room.controller.level >= 5 &&
+            counts["manager"] < 1 &&
+            room.memory.genLayout !== undefined &&
+            room.memory.genBuildings !== undefined &&
+            room.memory.genBuildings.spawns[0].id !== undefined &&
+            Game.getObjectById(room.memory.genBuildings.spawns[0].id) instanceof StructureSpawn
+        ) {
+            return {
+                role: "manager",
+                pattern: rolePatterns["manager"],
+                energy: room.energyCapacityAvailable,
+                index: 0,
+                inside: true
+            };
+        }
+        return null;
+    },
     //Check builders
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         let builderTarget = Math.max(
@@ -691,27 +712,6 @@ const needChecks: CreepNeedCheckFunction[] = [
                     }
                 }
             }
-        }
-        return null;
-    },
-    //Check manager
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (
-            room.controller &&
-            room.controller.level >= 5 &&
-            counts["manager"] < 1 &&
-            room.memory.genLayout !== undefined &&
-            room.memory.genBuildings !== undefined &&
-            room.memory.genBuildings.spawns[0].id !== undefined &&
-            Game.getObjectById(room.memory.genBuildings.spawns[0].id) instanceof StructureSpawn
-        ) {
-            return {
-                role: "manager",
-                pattern: rolePatterns["manager"],
-                energy: room.energyCapacityAvailable,
-                index: 0,
-                inside: true
-            };
         }
         return null;
     }
