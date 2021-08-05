@@ -28,7 +28,7 @@ export function LinkHandler(room: Room): void {
                             centerLink = linkObject as StructureLink;
                             break;
                         case 2:
-                            fillLinks.push(linkObject as StructureLink);
+                            fillLinks.unshift(linkObject as StructureLink);
                             break;
                         default:
                             minerLinks.push(linkObject as StructureLink);
