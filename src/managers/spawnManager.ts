@@ -5,7 +5,6 @@ import { unpackPosition } from "../utils/RoomPositionPacker";
 import { roomTotalStoredEnergy } from "utils/RoomCalc";
 import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
 import * as C from "../config/constants";
-import { MineralData } from "dataInterfaces/mineralData";
 import { roleList } from "roles/roleList";
 import { RunEvery } from "utils/RunEvery";
 import { generateName } from "utils/CreepNames";
