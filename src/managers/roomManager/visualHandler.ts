@@ -23,33 +23,36 @@ export function VisualHandler(room: Room, speed: number): void {
                 }
             }
 
-            room.visual.text(
-                "Rampart Health Target: " +
-                    Math.round((RAMPART_HITS_MAX[room.controller.level] * C.RAMPART_PERCENTAGE_MIN) / 1000) +
-                    "k",
-                1,
-                2.275,
-                {
-                    align: "left",
-                    font: "0.8"
-                }
-            );
+            if (Memory.stats?.rooms !== undefined && Memory.stats.rooms[room.name] !== undefined) {
+                const { rampartavg, rampartmin, rampartmax } = Memory.stats.rooms[room.name];
+                room.visual.text(
+                    "Rampart Target Hits: " +
+                        Math.round((RAMPART_HITS_MAX[room.controller.level] * C.RAMPART_PERCENTAGE_MIN) / 1000) +
+                        "k",
+                    1,
+                    2.275,
+                    {
+                        align: "left",
+                        font: "0.8"
+                    }
+                );
 
-            room.visual.text(
-                "Rampart Health: " +
-                    Math.round((room.memory.rampartData?.rampartavg || 0) / 1000) +
-                    "k/" +
-                    Math.round((room.memory.rampartData?.rampartmin || 0) / 1000) +
-                    "k/" +
-                    Math.round((room.memory.rampartData?.rampartmax || 0) / 1000) +
-                    "k (avg/min/max)",
-                1,
-                3.275,
-                {
-                    align: "left",
-                    font: "0.8"
-                }
-            );
+                room.visual.text(
+                    "Rampart Hits: " +
+                        Math.round(rampartavg / 1000) +
+                        "k/" +
+                        Math.round(rampartmin / 1000) +
+                        "k/" +
+                        Math.round(rampartmax / 1000) +
+                        "k (avg/min/max)",
+                    1,
+                    3.275,
+                    {
+                        align: "left",
+                        font: "0.8"
+                    }
+                );
+            }
 
             saveToCache("visualhandlerdata" + room.name, room.visual.export());
         } else {

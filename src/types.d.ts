@@ -44,7 +44,6 @@ interface RoomMemory {
     remoteSupportRooms: string[];
     linkStatus: LinkStatus;
     resources?: import("./dataInterfaces/resourcesData").ResourcesData;
-    rampartData?: import("./dataInterfaces/rampartData").RampartData;
     lastUpdate: number;
 }
 
