@@ -2,7 +2,6 @@ import { Manager } from "./manager";
 import { GenerateBodyFromPattern, bodySortingValues, rolePatterns } from "../utils/CreepBodyGenerator";
 import { unpackPosition } from "../utils/RoomPositionPacker";
 import { roomTotalStoredEnergy } from "utils/RoomCalc";
-import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
 import * as C from "../config/constants";
 import { roleList } from "roles/roleList";
 import { RunEvery } from "utils/RunEvery";
@@ -22,8 +21,8 @@ interface SpawnData {
     energy?: number;
     memory?: CreepMemory;
     body?: BodyPartConstant[];
+    index?: number;
     directions?: DirectionConstant[];
-    center?: boolean;
     name?: string;
 }
 type CreepNeedCheckFunction = (
@@ -151,16 +150,10 @@ export class SpawnManager implements Manager {
             return false;
         } else {
             let spawner: number = 0;
-            if (spawnData.center === true) {
-                if (room.memory.genLayout !== undefined) {
+            if (spawnData.index !== undefined) {
+                if (room.memory.genLayout !== undefined && room.memory.genBuildings !== undefined) {
                     spawner = _.findIndex(spawns, (s) =>
-                        s.pos.isEqualTo(
-                            new RoomPosition(
-                                room.memory.genLayout!.prefabs[0].x,
-                                room.memory.genLayout!.prefabs[0].y,
-                                room.name
-                            )
-                        )
+                        s.pos.isEqualTo(unpackPosition(room.memory.genBuildings!.spawns[spawnData.index!].pos))
                     );
                     if (spawner === -1) {
                         return false;
@@ -693,24 +686,75 @@ const needChecks: CreepNeedCheckFunction[] = [
             room.controller.level >= 5 &&
             counts["manager"] < 1 &&
             room.memory.genLayout !== undefined &&
-            _.findIndex(room.find(FIND_MY_SPAWNS, { filter: (s) => s.spawning === null }), (s) =>
-                s.pos.isEqualTo(
-                    new RoomPosition(
-                        room.memory.genLayout!.prefabs[0].x,
-                        room.memory.genLayout!.prefabs[0].y,
-                        room.name
-                    )
-                )
-            ) !== -1
+            room.memory.genBuildings !== undefined &&
+            room.memory.genBuildings.spawns[0].id !== undefined &&
+            Game.getObjectById(room.memory.genBuildings.spawns[0].id) instanceof StructureSpawn
         ) {
             return {
                 role: "manager",
                 pattern: rolePatterns["manager"],
                 energy: room.energyCapacityAvailable,
-                center: true,
-                directions: [BOTTOM]
+                index: 0,
+                directions: [
+                    RotationToSpawnDirection(
+                        0,
+                        room.memory.genLayout.prefabs[0].rotx,
+                        room.memory.genLayout.prefabs[0].roty
+                    )
+                ]
             };
         }
         return null;
     }
 ];
+
+function RotationToSpawnDirection(index: number, rx: number, ry: number): DirectionConstant {
+    const string = (rx === 1 ? "1" : "0") + (ry === 1 ? "1" : "0");
+    if (index === 0) {
+        switch (string) {
+            case "11":
+                return TOP_RIGHT;
+            case "01":
+                return TOP_LEFT;
+            case "10":
+                return BOTTOM_RIGHT;
+            case "00":
+                return BOTTOM_LEFT;
+            default:
+                console.log("RotationToSpawnDirection(): invalid direction");
+                return TOP;
+        }
+    }
+    if (index === 1) {
+        switch (string) {
+            case "11":
+                return TOP_RIGHT;
+            case "01":
+                return TOP_LEFT;
+            case "10":
+                return BOTTOM_RIGHT;
+            case "00":
+                return BOTTOM_LEFT;
+            default:
+                console.log("RotationToSpawnDirection(): invalid direction");
+                return TOP;
+        }
+    }
+    if (index === 2) {
+        switch (string) {
+            case "11":
+                return TOP_RIGHT;
+            case "01":
+                return TOP_LEFT;
+            case "10":
+                return BOTTOM_RIGHT;
+            case "00":
+                return BOTTOM_LEFT;
+            default:
+                console.log("RotationToSpawnDirection(): invalid direction");
+                return TOP;
+        }
+    }
+    console.log("RotationToSpawnDirection(): invalid index");
+    return TOP;
+}
