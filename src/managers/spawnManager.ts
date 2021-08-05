@@ -1,5 +1,4 @@
 import { Manager } from "./manager";
-import { SpawnData } from "../dataInterfaces/spawnData";
 import { GenerateBodyFromPattern, bodySortingValues, rolePatterns } from "../utils/CreepBodyGenerator";
 import { unpackPosition } from "../utils/RoomPositionPacker";
 import { roomTotalStoredEnergy } from "utils/RoomCalc";
@@ -9,6 +8,30 @@ import { roleList } from "roles/roleList";
 import { RunEvery } from "utils/RunEvery";
 import { generateName } from "utils/CreepNames";
 import { bucketTarget, pushGCL } from "config/config";
+
+declare global {
+    interface RoomMemory {
+        spawnQueue: SpawnData[];
+        waitingCreep?: SpawnData;
+    }
+}
+
+interface SpawnData {
+    pattern?: string;
+    role?: string;
+    energy?: number;
+    memory?: CreepMemory;
+    body?: BodyPartConstant[];
+    directions?: DirectionConstant[];
+    center?: boolean;
+    name?: string;
+}
+type CreepNeedCheckFunction = (
+    room: Room,
+    creeps: Creep[],
+    counts: _.Dictionary<number>,
+    roles: _.Dictionary<Creep[]>
+) => SpawnData | null;
 
 // Spawning system
 // check waitingCreep and try to spawn it

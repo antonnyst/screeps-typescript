@@ -37,8 +37,6 @@ interface CreepMemory {
 interface RoomMemory {
     roomLevel: number;
     reservation: ReservationDefinition | undefined;
-    spawnQueue: import("./dataInterfaces/spawnData").SpawnData[];
-    waitingCreep?: import("./dataInterfaces/spawnData").SpawnData;
     spawnAttempts?: number;
     remotes: string[];
     remoteSupportRooms: string[];
@@ -69,13 +67,6 @@ declare interface BuildInstruction {
 declare type RoleCountFunction = (room: Room, creeps: Creep[]) => number;
 declare type RoleNeedFunction = (room: Room) => number;
 declare type RoleCalcFunction = (room: Room, delta: number) => void;
-
-declare type CreepNeedCheckFunction = (
-    room: Room,
-    creeps: Creep[],
-    counts: _.Dictionary<number>,
-    roles: _.Dictionary<Creep[]>
-) => import("./dataInterfaces/spawnData").SpawnData | null;
 
 declare interface LabradorTask {
     id: Id<AnyStoreStructure | Resource | Tombstone>;
