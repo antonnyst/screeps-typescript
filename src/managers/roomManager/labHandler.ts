@@ -1,8 +1,22 @@
-import { autoLabsInLabsLocation, autoLabsRotationGuide } from "config/base/auto";
-import { AutoLayoutData } from "dataInterfaces/layoutData";
-import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
-import { LabsData, LabData } from "../../dataInterfaces/labsData";
-import { unpackPosition } from "../../utils/RoomPositionPacker";
+declare global {
+    interface RoomMemory {
+        labs?: LabsData;
+    }
+}
+
+export interface LabsData {
+    status: string;
+    labs: LabData[];
+    inLabs: number[];
+    outLabs: number[];
+}
+export interface LabData {
+    id: Id<StructureLab>;
+    targetResource: ResourceConstant | null;
+}
+
+////// LAB HANDLER //////
+// The LabHandler should run the lab reactions
 
 export function LabHandler(room: Room): void {
     runLabData(room);
@@ -26,7 +40,7 @@ function runLabData(room: Room): void {
                 let ready: boolean = true;
 
                 for (const lab of room.memory.labs.labs) {
-                    const labObj = Game.getObjectById(lab.id) as StructureLab;
+                    const labObj = Game.getObjectById(lab.id);
                     if (lab.targetResource === null && labObj != null && labObj.mineralType == null) {
                         // lab is ready
                         continue;
