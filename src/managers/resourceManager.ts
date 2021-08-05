@@ -2,6 +2,21 @@ import { RunEvery } from "utils/RunEvery";
 import * as C from "../config/constants";
 import { Manager } from "./manager";
 
+declare global {
+    interface Memory {
+        marketData: MarketData;
+    }
+}
+
+export interface MarketData {
+    prices: {
+        [key in MarketResourceConstant]?: {
+            sell: number;
+            buy: number;
+        };
+    };
+}
+
 export class ResourceManager implements Manager {
     minSpeed = 0.2;
     maxSpeed = 1;

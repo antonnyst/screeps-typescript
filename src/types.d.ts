@@ -54,7 +54,7 @@ interface Memory {
     msplit: { [key in string]: number };
     cacheHits: number;
     totalQueries: number;
-    marketData: import("./dataInterfaces/marketData").MarketData;
+    
 }
 
 declare type LinkStatus = "fill" | "empty";
