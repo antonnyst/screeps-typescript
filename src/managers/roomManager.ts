@@ -13,7 +13,15 @@ import { RemoteHandler } from "./roomManager/remoteHandler";
 declare global {
     interface RoomMemory {
         basicRoomData: BasicRoomData;
+        hostiles: { [key: string]: HostileData };
     }
+}
+
+interface HostileData {
+    id: string;
+    pos: RoomPosition;
+    body: BodyPartDefinition[];
+    firstSeen: number;
 }
 
 export class RoomManager implements Manager {
@@ -136,7 +144,7 @@ function updateRoomHostiles(room: Room): void {
     if (room.memory.hostiles === undefined) {
         room.memory.hostiles = {};
     }
-    const newHostiles: { [key: string]: import("../dataInterfaces/hostileData").HostileData } = {};
+    const newHostiles: { [key: string]: HostileData } = {};
     for (const creep of hostiles) {
         if (room.memory.hostiles[creep.id] !== undefined) {
             newHostiles[creep.id] = room.memory.hostiles[creep.id];

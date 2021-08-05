@@ -37,7 +37,6 @@ interface CreepMemory {
 
 interface RoomMemory {
     roomLevel: number;
-    hostiles: { [key: string]: import("./dataInterfaces/hostileData").HostileData };
     reservation: ReservationDefinition | undefined;
     spawnQueue: import("./dataInterfaces/spawnData").SpawnData[];
     waitingCreep?: import("./dataInterfaces/spawnData").SpawnData;
@@ -45,7 +44,6 @@ interface RoomMemory {
     remotes: string[];
     remoteSupportRooms: string[];
     linkStatus: LinkStatus;
-    labs?: import("./dataInterfaces/labsData").LabsData;
     resources?: import("./dataInterfaces/resourcesData").ResourcesData;
     rampartData?: import("./dataInterfaces/rampartData").RampartData;
     lastUpdate: number;
