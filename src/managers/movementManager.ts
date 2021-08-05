@@ -13,6 +13,8 @@ import { RunEvery } from "utils/RunEvery";
 //          put creeps in the way in the queue for proccessing
 //      when done move all creeps to their nextposition
 
+// TODO: fix not removing path of length 1 when it fails
+
 let cacheHits = 0;
 let totalQueries = 0;
 
@@ -464,7 +466,7 @@ const roomCallback = (roomName: string): boolean | CostMatrix => {
     return finalMatrix;
 };
 
-const cacheTime = 6000;
+const cacheTime = 500;
 
 const _pathCache: { [key in string]: { path: string; time: number } } = {};
 
