@@ -1,5 +1,16 @@
 import * as C from "../../config/constants";
 
+declare global {
+    interface RoomMemory{
+        resources?: ResourcesData;
+    }
+}
+
+interface ResourcesData {
+    total: { [resourceType in ResourceConstant]: number };
+    delta: { [resourceType in ResourceConstant]: number };
+}
+
 export function ResourceHandler(room: Room): void {
     ResourceData(room);
 }

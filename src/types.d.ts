@@ -43,7 +43,6 @@ interface RoomMemory {
     remotes: string[];
     remoteSupportRooms: string[];
     linkStatus: LinkStatus;
-    resources?: import("./dataInterfaces/resourcesData").ResourcesData;
     lastUpdate: number;
 }
 
