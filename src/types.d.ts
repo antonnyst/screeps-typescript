@@ -28,10 +28,6 @@ interface CreepMemory {
         [resource in MineralBoostConstant]: number;
     };
     _move?: any;
-    labrador?: {
-        task: LabradorTask | undefined;
-        qtask: LabradorTask[];
-    };
 }
 
 interface RoomMemory {
@@ -52,28 +48,6 @@ interface Memory {
 }
 
 declare type LinkStatus = "fill" | "empty";
-declare type ActionType = "transfer" | "withdraw" | "pickup";
-
-declare type BaseType = "bunker" | "auto";
-declare type LabDirection = 0 | 1 | 2 | 3;
-
-declare interface BuildInstruction {
-    x: number;
-    y: number;
-    type: BuildableStructureConstant;
-    name?: string;
-}
-
-declare type RoleCountFunction = (room: Room, creeps: Creep[]) => number;
-declare type RoleNeedFunction = (room: Room) => number;
-declare type RoleCalcFunction = (room: Room, delta: number) => void;
-
-declare interface LabradorTask {
-    id: Id<AnyStoreStructure | Resource | Tombstone>;
-    resourceType: ResourceConstant;
-    amount: number;
-    type: ActionType;
-}
 
 interface FlagMemory {
     processed?: boolean;
