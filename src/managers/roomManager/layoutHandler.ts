@@ -284,7 +284,9 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
                     range: 1
                 },
                 {
-                    roomCallback: roadCostMatrix
+                    roomCallback: roadCostMatrix,
+                    plainCost: 2,
+                    swampCost: 4
                 }
             );
 
