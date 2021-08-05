@@ -36,7 +36,6 @@ interface RoomMemory {
     spawnAttempts?: number;
     remotes: string[];
     remoteSupportRooms: string[];
-    linkStatus: LinkStatus;
     lastUpdate: number;
 }
 
@@ -47,7 +46,6 @@ interface Memory {
     totalQueries: number;
 }
 
-declare type LinkStatus = "fill" | "empty";
 
 interface FlagMemory {
     processed?: boolean;

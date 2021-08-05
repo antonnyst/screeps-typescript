@@ -1,3 +1,11 @@
+declare global {
+    interface RoomMemory {
+        linkStatus: LinkStatus;
+    }
+}
+
+declare type LinkStatus = "fill" | "empty";
+
 export function LinkHandler(room: Room): void {
     if (room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
         if (room.controller.level < 5 || room.memory.genBuildings === undefined) {
