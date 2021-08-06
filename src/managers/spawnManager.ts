@@ -627,14 +627,25 @@ const needChecks: CreepNeedCheckFunction[] = [
     //Check manager
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (
-            room.controller &&
-            room.controller.level >= 5 &&
-            counts["manager"] < 1 &&
-            room.memory.genLayout !== undefined &&
-            room.memory.genBuildings !== undefined &&
-            room.memory.genBuildings.spawns[0].id !== undefined &&
-            Game.getObjectById(room.memory.genBuildings.spawns[0].id) instanceof StructureSpawn
+            room.memory.genLayout === undefined ||
+            room.memory.genBuildings === undefined ||
+            room.memory.genBuildings.spawns[0].id === undefined ||
+            !(Game.getObjectById(room.memory.genBuildings.spawns[0].id) instanceof StructureSpawn)
         ) {
+            return null;
+        }
+        if (counts["manager"] === 1) {
+            const manager = roles["manager"][0];
+            if (manager !== undefined && manager.ticksToLive && manager.ticksToLive <= CREEP_SPAWN_TIME * 16) {
+                return {
+                    role: "manager",
+                    pattern: rolePatterns["manager"],
+                    energy: room.energyCapacityAvailable,
+                    index: 0,
+                    inside: true
+                };
+            }
+        } else if (counts["manager"] < 1) {
             return {
                 role: "manager",
                 pattern: rolePatterns["manager"],
