@@ -171,11 +171,7 @@ export function RepairHandler(room: Room): void {
             }
         }
 
-        if (
-            !hasRampart &&
-            Object.keys(room.memory.repair).length === 0 &&
-            room.memory.placedCS.length + room.memory.plannedCS.length === 0
-        ) {
+        if (!hasRampart && Object.keys(room.memory.repair).length === 0 && room.memory.placedCS.length === 0) {
             let lowestRampart: StructureRampart | null = null;
             for (const rampart of room.memory.genBuildings.ramparts) {
                 if (rampart.id !== undefined) {
