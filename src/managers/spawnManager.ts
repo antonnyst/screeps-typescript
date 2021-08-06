@@ -544,61 +544,6 @@ const needChecks: CreepNeedCheckFunction[] = [
         }
         return null;
     },
-    //Check upgraders
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (!room.controller) {
-            return null;
-        }
-
-        let upgraderTarget = 4;
-        if (room.controller.level === 8) {
-            if (room.controller.ticksToDowngrade < 100000) {
-                upgraderTarget = 1;
-            } else if (
-                pushGCL &&
-                Game.cpu.bucket > bucketTarget &&
-                room.memory.resources &&
-                room.memory.resources.total[RESOURCE_ENERGY] > C.ROOM_ENERGY_EXPORT_LIMIT * 0.95
-            ) {
-                upgraderTarget = 1;
-            } else {
-                upgraderTarget = 0;
-            }
-        } else if (room.controller.level === 7) {
-            upgraderTarget = 1;
-        } else if (room.storage) {
-            upgraderTarget = 1 + Math.floor(room.storage.store.getUsedCapacity(RESOURCE_ENERGY) / 100000);
-        } else if (room.memory.remotes.length > 0) {
-            upgraderTarget += room.memory.remotes.length;
-        }
-
-        if (counts["upgrader"] < upgraderTarget) {
-            if (room.controller.level === 8) {
-                return {
-                    role: "upgrader",
-                    pattern: "[mwcwmw]5",
-                    energy: room.energyCapacityAvailable
-                };
-            } else if (
-                room.controller.level === 7 &&
-                room.memory.resources &&
-                room.memory.resources.total[RESOURCE_ENERGY] > C.FULL_UPGRADER_ENERGY_NEEDED
-            ) {
-                return {
-                    role: "upgrader",
-                    pattern: "w40m5c5",
-                    energy: room.energyCapacityAvailable
-                };
-            } else {
-                return {
-                    role: "upgrader",
-                    pattern: rolePatterns["upgrader"],
-                    energy: Math.min(room.energyCapacityAvailable, 3000)
-                };
-            }
-        }
-        return null;
-    },
     //Check reservers
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (room.memory.remoteData === undefined || Object.keys(room.memory.remoteData.data).length === 0) {
@@ -692,6 +637,61 @@ const needChecks: CreepNeedCheckFunction[] = [
                 pattern: rolePatterns["builder"],
                 energy: room.energyCapacityAvailable
             };
+        }
+        return null;
+    },
+    //Check upgraders
+    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+        if (!room.controller) {
+            return null;
+        }
+
+        let upgraderTarget = 4;
+        if (room.controller.level === 8) {
+            if (room.controller.ticksToDowngrade < 100000) {
+                upgraderTarget = 1;
+            } else if (
+                pushGCL &&
+                Game.cpu.bucket > bucketTarget &&
+                room.memory.resources &&
+                room.memory.resources.total[RESOURCE_ENERGY] > C.ROOM_ENERGY_EXPORT_LIMIT * 0.95
+            ) {
+                upgraderTarget = 1;
+            } else {
+                upgraderTarget = 0;
+            }
+        } else if (room.controller.level === 7) {
+            upgraderTarget = 1;
+        } else if (room.storage) {
+            upgraderTarget = 1 + Math.floor(room.storage.store.getUsedCapacity(RESOURCE_ENERGY) / 100000);
+        } else if (room.memory.remotes.length > 0) {
+            upgraderTarget += room.memory.remotes.length;
+        }
+
+        if (counts["upgrader"] < upgraderTarget) {
+            if (room.controller.level === 8) {
+                return {
+                    role: "upgrader",
+                    pattern: "[mwcwmw]5",
+                    energy: room.energyCapacityAvailable
+                };
+            } else if (
+                room.controller.level === 7 &&
+                room.memory.resources &&
+                room.memory.resources.total[RESOURCE_ENERGY] > C.FULL_UPGRADER_ENERGY_NEEDED
+            ) {
+                return {
+                    role: "upgrader",
+                    pattern: "w40m5c5",
+                    energy: room.energyCapacityAvailable
+                };
+            } else {
+                return {
+                    role: "upgrader",
+                    pattern: rolePatterns["upgrader"],
+                    energy: Math.min(room.energyCapacityAvailable, 3000)
+                };
+            }
         }
         return null;
     },
