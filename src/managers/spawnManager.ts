@@ -382,6 +382,21 @@ const needChecks: CreepNeedCheckFunction[] = [
         }
         return null;
     },
+    //Check emergency upgraders
+    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+        if (
+            counts["upgrader"] < 1 &&
+            room.controller &&
+            room.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[room.controller.level] * 0.1
+        ) {
+            return {
+                role: "upgrader",
+                pattern: rolePatterns["upgrader"],
+                energy: Math.min(room.energyCapacityAvailable, 3000)
+            };
+        }
+        return null;
+    },
     //Check remote support
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (room.memory.remoteSupportRooms.length > 0) {
