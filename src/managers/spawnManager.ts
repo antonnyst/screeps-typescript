@@ -803,7 +803,7 @@ const needChecks: CreepNeedCheckFunction[] = [
             ) {
                 return {
                     role: "upgrader",
-                    pattern: "w40m5c5",
+                    pattern: "m5c5w40",
                     energy: room.energyCapacityAvailable
                 };
             } else {
