@@ -1,4 +1,4 @@
-import { packPosition } from "../utils/RoomPositionPacker";
+import { packPosition, unpackPosition } from "../utils/RoomPositionPacker";
 import { getFromCache, saveToCache } from "../utils/Cache";
 
 export interface CreepRoleInterface {
@@ -178,6 +178,15 @@ export abstract class CreepRole implements CreepRoleInterface {
                             }
                         }
                         if (s.structureType === STRUCTURE_LINK) {
+                            if (Game.rooms[this.creep!.memory.home].controller!.level >= 7) {
+                                if (
+                                    s.pos.isEqualTo(
+                                        unpackPosition(Memory.rooms[this.creep!.memory.home].genBuildings!.links[2].pos)
+                                    )
+                                ) {
+                                    return false;
+                                }
+                            }
                             if (s.store.getUsedCapacity(RESOURCE_ENERGY) >= requiredAmount) {
                                 return true;
                             } else {
