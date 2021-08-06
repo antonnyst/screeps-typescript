@@ -9,6 +9,7 @@ declare global {
                 pos: number;
             };
         };
+        rampartTargets: number;
     }
 }
 
@@ -138,7 +139,7 @@ export function RepairHandler(room: Room): void {
         }
 
         ///// RAMPARTS /////
-
+        room.memory.rampartTargets = 0;
         for (const rampart of room.memory.genBuildings.ramparts) {
             if (rampart.id !== undefined) {
                 const rampartObject = Game.getObjectById(rampart.id);
@@ -148,6 +149,8 @@ export function RepairHandler(room: Room): void {
                             id: rampartObject.id,
                             pos: packPosition(rampartObject.pos)
                         };
+                    } else if (rampartObject.hits / rampartObject.hitsMax < RAMPART_REPAIR_THRESHOLD) {
+                        room.memory.rampartTargets++;
                     }
                 }
             }
@@ -161,6 +164,8 @@ export function RepairHandler(room: Room): void {
                             id: rampartObject.id,
                             pos: packPosition(rampartObject.pos)
                         };
+                    } else if (rampartObject.hits / rampartObject.hitsMax < RAMPART_REPAIR_THRESHOLD) {
+                        room.memory.rampartTargets++;
                     }
                 }
             }

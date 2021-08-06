@@ -742,7 +742,7 @@ const needChecks: CreepNeedCheckFunction[] = [
             ),
             Math.min(
                 Math.ceil(
-                    Math.min(Object.keys(room.memory.repair).length, 20) /
+                    Math.min(Object.keys(room.memory.repair).length + room.memory.rampartTargets || 0, 20) /
                         (Math.min(room.energyCapacityAvailable, 3000) * 0.0012)
                 ),
                 2
