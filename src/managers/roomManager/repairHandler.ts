@@ -1,11 +1,6 @@
 import { packPosition } from "utils/RoomPositionPacker";
 import { BuildingData } from "./layoutHandler";
 
-const ROAD_REPAIR_THRESHOLD: number = 0.5;
-
-const RAMPART_REPAIR_THRESHOLD: number = 0.03;
-const RAMPART_MAX_THRESHOLD: number = 0.04;
-
 declare global {
     interface RoomMemory {
         repair: {
@@ -16,6 +11,12 @@ declare global {
         };
     }
 }
+
+const ROAD_REPAIR_THRESHOLD: number = 0.5;
+const ADJACENT_ROAD_REPAIR = 5;
+
+const RAMPART_REPAIR_THRESHOLD: number = 0.03;
+const RAMPART_MAX_THRESHOLD: number = 0.04;
 
 export function RepairHandler(room: Room): void {
     if (
@@ -55,18 +56,31 @@ export function RepairHandler(room: Room): void {
         }
 
         ///// ROADS /////
-
-        for (const road of room.memory.genBuildings.roads) {
+        for (let i = 0; i < room.memory.genBuildings.roads.length; i++) {
+            const road = room.memory.genBuildings.roads[i];
             if (road.id !== undefined) {
                 const roadObject = Game.getObjectById(road.id);
                 if (roadObject instanceof StructureRoad) {
                     if (roadObject.hits / roadObject.hitsMax < ROAD_REPAIR_THRESHOLD) {
-                        // this roadObject needs repair
-
-                        room.memory.repair[roadObject.id] = {
-                            id: roadObject.id,
-                            pos: packPosition(roadObject.pos)
-                        };
+                        // this road needs repair
+                        // Also repair adjacent roads
+                        for (let d = -ADJACENT_ROAD_REPAIR; d <= ADJACENT_ROAD_REPAIR; d++) {
+                            if (i + d < 0 || i + d >= room.memory.genBuildings.roads.length) {
+                                continue;
+                            }
+                            const r = room.memory.genBuildings.roads[i + d];
+                            if (r.id !== undefined) {
+                                const ro = Game.getObjectById(r.id);
+                                if (ro instanceof StructureRoad) {
+                                    if (ro.hits < ro.hitsMax) {
+                                        room.memory.repair[ro.id] = {
+                                            id: ro.id,
+                                            pos: packPosition(ro.pos)
+                                        };
+                                    }
+                                }
+                            }
+                        }
 
                         break;
                     }
