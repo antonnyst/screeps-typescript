@@ -178,7 +178,13 @@ export class SpawnManager implements Manager {
 
                 directions = spawnDirection(spawnData.inside ?? false, index, crx, cry, qrx, qry);
             }
-            return spawns[spawner].spawnCreep(body, name, { memory, directions }) === OK;
+            return (
+                spawns[spawner].spawnCreep(body, name, {
+                    memory,
+                    directions,
+                    energyStructures: GetEnergyStructures(room)
+                }) === OK
+            );
         }
     }
 }
@@ -980,4 +986,28 @@ function spawnDirectionOutside(index: number, rx: number, ry: number): Direction
     }
     console.log("spawnDirectionOutside(): invalid index");
     return [TOP];
+}
+
+function GetEnergyStructures(room: Room): (StructureSpawn | StructureExtension)[] | undefined {
+    if (Memory.rooms[room.name].genBuildings === undefined) {
+        return undefined;
+    }
+    const energyStructures = [];
+    for (const building of Memory.rooms[room.name].genBuildings!.spawns) {
+        if (building.id !== undefined) {
+            const object = Game.getObjectById(building.id);
+            if (object instanceof StructureSpawn) {
+                energyStructures.push(object);
+            }
+        }
+    }
+    for (const building of Memory.rooms[room.name].genBuildings!.extensions) {
+        if (building.id !== undefined) {
+            const object = Game.getObjectById(building.id);
+            if (object instanceof StructureExtension) {
+                energyStructures.push(object);
+            }
+        }
+    }
+    return energyStructures;
 }
