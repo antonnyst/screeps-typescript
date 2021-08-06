@@ -1,5 +1,6 @@
 import { CreepRole } from "./creepRole";
 import { EXTRA_ENERGY_FILL_ENERGY_NEEDED } from "config/constants";
+import { BuildingData } from "managers/roomManager/layoutHandler";
 
 declare global {
     interface CreepMemory {
@@ -26,10 +27,18 @@ interface PickupTask {
 }
 
 const FillerCooldown = 5;
+const FillerIgnoreExtensions: Partial<Record<number, number[]>> = {
+    7: [5, 8, 9],
+    8: [5, 8, 9, 12]
+};
 
 export class FillerRole extends CreepRole {
     runRole() {
-        if (this.creep === null || this.creep.room.memory.genLayout === undefined) {
+        if (
+            this.creep === null ||
+            this.creep.room.memory.genLayout === undefined ||
+            this.creep.room.memory.genBuildings === undefined
+        ) {
             return;
         }
 
@@ -156,18 +165,22 @@ export class FillerRole extends CreepRole {
                 cooldown: 0
             };
         }
+
+        const room = Game.rooms[this.creep.memory.home];
+
         const energyStructures: (
             | StructureSpawn
             | StructureExtension
             | StructureTower
             | StructureLab
-        )[] = this.creep.room.find(FIND_MY_STRUCTURES, {
-            filter: (s) =>
-                ((s.structureType === STRUCTURE_TOWER || s.structureType === STRUCTURE_EXTENSION) &&
-                    s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) ||
-                (s.structureType === STRUCTURE_SPAWN && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) ||
-                (s.structureType === STRUCTURE_LAB && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
-        }) as (StructureSpawn | StructureExtension | StructureTower | StructureLab)[];
+        )[] = GetEnergyBuildings(
+            Memory.rooms[this.creep.memory.home].genBuildings!.extensions,
+            FillerIgnoreExtensions[room.controller!.level]
+        ).concat(
+            GetEnergyBuildings(Memory.rooms[this.creep.memory.home].genBuildings!.towers),
+            GetEnergyBuildings(Memory.rooms[this.creep.memory.home].genBuildings!.spawns),
+            GetEnergyBuildings(Memory.rooms[this.creep.memory.home].genBuildings!.labs)
+        ) as (StructureSpawn | StructureExtension | StructureTower | StructureLab)[];
 
         // check leftover resources
 
@@ -471,4 +484,25 @@ export class FillerRole extends CreepRole {
         };
         return;
     }
+}
+
+function GetEnergyBuildings(buildings: BuildingData[], ignoreIndexes?: number[]): Structure[] {
+    const structures: Structure[] = [];
+    for (const [i, building] of buildings.entries()) {
+        if (building.id !== undefined && !ignoreIndexes?.includes(i)) {
+            const object = Game.getObjectById(building.id);
+            if (
+                (object instanceof StructureExtension ||
+                    object instanceof StructureTower ||
+                    object instanceof StructureSpawn) &&
+                object.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            ) {
+                structures.push(object);
+            }
+            if (object instanceof StructureLab && object.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                structures.push(object);
+            }
+        }
+    }
+    return structures;
 }
