@@ -22,6 +22,7 @@ import { RemoteMinerRole } from "./remoteMinerRole";
 import { ReserverRole } from "./reserverRole";
 import { UpgraderRole } from "./upgraderRole";
 import { ScoutRole } from "./scoutRole";
+import { QuickFiller } from "./quickFillerRole";
 
 export const roleList: { [role: string]: CreepRole } = {
     armedDismantler: new ArmedDismantlerRole(),
@@ -45,5 +46,6 @@ export const roleList: { [role: string]: CreepRole } = {
     remoteMiner: new RemoteMinerRole(),
     reserver: new ReserverRole(),
     upgrader: new UpgraderRole(),
-    scout: new ScoutRole()
+    scout: new ScoutRole(),
+    quickFiller: new QuickFiller()
 };
