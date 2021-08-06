@@ -12,13 +12,11 @@ export class UpgraderRole extends CreepRole {
             this.setMovementData(cpos, 1, false, false);
             if (this.creep.pos.isNearTo(cpos)) {
                 if (this.creep.store.getUsedCapacity(RESOURCE_ENERGY) <= this.creep.getActiveBodyparts(WORK)) {
-                    const link = _.filter(
-                        unpackPosition(this.creep.room.memory.genLayout.controller).lookFor(LOOK_STRUCTURES),
-                        (s: Structure) => s.structureType === STRUCTURE_LINK
-                    )[0];
-
-                    if (link !== undefined) {
-                        this.creep.withdraw(link, RESOURCE_ENERGY);
+                    if (this.creep.room.memory.genBuildings?.links[0].id !== undefined) {
+                        const link = Game.getObjectById(this.creep.room.memory.genBuildings!.links[0].id);
+                        if (link !== null && link instanceof StructureLink) {
+                            this.creep.withdraw(link, RESOURCE_ENERGY);
+                        }
                     }
                 }
                 this.creep.upgradeController(this.creep.room.controller!);
