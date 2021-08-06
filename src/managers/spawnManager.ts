@@ -494,7 +494,9 @@ const needChecks: CreepNeedCheckFunction[] = [
             return {
                 role: "builder",
                 pattern: rolePatterns["builder"],
-                energy: room.energyCapacityAvailable
+                energy:
+                    room.energyCapacityAvailable -
+                    (room.controller!.level === 7 && room.find(FIND_MY_SPAWNS).length < 2 ? 50 : 0)
             };
         }
         return null;
@@ -752,7 +754,9 @@ const needChecks: CreepNeedCheckFunction[] = [
             return {
                 role: "builder",
                 pattern: rolePatterns["builder"],
-                energy: room.energyCapacityAvailable
+                energy:
+                    room.energyCapacityAvailable -
+                    (room.controller!.level === 7 && room.find(FIND_MY_SPAWNS).length < 2 ? 50 : 0)
             };
         }
         return null;
