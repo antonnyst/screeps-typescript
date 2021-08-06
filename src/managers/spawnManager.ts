@@ -1,12 +1,13 @@
 import { Manager } from "./manager";
 import { GenerateBodyFromPattern, bodySortingValues, rolePatterns } from "../utils/CreepBodyGenerator";
-import { unpackPosition } from "../utils/RoomPositionPacker";
+import { packPosition, unpackPosition } from "../utils/RoomPositionPacker";
 import { roomTotalStoredEnergy } from "utils/RoomCalc";
 import * as C from "../config/constants";
 import { roleList } from "roles/roleList";
 import { RunEvery } from "utils/RunEvery";
 import { generateName } from "utils/CreepNames";
 import { bucketTarget, pushGCL } from "config/config";
+import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
 
 declare global {
     interface RoomMemory {
@@ -364,6 +365,122 @@ const needChecks: CreepNeedCheckFunction[] = [
                 pattern: rolePatterns["scout"],
                 energy: room.energyCapacityAvailable
             };
+        }
+        return null;
+    },
+    // Check QuickFillers
+    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+        if (room.memory.genLayout === undefined || room.memory.genBuildings === undefined) {
+            return null;
+        }
+        if (room.controller!.level < 7) {
+            return null;
+        }
+
+        if (counts["quickFiller"] < 4) {
+            if (room.controller!.level === 7) {
+                if (Memory.rooms[room.name].genBuildings!.spawns[1].id !== undefined) {
+                    const spawner = Game.getObjectById(Memory.rooms[room.name].genBuildings!.spawns[1].id!);
+                    if (spawner !== null && spawner instanceof StructureSpawn) {
+                        let count = 0;
+                        for (const creep of roles["quickFiller"]) {
+                            if (creep.pos.isNearTo(spawner.pos)) {
+                                count++;
+                            }
+                        }
+                        if (count < 2) {
+                            return {
+                                role: "quickFiller",
+                                pattern: rolePatterns["quickFiller"],
+                                energy: room.energyCapacityAvailable,
+                                index: 1,
+                                inside: true
+                            };
+                        }
+                    }
+                }
+                let count = 0;
+
+                const spawnDirections = spawnDirectionInside(
+                    2,
+                    Memory.rooms[room.name].genLayout!.prefabs[2].rotx,
+                    Memory.rooms[room.name].genLayout!.prefabs[2].roty
+                );
+
+                for (const spawnDirection of spawnDirections) {
+                    const pos = offsetPositionByDirection(
+                        unpackPosition(Memory.rooms[room.name].genBuildings!.spawns[2].pos),
+                        spawnDirection
+                    );
+                    let has = false;
+                    for (const creep of roles["quickFiller"]) {
+                        if (
+                            creep.pos.isEqualTo(pos) ||
+                            (creep.memory.targetPos !== undefined &&
+                                unpackPosition(creep.memory.targetPos).isEqualTo(pos))
+                        ) {
+                            has = true;
+                            break;
+                        }
+                    }
+                    if (!has) {
+                        return {
+                            role: "quickFiller",
+                            pattern: rolePatterns["quickFiller"] + "m",
+                            energy: room.energyCapacityAvailable,
+                            inside: false,
+                            memory: {
+                                role: "quickFiller",
+                                home: room.name,
+                                targetPos: packPosition(pos)
+                            }
+                        };
+                    }
+                }
+            } else if (room.controller!.level === 8) {
+                if (Memory.rooms[room.name].genBuildings!.spawns[1].id !== undefined) {
+                    const spawner = Game.getObjectById(Memory.rooms[room.name].genBuildings!.spawns[1].id!);
+                    if (spawner !== null && spawner instanceof StructureSpawn) {
+                        let count = 0;
+                        for (const creep of roles["quickFiller"]) {
+                            if (creep.pos.isNearTo(spawner.pos)) {
+                                count++;
+                            }
+                        }
+
+                        if (count < 2) {
+                            return {
+                                role: "quickFiller",
+                                pattern: rolePatterns["quickFiller"],
+                                energy: room.energyCapacityAvailable,
+                                index: 1,
+                                inside: true
+                            };
+                        }
+                    }
+                }
+                if (Memory.rooms[room.name].genBuildings!.spawns[2].id !== undefined) {
+                    const spawner = Game.getObjectById(Memory.rooms[room.name].genBuildings!.spawns[2].id!);
+                    if (spawner !== null && spawner instanceof StructureSpawn) {
+                        let count = 0;
+                        for (const creep of roles["quickFiller"]) {
+                            if (creep.pos.isNearTo(spawner.pos)) {
+                                count++;
+                            }
+                        }
+
+                        if (count < 2) {
+                            return {
+                                role: "quickFiller",
+                                pattern: rolePatterns["quickFiller"],
+                                energy: room.energyCapacityAvailable,
+                                index: 2,
+                                inside: true
+                            };
+                        }
+                    }
+                }
+            }
         }
         return null;
     },

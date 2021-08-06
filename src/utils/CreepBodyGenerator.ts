@@ -104,7 +104,8 @@ export const rolePatterns: { [roleName: string]: string } = {
     reserver: "[lm]5",
     scout: "m",
     upgrader: "[mwcwmw]8",
-    manager: "c16"
+    manager: "c16",
+    quickFiller: "c4"
 };
 
 export const bodySortingValues: { [bodyPartName: string]: number } = {
