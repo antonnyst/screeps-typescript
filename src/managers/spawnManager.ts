@@ -712,6 +712,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     //Check manager
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (
+            (room.controller !== undefined && room.controller.level < 5) ||
             room.memory.genLayout === undefined ||
             room.memory.genBuildings === undefined ||
             room.memory.genBuildings.spawns[0].id === undefined ||
