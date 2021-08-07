@@ -336,16 +336,7 @@ export class MovementManager implements Manager {
                 if (data[creep.name] && data[creep.name].needsToMove && data[creep.name].nextLocation) {
                     if (creep.fatigue === 0) {
                         if (creep.pos.getRangeTo(data[creep.name].nextLocation!) !== 1 && creep.memory.movementData) {
-                            console.log("fail move");
-                            console.log(creep.memory.movementData._path);
-                            console.log(
-                                creep.name +
-                                    " " +
-                                    "fail move currentPos " +
-                                    creep.pos +
-                                    " trying to move to " +
-                                    data[creep.name].nextLocation!
-                            );
+                            creep.say("fail move");
                             creep.memory.movementData._path = undefined;
 
                             if (creep.memory.movementData._pathName !== undefined) {
