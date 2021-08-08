@@ -1,6 +1,6 @@
 import { unpackPosition, packPosition } from "../../utils/RoomPositionPacker";
 import { offsetPositionByDirection } from "../../utils/RoomPositionHelpers";
-import { RunEvery } from "../../utils/RunEvery";
+import { RunEvery, RunNow } from "../../utils/RunEvery";
 import { GenLayoutData } from "layout/layout";
 import { AddWork, GetCurrentWorkQueue } from "managers/layoutManager";
 
@@ -10,6 +10,7 @@ declare global {
         genBuildings?: GenBuildingsData;
     }
 }
+
 export interface GenBuildingsData {
     roads: BuildingData[];
     ramparts: BuildingData[];
@@ -62,6 +63,9 @@ export function LayoutHandler(room: Room): void {
                     basicRoomData: room.memory.basicRoomData,
                     callback: (layout: GenLayoutData) => {
                         room.memory.genLayout = layout;
+                        room.memory.genBuildings = GenerateBuildingsData(Game.rooms[room.name]);
+                        UpdateBuildingsData(Game.rooms[room.name]);
+                        BuildBuildings(Game.rooms[room.name]);
                     }
                 });
             }
@@ -685,30 +689,6 @@ function BuildBuilding<T extends BuildableStructureConstant>(
         type: type,
         name: building.name
     });
-
-    /*
-    if (type === STRUCTURE_SPAWN && building.name !== undefined) {
-        let name = building.name || "";
-
-        let i = 1;
-        const done: boolean = false;
-        while (!done) {
-            const potentialName = name.replace("{INDEX}", i.toString());
-
-            const res = room.createConstructionSite(pos.x, pos.y, type, potentialName);
-
-            if (res === OK) {
-                return;
-            }
-            i++;
-            if (i > 5) {
-                break;
-            }
-        }
-        return;
-    } else {
-        room.createConstructionSite(pos, type) === 0;
-    }*/
 }
 
 function removeDuplicates(array: BuildingData[]): BuildingData[] {
