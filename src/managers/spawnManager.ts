@@ -411,7 +411,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                     2,
                     Memory.rooms[room.name].genLayout!.prefabs[2].rotx,
                     Memory.rooms[room.name].genLayout!.prefabs[2].roty
-                );
+                )!;
 
                 for (const spawnDirection of spawnDirections) {
                     const pos = offsetPositionByDirection(
@@ -634,14 +634,14 @@ const needChecks: CreepNeedCheckFunction[] = [
             }
         }
         if (counts["remoteHauler"] < haulerTarget) {
-            const splitByRoom = _.groupBy(roles["remoteHauler"], (c) => c.memory.roleData?.target);
+            const splitByRoom = _.groupBy(roles["remoteHauler"], (c) => c.memory.targetRoom);
             for (let remote in room.memory.remoteData.data) {
                 if (splitByRoom[remote] === undefined || splitByRoom[remote].length < haulerPerRoom[remote]) {
                     for (let i = 0; i < room.memory.remoteData.data[remote].sources.length; i++) {
                         let haulerAmount = 0;
                         if (splitByRoom[remote] !== undefined) {
                             for (let j = 0; j < splitByRoom[remote].length; j++) {
-                                if (splitByRoom[remote][j].memory.roleData?.targetId === i.toString()) {
+                                if (splitByRoom[remote][j].memory.targetSource === i) {
                                     haulerAmount += 1;
                                 }
                             }
@@ -656,10 +656,8 @@ const needChecks: CreepNeedCheckFunction[] = [
                                 memory: {
                                     role: "remoteHauler",
                                     home: room.name,
-                                    roleData: {
-                                        targetId: i.toString(),
-                                        target: remote
-                                    }
+                                    targetSource: i,
+                                    targetRoom: remote
                                 }
                             };
                         }
@@ -744,18 +742,21 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check builders
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        let builderTarget = Math.max(
-            Math.ceil(
-                (room.memory.placedCS.length + room.memory.plannedCS.length) /
-                    (Math.min(room.energyCapacityAvailable, 3000) * 0.00167)
-            ),
-            Math.min(
+        let builderTarget = Math.min(
+            Math.max(
                 Math.ceil(
-                    Math.min(Object.keys(room.memory.repair).length + room.memory.rampartTargets || 0, 20) /
-                        (Math.min(room.energyCapacityAvailable, 3000) * 0.0012)
+                    (room.memory.placedCS.length + room.memory.plannedCS.length) /
+                        (Math.min(room.energyCapacityAvailable, 3000) * 0.00167)
                 ),
-                2
-            )
+                Math.min(
+                    Math.ceil(
+                        Math.min(Object.keys(room.memory.repair).length + room.memory.rampartTargets || 0, 20) /
+                            (Math.min(room.energyCapacityAvailable, 3000) * 0.0012)
+                    ),
+                    2
+                )
+            ),
+            10
         );
         if (counts["builder"] < builderTarget) {
             return {
@@ -878,7 +879,7 @@ function spawnDirection(
     cry: number = 0,
     qrx: number = 0,
     qry: number = 0
-): DirectionConstant[] {
+): DirectionConstant[] | undefined {
     let { rx, ry } = index === 0 ? { rx: crx, ry: cry } : { rx: qrx, ry: qry };
     if (inside) {
         return spawnDirectionInside(index, rx, ry);
@@ -887,7 +888,7 @@ function spawnDirection(
     }
 }
 
-function spawnDirectionInside(index: number, rx: number, ry: number): DirectionConstant[] {
+function spawnDirectionInside(index: number, rx: number, ry: number): DirectionConstant[] | undefined {
     const string = (rx === 1 ? "1" : "0") + (ry === 1 ? "1" : "0");
     if (index === 0) {
         switch (string) {
@@ -901,7 +902,7 @@ function spawnDirectionInside(index: number, rx: number, ry: number): DirectionC
                 return [BOTTOM_LEFT];
             default:
                 console.log("spawnDirectionInside(): invalid rotation");
-                return [TOP];
+                return undefined;
         }
     }
     if (index === 1) {
@@ -916,7 +917,7 @@ function spawnDirectionInside(index: number, rx: number, ry: number): DirectionC
                 return [TOP_LEFT, TOP_RIGHT];
             default:
                 console.log("spawnDirectionInside(): invalid rotation");
-                return [TOP];
+                return undefined;
         }
     }
     if (index === 2) {
@@ -931,14 +932,14 @@ function spawnDirectionInside(index: number, rx: number, ry: number): DirectionC
                 return [BOTTOM_LEFT, BOTTOM_RIGHT];
             default:
                 console.log("spawnDirectionInside(): invalid rotation");
-                return [TOP];
+                return undefined;
         }
     }
     console.log("spawnDirectionInside(): invalid index");
-    return [TOP];
+    return undefined;
 }
 
-function spawnDirectionOutside(index: number, rx: number, ry: number): DirectionConstant[] {
+function spawnDirectionOutside(index: number, rx: number, ry: number): DirectionConstant[] | undefined {
     const string = (rx === 1 ? "1" : "0") + (ry === 1 ? "1" : "0");
     if (index === 0) {
         switch (string) {
@@ -952,7 +953,7 @@ function spawnDirectionOutside(index: number, rx: number, ry: number): Direction
                 return [BOTTOM_RIGHT, RIGHT, TOP_LEFT, TOP, TOP_RIGHT];
             default:
                 console.log("spawnDirectionOutside(): invalid rotation");
-                return [TOP];
+                return undefined;
         }
     }
     if (index === 1) {
@@ -967,7 +968,7 @@ function spawnDirectionOutside(index: number, rx: number, ry: number): Direction
                 return [BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT];
             default:
                 console.log("spawnDirectionOutside(): invalid rotation");
-                return [TOP];
+                return undefined;
         }
     }
     if (index === 2) {
@@ -982,11 +983,11 @@ function spawnDirectionOutside(index: number, rx: number, ry: number): Direction
                 return [TOP_LEFT, TOP, TOP_RIGHT];
             default:
                 console.log("spawnDirectionOutside(): invalid rotation");
-                return [TOP];
+                return undefined;
         }
     }
     console.log("spawnDirectionOutside(): invalid index");
-    return [TOP];
+    return undefined;
 }
 
 function GetEnergyStructures(room: Room): (StructureSpawn | StructureExtension)[] | undefined {
@@ -1009,6 +1010,9 @@ function GetEnergyStructures(room: Room): (StructureSpawn | StructureExtension)[
                 energyStructures.push(object);
             }
         }
+    }
+    if (energyStructures.length === 0) {
+        return undefined;
     }
     return energyStructures;
 }
