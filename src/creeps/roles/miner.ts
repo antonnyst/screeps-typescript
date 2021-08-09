@@ -1,4 +1,4 @@
-import { setMovementData } from "newRoleSystem/creep";
+import { setMovementData } from "creeps/creep";
 import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
 import { unpackPosition } from "utils/RoomPositionPacker";
 
