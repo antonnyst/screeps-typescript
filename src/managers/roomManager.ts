@@ -9,6 +9,8 @@ import { RunEvery, RunNow } from "utils/RunEvery";
 import { VisualHandler } from "./roomManager/visualHandler";
 import { BasicRoomData, generateBasicRoomData } from "layout/layout";
 import { RemoteHandler } from "./roomManager/remoteHandler";
+import { fromRoomCoordinate, toRoomCoordinate } from "utils/RoomCoordinate";
+import { describeRoom } from "utils/RoomCalc";
 
 declare global {
     interface RoomMemory {
@@ -106,6 +108,16 @@ function roomLogic(roomName: string, speed: number): void {
 
     //RemoteHandler
     RunEvery(RemoteHandler, "roomlogicremotehandler" + roomName, 750 / speed, room);
+
+    //RemoteDecisions
+    RunEvery(
+        () => {
+            remoteDecisions(room);
+        },
+        "roomlogicremotedecisions" + roomName,
+        250 / speed,
+        room
+    );
 }
 
 function getRoomLevel(room: Room): number {
@@ -171,4 +183,75 @@ function updateRoomHostiles(room: Room): void {
 }
 function updateRoomReservation(room: Room): void {
     room.memory.reservation = room.controller?.reservation;
+}
+const REMOTE_SEARCH_RANGE = 2;
+
+function remoteDecisions(room: Room): void {
+    const roomCoord = toRoomCoordinate(room.name);
+    if (roomCoord === null || room.memory.remotes === undefined) {
+        return;
+    }
+    const currentCount = room.memory.remotes.length;
+    if (currentCount >= GetRemoteLimit(room)) {
+        return;
+    }
+    const remotes: string[] = [];
+    for (let dx = -REMOTE_SEARCH_RANGE; dx <= REMOTE_SEARCH_RANGE; dx++) {
+        for (let dy = -REMOTE_SEARCH_RANGE; dy <= REMOTE_SEARCH_RANGE; dy++) {
+            if (dx === 0 && dy === 0) {
+                continue;
+            }
+            const remote = fromRoomCoordinate({
+                x: roomCoord.x + dx,
+                y: roomCoord.y + dy
+            });
+            if (
+                Memory.rooms[remote] === undefined ||
+                Memory.rooms[remote].roomLevel < 0 ||
+                describeRoom(remote) !== "room" ||
+                Memory.rooms[room.name].remotes.includes(remote)
+            ) {
+                continue;
+            }
+            const route = Game.map.findRoute(room.name, remote);
+            if (route === -2 || route.length > REMOTE_SEARCH_RANGE) {
+                continue;
+            }
+            let validRoute = true;
+            for (const routeRoom of route) {
+                if (Memory.rooms[routeRoom.room] === undefined || Memory.rooms[routeRoom.room].roomLevel < 0) {
+                    validRoute = false;
+                    break;
+                }
+            }
+            if (!validRoute) {
+                continue;
+            }
+            remotes.push(remote);
+        }
+    }
+
+    remotes.sort((a, b) => {
+        const aRoute = Game.map.findRoute(room.name, a);
+        const bRoute = Game.map.findRoute(room.name, b);
+        if (aRoute !== -2 && bRoute !== -2) {
+            if (aRoute.length - bRoute.length === 0) {
+                const aCoord = toRoomCoordinate(a);
+                const bCoord = toRoomCoordinate(b);
+                if (aCoord!.x - bCoord!.x === 0) {
+                    return aCoord!.y - bCoord!.y;
+                }
+                return aCoord!.x - bCoord!.x;
+            }
+            return aRoute.length - bRoute.length;
+        } else {
+            return 0;
+        }
+    });
+    remotes.splice(GetRemoteLimit(room) - currentCount);
+    room.memory.remotes = room.memory.remotes.concat(remotes);
+}
+
+function GetRemoteLimit(room: Room): number {
+    return Math.max(0, Math.min(4, (room.controller?.level || 0) - 1));
 }
