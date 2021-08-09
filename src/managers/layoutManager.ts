@@ -34,7 +34,7 @@ export class LayoutManager implements Manager {
             if (currentWork !== undefined) {
                 RunEvery(
                     () => {
-                        while (Game.cpu.getUsed() < Game.cpu.tickLimit * 0.75) {
+                        while (Game.cpu.getUsed() < Game.cpu.tickLimit * 0.5) {
                             const res = currentWork!.generator.next();
                             if (res.done) {
                                 console.log("Done with work for room " + currentWork!.request.room);
