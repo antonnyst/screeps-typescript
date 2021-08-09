@@ -2,7 +2,7 @@ import { unpackPosition } from "../../utils/RoomPositionPacker";
 import { getEnergy, setMovementData } from "../creep";
 
 export interface UpgraderMemory extends CreepMemory {
-    energy: boolean;
+    energy?: boolean;
 }
 
 export function upgrader(creep: Creep): void {
