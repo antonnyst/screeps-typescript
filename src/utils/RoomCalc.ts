@@ -15,7 +15,10 @@ export function roomTotalStoredEnergy(room: Room): number {
  * @co-author warinternal
  *
  */
-export function describeRoom(roomName: string): string {
+
+type RoomDescription = "highway_portal" | "highway" | "center" | "source_keeper" | "room";
+
+export function describeRoom(roomName: string): RoomDescription | null {
     const array = roomName.match(/\d+/g);
 
     if (array) {
@@ -33,5 +36,5 @@ export function describeRoom(roomName: string): string {
             return "room";
         }
     }
-    return "err";
+    return null;
 }
