@@ -509,11 +509,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check emergency upgraders
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (
-            counts["upgrader"] < 1 &&
-            room.controller &&
-            room.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[room.controller.level] * 0.1
-        ) {
+        if (counts["upgrader"] < 1 && room.controller) {
             return {
                 role: "upgrader",
                 pattern: rolePatterns["upgrader"],

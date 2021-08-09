@@ -1,4 +1,5 @@
 import { unpackPosition } from "utils/RoomPositionPacker";
+import { RunEvery, RunNow } from "utils/RunEvery";
 
 declare global {
     interface RoomMemory {
@@ -36,18 +37,25 @@ export function RemoteHandler(room: Room): void {
             room.memory.remotes = [];
         }
 
-        if (
-            room.memory.remoteData === undefined ||
-            room.memory.remoteData.check !== GetRemoteChecksum(room.memory.remotes)
-        ) {
-            room.memory.remoteData = GenerateRemoteData(room);
+        if (room.memory.remoteData === undefined || room.memory.remoteData.check !== GetRemoteChecksum(room)) {
+            RunNow(() => {
+                room.memory.remoteData = GenerateRemoteData(room);
+            }, "remotehandlergenerateremotedata" + room.name);
         }
+
+        RunEvery(
+            () => {
+                room.memory.remoteData = GenerateRemoteData(room);
+            },
+            "remotehandlergenerateremotedata" + room.name,
+            1500
+        );
     }
 }
 
-function GetRemoteChecksum(remotes: string[]): string {
-    let res = "";
-    for (const remote of remotes) {
+function GetRemoteChecksum(room: Room): string {
+    let res = "" + room.controller!.level;
+    for (const remote of room.memory.remotes) {
         res += remote;
     }
     return res;
@@ -64,7 +72,7 @@ function GenerateRemoteData(room: Room): RemoteData {
 
     return {
         data,
-        check: GetRemoteChecksum(room.memory.remotes)
+        check: GetRemoteChecksum(room)
     };
 }
 

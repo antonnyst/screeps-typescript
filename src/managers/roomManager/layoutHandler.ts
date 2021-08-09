@@ -4,6 +4,8 @@ import { RunEvery, RunNow } from "../../utils/RunEvery";
 import { GenLayoutData } from "layout/layout";
 import { AddWork, GetCurrentWorkQueue } from "managers/layoutManager";
 
+//TODO: roads are intersecting mining spots
+
 declare global {
     interface RoomMemory {
         genLayout?: GenLayoutData;
