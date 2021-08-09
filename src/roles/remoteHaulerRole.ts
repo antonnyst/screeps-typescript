@@ -90,7 +90,7 @@ export class RemoteHaulerRole extends CreepRole {
 
             if (target === null && Memory.rooms[this.creep.memory.home].genBuildings?.storage?.id !== undefined) {
                 const storage = Game.getObjectById(Memory.rooms[this.creep.memory.home].genBuildings!.storage.id!);
-                if (storage instanceof StructureStorage) {
+                if (storage instanceof StructureStorage && storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
                     target = storage;
                 }
             }

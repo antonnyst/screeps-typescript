@@ -253,5 +253,5 @@ function remoteDecisions(room: Room): void {
 }
 
 function GetRemoteLimit(room: Room): number {
-    return Math.max(0, Math.min(4, (room.controller?.level || 0) - 1));
+    return Math.max(0, Math.min(2, (room.controller?.level || 0) - 1));
 }

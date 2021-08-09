@@ -145,7 +145,7 @@ export function RepairHandler(room: Room): void {
                 const rampartObject = Game.getObjectById(rampart.id);
                 if (rampartObject instanceof StructureRampart) {
                     if (rampartObject.hits < 2000) {
-                        room.memory.repair[rampartObject.id] = {
+                        room.memory.repair[rampartObject.id] = room.memory.repair[rampartObject.id] || {
                             id: rampartObject.id,
                             pos: packPosition(rampartObject.pos)
                         };
@@ -160,7 +160,7 @@ export function RepairHandler(room: Room): void {
                 const rampartObject = Game.getObjectById(building.rampart.id);
                 if (rampartObject instanceof StructureRampart) {
                     if (rampartObject.hits < 2000) {
-                        room.memory.repair[rampartObject.id] = {
+                        room.memory.repair[rampartObject.id] = room.memory.repair[rampartObject.id] || {
                             id: rampartObject.id,
                             pos: packPosition(rampartObject.pos)
                         };
@@ -201,7 +201,7 @@ export function RepairHandler(room: Room): void {
             }
 
             if (lowestRampart !== null) {
-                room.memory.repair[lowestRampart.id] = {
+                room.memory.repair[lowestRampart.id] = room.memory.repair[lowestRampart.id] || {
                     id: lowestRampart.id,
                     pos: packPosition(lowestRampart.pos)
                 };
