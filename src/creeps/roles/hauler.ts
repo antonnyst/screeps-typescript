@@ -7,7 +7,7 @@ export interface HaulerMemory extends CreepMemory {
     gathering?: boolean;
 }
 
-export function miner(creep: Creep) {
+export function hauler(creep: Creep) {
     const memory = creep.memory as HaulerMemory;
     const home = Game.rooms[creep.memory.home];
     if (home.memory.genLayout === undefined || home.memory.genBuildings === undefined) {
