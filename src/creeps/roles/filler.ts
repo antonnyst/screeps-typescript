@@ -39,6 +39,33 @@ export function filler(creep: Creep): void {
     }
 
     doTasks(creep);
+
+    for (let i = memory.tasks.length - 1; i >= 0; i--) {
+        const task = memory.tasks[i];
+        const object = Game.getObjectById(task.id);
+        if (object === null) {
+            memory.tasks.splice(i, 1);
+            continue;
+        }
+        if (
+            task.type === "transfer" &&
+            (object instanceof StructureStorage ||
+                object instanceof StructureContainer ||
+                object instanceof StructureSpawn ||
+                object instanceof StructureExtension ||
+                object instanceof StructureTower) &&
+            task.resourceType !== undefined &&
+            task.amount !== undefined
+        ) {
+            if (
+                object.store.getFreeCapacity(task.resourceType) !== null &&
+                object.store.getFreeCapacity(task.resourceType)! < task.amount
+            ) {
+                memory.tasks.splice(i, 1);
+                continue;
+            }
+        }
+    }
 }
 
 function getTasks(creep: Creep): Task[] {
@@ -100,7 +127,7 @@ function doTasks(creep: Creep): void {
     }
 
     setMovementData(creep, {
-        pos: object.pos,
+        pos: task.pos || object.pos,
         range: 1
     });
 
