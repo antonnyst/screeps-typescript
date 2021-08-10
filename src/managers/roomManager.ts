@@ -187,6 +187,9 @@ function updateRoomReservation(room: Room): void {
 const REMOTE_SEARCH_RANGE = 2;
 
 function remoteDecisions(room: Room): void {
+    if (room.memory.roomLevel !== 2) {
+        return;
+    }
     const roomCoord = toRoomCoordinate(room.name);
     if (roomCoord === null || room.memory.remotes === undefined) {
         return;
@@ -253,5 +256,18 @@ function remoteDecisions(room: Room): void {
 }
 
 function GetRemoteLimit(room: Room): number {
-    return Math.max(0, Math.min(2, (room.controller?.level || 0) - 1));
+    if (room.memory.genBuildings === undefined) {
+        return 0;
+    }
+    let spawnCount = 0;
+    for (const spawn of room.memory.genBuildings?.spawns) {
+        if (spawn.id !== undefined) {
+            const object = Game.getObjectById(spawn.id);
+            if (object instanceof StructureSpawn) {
+                spawnCount++;
+            }
+        }
+    }
+
+    return spawnCount;
 }

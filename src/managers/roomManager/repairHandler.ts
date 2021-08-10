@@ -46,7 +46,6 @@ export function RepairHandler(room: Room): void {
             const object = Game.getObjectById(room.memory.repair[repairId].id);
             if (
                 object === null ||
-                object === undefined ||
                 object.hits === object.hitsMax ||
                 (object.structureType === STRUCTURE_RAMPART && object.hits / object.hitsMax > RAMPART_MAX_THRESHOLD)
             ) {
@@ -74,7 +73,7 @@ export function RepairHandler(room: Room): void {
                                 const ro = Game.getObjectById(r.id);
                                 if (ro instanceof StructureRoad) {
                                     if (ro.hits < ro.hitsMax) {
-                                        room.memory.repair[ro.id] = {
+                                        room.memory.repair[ro.id] = room.memory.repair[ro.id] || {
                                             id: ro.id,
                                             pos: packPosition(ro.pos)
                                         };
@@ -96,7 +95,7 @@ export function RepairHandler(room: Room): void {
                 const containerObject = Game.getObjectById(container.id);
                 if (containerObject instanceof StructureContainer) {
                     if (containerObject.hits / containerObject.hitsMax < ROAD_REPAIR_THRESHOLD) {
-                        room.memory.repair[containerObject.id] = {
+                        room.memory.repair[containerObject.id] = room.memory.repair[containerObject.id] || {
                             id: containerObject.id,
                             pos: packPosition(containerObject.pos)
                         };
@@ -129,7 +128,7 @@ export function RepairHandler(room: Room): void {
                     buildingObject !== undefined
                 ) {
                     if (buildingObject.hits < buildingObject.hitsMax) {
-                        room.memory.repair[buildingObject.id] = {
+                        room.memory.repair[buildingObject.id] = room.memory.repair[buildingObject.id] || {
                             id: buildingObject.id,
                             pos: packPosition(buildingObject.pos)
                         };
@@ -206,14 +205,10 @@ export function RepairHandler(room: Room): void {
                     pos: packPosition(lowestRampart.pos)
                 };
             }
-        } else if (
-            hasRampart &&
-            (Object.keys(room.memory.repair).length > 1 ||
-                room.memory.placedCS.length + room.memory.plannedCS.length > 0)
-        ) {
+        } else if (hasRampart && (Object.keys(room.memory.repair).length > 1 || room.memory.placedCS.length > 0)) {
             for (const repairId in room.memory.repair) {
                 const object = Game.getObjectById(room.memory.repair[repairId].id);
-                if (object !== null && object !== undefined && object?.structureType === STRUCTURE_RAMPART) {
+                if (object !== null && object.structureType === STRUCTURE_RAMPART) {
                     delete room.memory.repair[repairId];
                 }
             }
