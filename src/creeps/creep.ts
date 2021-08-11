@@ -1,5 +1,13 @@
 import { packPosition, unpackPosition } from "utils/RoomPositionPacker";
 
+declare global {
+    interface CreepMemory {
+        home: RoomName;
+    }
+}
+
+type RoomName = string;
+
 interface MovementArguments {
     pos: RoomPosition | number;
     range: number;
