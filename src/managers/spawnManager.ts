@@ -55,10 +55,10 @@ export class SpawnManager implements Manager {
                             if (this.checkWaiting(room, spawns)) {
                                 continue;
                             }
-                            if (this.checkNeeds(room, spawns)) {
+                            if (this.checkQueue(room, spawns)) {
                                 continue;
                             }
-                            this.checkQueue(room, spawns);
+                            this.checkNeeds(room, spawns);
                         }
                     }
                 }
@@ -111,15 +111,18 @@ export class SpawnManager implements Manager {
         }
         return false;
     }
-    public checkQueue(room: Room, spawns: StructureSpawn[]): void {
+    public checkQueue(room: Room, spawns: StructureSpawn[]): boolean {
         room.memory.spawnQueue = room.memory.spawnQueue || [];
         const spawnData: SpawnData | undefined = room.memory.spawnQueue.shift();
         if (spawnData !== undefined) {
             const result = this.spawnCreep(room, spawns, spawnData);
             if (!result) {
                 room.memory.spawnQueue.unshift(spawnData);
+                return false;
             }
+            return true;
         }
+        return false;
     }
     public spawnCreep(room: Room, spawns: StructureSpawn[], spawnData: SpawnData): boolean {
         let body: BodyPartConstant[] | undefined;
@@ -241,7 +244,7 @@ const needChecks: CreepNeedCheckFunction[] = [
             return {
                 role: "filler",
                 pattern: rolePatterns["filler"],
-                energy: room.energyCapacityAvailable
+                energy: GetEnergyCapacity(room)
             };
         }
         return null;
@@ -256,7 +259,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                 return {
                     role: "miner",
                     pattern: rolePatterns["miner"],
-                    energy: room.energyCapacityAvailable,
+                    energy: GetEnergyCapacity(room),
                     memory: {
                         role: "miner",
                         home: room.name,
@@ -275,7 +278,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                 return {
                     role: "miner",
                     pattern: rolePatterns["miner"],
-                    energy: room.energyCapacityAvailable,
+                    energy: GetEnergyCapacity(room),
                     memory: {
                         role: "miner",
                         home: room.name,
@@ -296,7 +299,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                     return {
                         role: "miner",
                         pattern: rolePatterns["miner"],
-                        energy: room.energyCapacityAvailable,
+                        energy: GetEnergyCapacity(room),
                         memory: {
                             role: "miner",
                             home: room.name,
@@ -322,7 +325,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                     return {
                         role: "miner",
                         pattern: rolePatterns["miner"],
-                        energy: room.energyCapacityAvailable,
+                        energy: GetEnergyCapacity(room),
                         memory: {
                             role: "miner",
                             home: room.name,
@@ -343,7 +346,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                         return {
                             role: "hauler",
                             pattern: rolePatterns["hauler"],
-                            energy: room.energyCapacityAvailable,
+                            energy: GetEnergyCapacity(room),
                             memory: {
                                 role: "hauler",
                                 home: room.name,
@@ -369,7 +372,7 @@ const needChecks: CreepNeedCheckFunction[] = [
             return {
                 role: "scout",
                 pattern: rolePatterns["scout"],
-                energy: room.energyCapacityAvailable
+                energy: GetEnergyCapacity(room)
             };
         }
         return null;
@@ -398,7 +401,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                             return {
                                 role: "quickFiller",
                                 pattern: rolePatterns["quickFiller"],
-                                energy: room.energyCapacityAvailable,
+                                energy: GetEnergyCapacity(room),
                                 index: 1,
                                 inside: true
                             };
@@ -433,7 +436,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                         return {
                             role: "quickFiller",
                             pattern: rolePatterns["quickFiller"] + "m",
-                            energy: room.energyCapacityAvailable,
+                            energy: GetEnergyCapacity(room),
                             inside: false,
                             memory: {
                                 role: "quickFiller",
@@ -458,7 +461,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                             return {
                                 role: "quickFiller",
                                 pattern: rolePatterns["quickFiller"],
-                                energy: room.energyCapacityAvailable,
+                                energy: GetEnergyCapacity(room),
                                 index: 1,
                                 inside: true
                             };
@@ -479,7 +482,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                             return {
                                 role: "quickFiller",
                                 pattern: rolePatterns["quickFiller"],
-                                energy: room.energyCapacityAvailable,
+                                energy: GetEnergyCapacity(room),
                                 index: 2,
                                 inside: true
                             };
@@ -500,9 +503,7 @@ const needChecks: CreepNeedCheckFunction[] = [
             return {
                 role: "builder",
                 pattern: rolePatterns["builder"],
-                energy:
-                    room.energyCapacityAvailable -
-                    (room.controller!.level === 7 && room.find(FIND_MY_SPAWNS).length < 2 ? 50 : 0)
+                energy: GetEnergyCapacity(room)
             };
         }
         return null;
@@ -513,7 +514,7 @@ const needChecks: CreepNeedCheckFunction[] = [
             return {
                 role: "upgrader",
                 pattern: rolePatterns["upgrader"],
-                energy: Math.min(room.energyCapacityAvailable, 3000)
+                energy: Math.min(GetEnergyCapacity(room), 3000)
             };
         }
         return null;
@@ -529,7 +530,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                     return {
                         role: "foot",
                         pattern: rolePatterns["foot"],
-                        energy: room.energyCapacityAvailable,
+                        energy: GetEnergyCapacity(room),
                         memory: {
                             role: "foot",
                             home: r
@@ -548,7 +549,7 @@ const needChecks: CreepNeedCheckFunction[] = [
             return {
                 role: "peacekeeper",
                 pattern: rolePatterns["peacekeeper"],
-                energy: room.energyCapacityAvailable
+                energy: GetEnergyCapacity(room)
             };
         }
         return null;
@@ -564,7 +565,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                     return {
                         role: "peacekeeper",
                         pattern: rolePatterns["peacekeeper"],
-                        energy: room.energyCapacityAvailable,
+                        energy: GetEnergyCapacity(room),
                         memory: {
                             role: "peacekeeper",
                             home: r
@@ -614,7 +615,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                             return {
                                 role: "remoteMiner",
                                 pattern: rolePatterns["remoteMiner"],
-                                energy: room.energyCapacityAvailable,
+                                energy: GetEnergyCapacity(room),
                                 memory: {
                                     role: "remoteMiner",
                                     home: room.name,
@@ -648,7 +649,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                                 pattern:
                                     rolePatterns["remoteHauler"] +
                                     room.memory.remoteData.data[remote].sources[i].haulers.size.toString(),
-                                energy: room.energyCapacityAvailable,
+                                energy: GetEnergyCapacity(room),
                                 memory: {
                                     role: "remoteHauler",
                                     home: room.name,
@@ -669,10 +670,7 @@ const needChecks: CreepNeedCheckFunction[] = [
             return null;
         }
 
-        if (
-            counts["reserver"] < Object.keys(room.memory.remoteData.data).length &&
-            room.energyCapacityAvailable >= 650
-        ) {
+        if (counts["reserver"] < Object.keys(room.memory.remoteData.data).length && GetEnergyCapacity(room) >= 650) {
             const splitByRoom = _.groupBy(roles["reserver"], (c) => c.memory.roleData?.target);
             for (let i = 0; i < room.memory.remotes.length; i++) {
                 if (Game.rooms[room.memory.remotes[i]] === undefined) {
@@ -689,7 +687,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                     return {
                         role: "reserver",
                         pattern: rolePatterns["reserver"],
-                        energy: room.energyCapacityAvailable,
+                        energy: GetEnergyCapacity(room),
                         memory: {
                             role: "reserver",
                             home: room.name,
@@ -720,7 +718,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                 return {
                     role: "manager",
                     pattern: rolePatterns["manager"],
-                    energy: room.energyCapacityAvailable,
+                    energy: GetEnergyCapacity(room),
                     index: 0,
                     inside: true
                 };
@@ -729,7 +727,7 @@ const needChecks: CreepNeedCheckFunction[] = [
             return {
                 role: "manager",
                 pattern: rolePatterns["manager"],
-                energy: room.energyCapacityAvailable,
+                energy: GetEnergyCapacity(room),
                 index: 0,
                 inside: true
             };
@@ -758,9 +756,7 @@ const needChecks: CreepNeedCheckFunction[] = [
             return {
                 role: "builder",
                 pattern: rolePatterns["builder"],
-                energy:
-                    room.energyCapacityAvailable -
-                    (room.controller!.level === 7 && room.find(FIND_MY_SPAWNS).length < 2 ? 50 : 0)
+                energy: GetEnergyCapacity(room)
             };
         }
         return null;
@@ -798,7 +794,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                 return {
                     role: "upgrader",
                     pattern: "[mwcwmw]5",
-                    energy: room.energyCapacityAvailable
+                    energy: GetEnergyCapacity(room)
                 };
             } else if (
                 room.controller.level === 7 &&
@@ -808,13 +804,13 @@ const needChecks: CreepNeedCheckFunction[] = [
                 return {
                     role: "upgrader",
                     pattern: "m5c5w40",
-                    energy: room.energyCapacityAvailable
+                    energy: GetEnergyCapacity(room)
                 };
             } else {
                 return {
                     role: "upgrader",
                     pattern: rolePatterns["upgrader"],
-                    energy: Math.min(room.energyCapacityAvailable, 3000)
+                    energy: Math.min(GetEnergyCapacity(room), 3000)
                 };
             }
         }
@@ -851,14 +847,14 @@ const needChecks: CreepNeedCheckFunction[] = [
                         return {
                             role: "mineralMiner",
                             pattern: rolePatterns["mineralMiner"],
-                            energy: room.energyCapacityAvailable
+                            energy: GetEnergyCapacity(room)
                         };
                     }
                     if (counts["mineralHauler"] === 0) {
                         return {
                             role: "mineralHauler",
                             pattern: rolePatterns["mineralHauler"],
-                            energy: room.energyCapacityAvailable
+                            energy: GetEnergyCapacity(room)
                         };
                     }
                 }
@@ -1011,4 +1007,11 @@ function GetEnergyStructures(room: Room): (StructureSpawn | StructureExtension)[
         return undefined;
     }
     return energyStructures;
+}
+
+function GetEnergyCapacity(room: Room): number {
+    if (room.controller!.level >= 7) {
+        return room.energyCapacityAvailable - 200;
+    }
+    return room.energyCapacityAvailable;
 }
