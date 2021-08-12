@@ -4,8 +4,6 @@ import { RunEvery, RunNow } from "../../utils/RunEvery";
 import { GenLayoutData } from "layout/layout";
 import { AddWork, GetCurrentWorkQueue } from "managers/layoutManager";
 
-//TODO: roads are intersecting mining spots
-
 declare global {
     interface RoomMemory {
         genLayout?: GenLayoutData;
@@ -222,6 +220,7 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
             };
         })
     );
+    const baseRoom = room;
     const basePos = new RoomPosition(room.memory.genLayout.prefabs[0].x, room.memory.genLayout.prefabs[0].y, room.name);
     const roadCostMatrix = (roomName: string): boolean | CostMatrix => {
         const room = Game.rooms[roomName];
@@ -275,6 +274,24 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
             costs.set(mpos.x, mpos.y, 255);
             const cpos = unpackPosition(room.memory.genLayout.controller);
             costs.set(cpos.x, cpos.y, 255);
+            
+            for (const [i, source] of room.memory.genLayout.sources.entries()) {
+                const containerPos = offsetPositionByDirection(
+                    unpackPosition(room.memory.basicRoomData.sources[i].pos),
+                    source.container
+                );
+                costs.set(containerPos.x, containerPos.y, 255);
+                const linkPos = offsetPositionByDirection(containerPos, source.link);
+                costs.set(linkPos.x, linkPos.y, 255);
+            }
+        }
+        if (isRemote && baseRoom.memory.remoteData !== undefined) {
+            if (baseRoom.memory.remoteData.data[roomName] !== undefined) {
+                for (const source of baseRoom.memory.remoteData.data[roomName].sources) {
+                    const pos = offsetPositionByDirection(unpackPosition(source.pos), source.container);
+                    costs.set(pos.x, pos.y, 255);
+                }
+            }
         }
 
         return costs;
