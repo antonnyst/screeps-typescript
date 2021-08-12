@@ -21,16 +21,18 @@ export class PeacekeeperRole extends CreepRole {
             // retarget
 
             let foundRoom: boolean = false;
+            if (Memory.rooms[this.creep.memory.home].remotes !== undefined) {
+                for (const remote of Memory.rooms[this.creep.memory.home].remotes) {
+                    if (
+                        (Memory.rooms[remote] !== undefined && Object.keys(Memory.rooms[remote].hostiles).length > 0) ||
+                        (Game.rooms[remote] !== undefined &&
+                            Game.rooms[remote].find(FIND_HOSTILE_STRUCTURES).length > 0)
+                    ) {
+                        this.creep.memory.roleData.target = remote;
+                        foundRoom = true;
 
-            for (const remote of Memory.rooms[this.creep.memory.home].remotes) {
-                if (
-                    (Memory.rooms[remote] !== undefined && Object.keys(Memory.rooms[remote].hostiles).length > 0) ||
-                    (Game.rooms[remote] !== undefined && Game.rooms[remote].find(FIND_HOSTILE_STRUCTURES).length > 0)
-                ) {
-                    this.creep.memory.roleData.target = remote;
-                    foundRoom = true;
-
-                    break;
+                        break;
+                    }
                 }
             }
 
