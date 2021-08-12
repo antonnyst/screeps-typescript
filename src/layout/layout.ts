@@ -622,6 +622,9 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
             );
             costs.set(mpos.x, mpos.y, 255);
 
+            const cpos = unpackPosition(candidatesFitness[0].p.controller);
+            costs.set(cpos.x, cpos.y, 255);
+
             return costs;
         };
 
@@ -1273,8 +1276,19 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
             const pos = unpackPosition(tower);
             costs.set(pos.x, pos.y, 255);
         }
+
+        for (const [i, source] of candidatesFitness[0].p.sources.entries()) {
+            const containerPos = offsetPositionByDirection(
+                unpackPosition(basicLayout.sources[i].pos),
+                source.container
+            );
+            costs.set(containerPos.x, containerPos.y, 255);
+            const linkPos = offsetPositionByDirection(containerPos, source.link);
+            costs.set(linkPos.x, linkPos.y, 255);
+        }
+
         const mpos = offsetPositionByDirection(
-            unpackPosition(room.memory.basicRoomData.mineral!.pos),
+            unpackPosition(basicLayout.mineral!.pos),
             candidatesFitness[0].p.mineral.container
         );
         costs.set(mpos.x, mpos.y, 255);
