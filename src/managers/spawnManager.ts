@@ -842,7 +842,12 @@ const needChecks: CreepNeedCheckFunction[] = [
                 const container = Game.getObjectById(
                     room.memory.genBuildings.containers[room.memory.genBuildings.containers.length - 1].id!
                 );
-                if (extractor !== undefined && container instanceof Structure) {
+                if (
+                    extractor !== undefined &&
+                    container instanceof Structure &&
+                    room.memory.resources !== undefined &&
+                    room.memory.resources?.total[mineral.mineralType] < C.ROOM_MINERAL_EXPORT_LIMIT * 1.5
+                ) {
                     if (counts["mineralMiner"] === 0) {
                         return {
                             role: "mineralMiner",
