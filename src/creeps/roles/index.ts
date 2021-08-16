@@ -4,5 +4,6 @@ export * from "./hauler";
 export * from "./manager";
 export * from "./miner";
 export * from "./protector";
+export * from "./scout";
 export * from "./upgrader";
 export * from "./worker";
