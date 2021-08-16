@@ -34,3 +34,27 @@ export function Building(data: BuildingData | undefined): Structure | null {
     }
     return null;
 }
+
+export function Spawns(room: Room): StructureSpawn[] | null {
+    return Buildings(room.memory.genBuildings?.spawns) as StructureSpawn[] | null;
+}
+
+export function Towers(room: Room): StructureTower[] | null {
+    return Buildings(room.memory.genBuildings?.towers) as StructureTower[] | null;
+}
+
+export function Buildings(data: BuildingData[] | undefined): Structure[] | null {
+    if (data === undefined) {
+        return null;
+    }
+    const array: Structure[] = [];
+    for (const building of data) {
+        if (building.id !== undefined) {
+            const object = Game.getObjectById(building.id);
+            if (object !== null && !(object instanceof ConstructionSite)) {
+                array.push(object);
+            }
+        }
+    }
+    return array;
+}
