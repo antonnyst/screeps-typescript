@@ -270,9 +270,8 @@ export class FillerRole extends CreepRole {
                 FIND_STRUCTURES,
                 {
                     filter: (s) =>
-                        (s.structureType === STRUCTURE_CONTAINER ||
-                            s.structureType === STRUCTURE_STORAGE ||
-                            s.structureType === STRUCTURE_TERMINAL) &&
+                        (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) && //||
+                        //s.structureType === STRUCTURE_TERMINAL
                         s.store.getUsedCapacity(RESOURCE_ENERGY) > 0
                 }
             ) as (StructureContainer | StructureStorage | StructureTerminal)[];

@@ -35,10 +35,17 @@ export function worker(creep: Creep): void {
     } else {
         const target = getTarget(creep);
         if (target !== null) {
-            setMovementData(creep, {
-                pos: target.pos,
-                range: 3
-            });
+            if (target.pos.roomName !== creep.room.name) {
+                setMovementData(creep, {
+                    pos: new RoomPosition(25, 25, target.pos.roomName),
+                    range: 23
+                });
+            } else {
+                setMovementData(creep, {
+                    pos: target.pos,
+                    range: 3
+                });
+            }
             if (creep.pos.inRangeTo(target.pos, 3)) {
                 if (target instanceof Structure) {
                     creep.repair(target);

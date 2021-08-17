@@ -120,9 +120,9 @@ export function remoteHauler(creep: Creep) {
             }
         } else {
             const cpos = new RoomPosition(
-                creep.room.memory.genLayout!.prefabs[0].x,
-                creep.room.memory.genLayout!.prefabs[0].y,
-                creep.room.name
+                home.memory.genLayout!.prefabs[0].x,
+                home.memory.genLayout!.prefabs[0].y,
+                home.name
             );
             setMovementData(creep, {
                 pos: cpos,

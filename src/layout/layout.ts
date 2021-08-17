@@ -1311,6 +1311,7 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
                 range: 1
             },
             {
+                maxOps: 5000,
                 roomCallback: roadCostMatrix,
                 plainCost: 2,
                 swampCost: 10
@@ -1335,6 +1336,7 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
             range: 1
         },
         {
+            maxOps: 5000,
             roomCallback: roadCostMatrix,
             plainCost: 2,
             swampCost: 10

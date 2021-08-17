@@ -3,11 +3,13 @@ import { GenerateBodyFromPattern, bodySortingValues, rolePatterns } from "../uti
 import { packPosition, unpackPosition } from "../utils/RoomPositionPacker";
 import { roomTotalStoredEnergy } from "utils/RoomCalc";
 import * as C from "../config/constants";
-import { roleList } from "roles/roleList";
+import * as roles from "../creeps/roles";
 import { RunEvery } from "utils/RunEvery";
 import { generateName } from "utils/CreepNames";
 import { bucketTarget, pushGCL } from "config/config";
 import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
+import { HaulerMemory, MinerMemory, RemoteHaulerMemory, RemoteMinerMemory, ReserverMemory } from "creeps/roles";
+import { CreepRole } from "creeps/runner";
 
 declare global {
     interface RoomMemory {
@@ -89,7 +91,7 @@ export class SpawnManager implements Manager {
         const creepCounts = _.countBy(creeps, (c) => c.memory.role);
         const creepRoles = _.groupBy(creeps, (c) => c.memory.role);
 
-        for (const role of Object.keys(roleList)) {
+        for (const role of Object.keys(roles)) {
             creepCounts[role] = creepCounts[role] || 0;
             creepRoles[role] = creepRoles[role] || [];
         }
@@ -140,7 +142,7 @@ export class SpawnManager implements Manager {
         let memory: CreepMemory | undefined;
         if (spawnData.memory === undefined) {
             if (spawnData.role !== undefined) {
-                memory = { role: spawnData.role, home: room.name };
+                memory = { role: spawnData.role as CreepRole, home: room.name };
             } else {
                 console.log("SpawnData error no memory " + spawnData.role);
             }
@@ -223,9 +225,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                 memory: {
                     role: "miner",
                     home: room.name,
-                    roleData: {
-                        targetId: "0"
-                    }
+                    source: 0
                 }
             };
         }
@@ -263,9 +263,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                     memory: {
                         role: "miner",
                         home: room.name,
-                        roleData: {
-                            targetId: "0"
-                        }
+                        source: 0
                     }
                 };
             }
@@ -273,7 +271,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                 room.memory.genLayout!.sources.length === 2 &&
                 counts["miner"] === 1 &&
                 roles["miner"][0] !== undefined &&
-                roles["miner"][0].memory.roleData?.targetId !== undefined
+                (roles["miner"][0].memory as MinerMemory).source !== undefined
             ) {
                 return {
                     role: "miner",
@@ -282,16 +280,14 @@ const needChecks: CreepNeedCheckFunction[] = [
                     memory: {
                         role: "miner",
                         home: room.name,
-                        roleData: {
-                            targetId: roles["miner"][0].memory.roleData.targetId === "0" ? "1" : "0"
-                        }
+                        source: (roles["miner"][0].memory as MinerMemory).source === 0 ? 1 : 0
                     }
                 };
             }
             for (let i = 0; i < room.memory.genLayout!.sources.length; i++) {
                 let hasMiner = false;
                 for (const miner of roles["miner"]) {
-                    if (miner.memory.roleData?.targetId === i.toString()) {
+                    if ((miner.memory as MinerMemory).source === i) {
                         hasMiner = true;
                     }
                 }
@@ -303,9 +299,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                         memory: {
                             role: "miner",
                             home: room.name,
-                            roleData: {
-                                targetId: i.toString()
-                            }
+                            source: i
                         }
                     };
                 }
@@ -316,7 +310,7 @@ const needChecks: CreepNeedCheckFunction[] = [
             for (let i = 0; i < room.memory.genLayout!.sources.length; i++) {
                 let hasMiner = false;
                 for (const miner of roles["miner"]) {
-                    if (miner.memory.roleData?.targetId === i.toString()) {
+                    if ((miner.memory as MinerMemory).source === i) {
                         hasMiner = true;
                         break;
                     }
@@ -329,15 +323,13 @@ const needChecks: CreepNeedCheckFunction[] = [
                         memory: {
                             role: "miner",
                             home: room.name,
-                            roleData: {
-                                targetId: i.toString()
-                            }
+                            source: i
                         }
                     };
                 } else if (haulerTarget + i > 1) {
                     let hasHauler = false;
                     for (const hauler of roles["hauler"]) {
-                        if (hauler.memory.roleData?.targetId === i.toString()) {
+                        if ((hauler.memory as HaulerMemory).source === i) {
                             hasHauler = true;
                             break;
                         }
@@ -350,9 +342,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                             memory: {
                                 role: "hauler",
                                 home: room.name,
-                                roleData: {
-                                    targetId: i.toString()
-                                }
+                                source: i
                             }
                         };
                     }
@@ -441,7 +431,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                             memory: {
                                 role: "quickFiller",
                                 home: room.name,
-                                targetPos: packPosition(pos)
+                                pos: packPosition(pos)
                             }
                         };
                     }
@@ -496,12 +486,12 @@ const needChecks: CreepNeedCheckFunction[] = [
     //Check minimal builders
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (
-            counts["builder"] === 0 &&
+            counts["worker"] === 0 &&
             (room.memory.placedCS.length > 0 ||
                 (room.memory.repair !== undefined && Object.keys(room.memory.repair).length > 0))
         ) {
             return {
-                role: "builder",
+                role: "worker",
                 pattern: rolePatterns["builder"],
                 energy: GetEnergyCapacity(room)
             };
@@ -558,18 +548,14 @@ const needChecks: CreepNeedCheckFunction[] = [
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (room.memory.remoteSupportRooms.length > 0) {
             for (const r of room.memory.remoteSupportRooms) {
-                const fAmt = _.filter(Game.creeps, (c: Creep) => c.memory.role === "peacekeeper" && c.memory.home === r)
+                const fAmt = _.filter(Game.creeps, (c: Creep) => c.memory.role === "protector" && c.memory.home === r)
                     .length;
 
                 if (fAmt < 1 && Game.rooms[r] !== undefined) {
                     return {
-                        role: "peacekeeper",
+                        role: "protector",
                         pattern: rolePatterns["peacekeeper"],
-                        energy: GetEnergyCapacity(room),
-                        memory: {
-                            role: "peacekeeper",
-                            home: r
-                        }
+                        energy: GetEnergyCapacity(room)
                     };
                 }
             }
@@ -595,7 +581,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         }
 
         if (counts["remoteMiner"] < minerTarget) {
-            const splitByRoom = _.groupBy(roles["remoteMiner"], (c) => c.memory.roleData?.target);
+            const splitByRoom = _.groupBy(roles["remoteMiner"], (c) => (c.memory as RemoteMinerMemory).room);
             for (let remote in room.memory.remoteData.data) {
                 if (
                     splitByRoom[remote] === undefined ||
@@ -605,7 +591,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                         let hasMiner = false;
                         if (splitByRoom[remote] !== undefined) {
                             for (let j = 0; j < splitByRoom[remote].length; j++) {
-                                if (splitByRoom[remote][j].memory.roleData?.targetId === i.toString()) {
+                                if ((splitByRoom[remote][j].memory as RemoteMinerMemory).source === i) {
                                     hasMiner = true;
                                     break;
                                 }
@@ -619,10 +605,8 @@ const needChecks: CreepNeedCheckFunction[] = [
                                 memory: {
                                     role: "remoteMiner",
                                     home: room.name,
-                                    roleData: {
-                                        targetId: i.toString(),
-                                        target: remote
-                                    }
+                                    room: remote,
+                                    source: i
                                 }
                             };
                         }
@@ -631,14 +615,14 @@ const needChecks: CreepNeedCheckFunction[] = [
             }
         }
         if (counts["remoteHauler"] < haulerTarget) {
-            const splitByRoom = _.groupBy(roles["remoteHauler"], (c) => c.memory.targetRoom);
+            const splitByRoom = _.groupBy(roles["remoteHauler"], (c) => (c.memory as RemoteHaulerMemory).room);
             for (let remote in room.memory.remoteData.data) {
                 if (splitByRoom[remote] === undefined || splitByRoom[remote].length < haulerPerRoom[remote]) {
                     for (let i = 0; i < room.memory.remoteData.data[remote].sources.length; i++) {
                         let haulerAmount = 0;
                         if (splitByRoom[remote] !== undefined) {
                             for (let j = 0; j < splitByRoom[remote].length; j++) {
-                                if (splitByRoom[remote][j].memory.targetSource === i) {
+                                if ((splitByRoom[remote][j].memory as RemoteHaulerMemory).source === i) {
                                     haulerAmount += 1;
                                 }
                             }
@@ -653,8 +637,8 @@ const needChecks: CreepNeedCheckFunction[] = [
                                 memory: {
                                     role: "remoteHauler",
                                     home: room.name,
-                                    targetSource: i,
-                                    targetRoom: remote
+                                    room: remote,
+                                    source: i
                                 }
                             };
                         }
@@ -671,7 +655,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         }
 
         if (counts["reserver"] < Object.keys(room.memory.remoteData.data).length && GetEnergyCapacity(room) >= 650) {
-            const splitByRoom = _.groupBy(roles["reserver"], (c) => c.memory.roleData?.target);
+            const splitByRoom = _.groupBy(roles["reserver"], (c) => (c.memory as ReserverMemory).room);
             for (let i = 0; i < room.memory.remotes.length; i++) {
                 if (Game.rooms[room.memory.remotes[i]] === undefined) {
                     continue;
@@ -691,9 +675,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                         memory: {
                             role: "reserver",
                             home: room.name,
-                            roleData: {
-                                target: room.memory.remotes[i]
-                            }
+                            room: room.memory.remotes[i]
                         }
                     };
                 }
@@ -752,9 +734,9 @@ const needChecks: CreepNeedCheckFunction[] = [
             ),
             10
         );
-        if (counts["builder"] < builderTarget) {
+        if (counts["worker"] < builderTarget) {
             return {
-                role: "builder",
+                role: "worker",
                 pattern: rolePatterns["builder"],
                 energy: GetEnergyCapacity(room)
             };

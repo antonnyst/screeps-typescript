@@ -152,7 +152,7 @@ function GatherData(room: string): void {
 
     const hostiles: Creep[] = Game.rooms[room].find(FIND_HOSTILE_CREEPS);
     const defenders: Creep[] = Game.rooms[room].find(FIND_MY_CREEPS, {
-        filter: (c) => c.memory.home === room && c.memory.role === "defender"
+        filter: (c) => c.memory.home === room && false //c.memory.role === "defender"
     });
 
     for (const hostile of hostiles) {

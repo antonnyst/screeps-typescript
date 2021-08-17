@@ -1,3 +1,4 @@
+import { ClaimerMemory } from "creeps/roles";
 import { Manager } from "./manager";
 export class FlagManager implements Manager {
     minSpeed = 1;
@@ -31,10 +32,8 @@ function HandleFlag(flag: Flag): void {
                     memory: {
                         role: "claimer",
                         home: flag.name,
-                        roleData: {
-                            target: flag.pos.roomName
-                        }
-                    }
+                        room: flag.pos.roomName
+                    } as ClaimerMemory
                 });
                 Memory.rooms[flag.name].remoteSupportRooms.push(flag.pos.roomName);
             }

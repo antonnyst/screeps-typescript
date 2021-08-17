@@ -274,7 +274,7 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
             costs.set(mpos.x, mpos.y, 255);
             const cpos = unpackPosition(room.memory.genLayout.controller);
             costs.set(cpos.x, cpos.y, 255);
-            
+
             for (const [i, source] of room.memory.genLayout.sources.entries()) {
                 const containerPos = offsetPositionByDirection(
                     unpackPosition(room.memory.basicRoomData.sources[i].pos),
@@ -307,6 +307,7 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
                     range: 1
                 },
                 {
+                    maxOps: 10000,
                     roomCallback: roadCostMatrix,
                     plainCost: 2,
                     swampCost: 4
@@ -314,6 +315,7 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
             );
 
             if (search.incomplete === true) {
+                console.log("incomplete path " + remote + " " + source.id);
                 continue;
             }
 

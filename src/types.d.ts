@@ -9,14 +9,14 @@ interface RawMemory {
 }
 
 interface CreepMemory {
-    role: string;
+    //role: string;
     home: string;
-    roleData?: {
+    /*roleData?: {
         target?: string;
         targetId?: string;
         hasEnergy?: boolean;
         anyStore?: any;
-    };
+    };*/
     checkIdle?: {
         idleCount: number;
         lastPos: RoomPosition;
@@ -45,7 +45,6 @@ interface Memory {
     cacheHits: number;
     totalQueries: number;
 }
-
 
 interface FlagMemory {
     processed?: boolean;

@@ -169,7 +169,7 @@ function getEnergyTarget(creep: Creep): Structure | Resource | Tombstone | Ruin 
         return targets[0];
     } else {
         if (creep.getActiveBodyparts(WORK) > 0) {
-            return creep.pos.findClosestByRange(FIND_SOURCES_ACTIVE);
+            return creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
         } else {
             return null;
         }

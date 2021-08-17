@@ -49,7 +49,7 @@ export function hauler(creep: Creep) {
     } else {
         // TODO: Add target locking
         let target: StructureContainer | StructureStorage | null = null;
-        if (home.memory.genBuildings.containers[memory.source].id !== undefined) {
+        if (home.memory.genBuildings.containers[0].id !== undefined) {
             const container = Game.getObjectById(home.memory.genBuildings.containers[memory.source].id!);
             if (
                 container instanceof StructureContainer &&

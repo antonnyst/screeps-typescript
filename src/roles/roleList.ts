@@ -1,5 +1,5 @@
 import { CreepRole } from "./creepRole";
-
+/*
 import { ArmedDismantlerRole } from "./armedDismantler";
 import { BlinkerRole } from "./blinkerRole";
 import { BuilderRole } from "./builderRole";
@@ -49,3 +49,4 @@ export const roleList: { [role: string]: CreepRole } = {
     scout: new ScoutRole(),
     quickFiller: new QuickFiller()
 };
+*/
