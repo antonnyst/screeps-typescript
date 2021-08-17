@@ -1,7 +1,6 @@
+import { runCreep } from "creeps/runner";
 import * as Config from "./../config/config";
 import { Manager } from "./manager";
-import { CreepRole } from "./../roles/creepRole";
-import { roleList } from "./../roles/roleList";
 
 const cpuArr: { [name: string]: { c: number; cpu: number } } = {};
 
@@ -21,15 +20,9 @@ export class CreepManager implements Manager {
                 continue;
             }
 
-            const role: CreepRole = roleList[creep.memory.role];
-            if (role === undefined) {
-                continue;
-            }
-
             const cpu = Game.cpu.getUsed();
 
-            role.setCreep(creep);
-            role.runLogic();
+            runCreep(creep);
 
             const uCpu = Game.cpu.getUsed() - cpu;
 

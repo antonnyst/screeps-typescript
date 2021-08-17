@@ -49,11 +49,23 @@ export function filler(creep: Creep): void {
         }
         if (
             task.type === "transfer" &&
-            (object instanceof StructureStorage ||
-                object instanceof StructureContainer ||
+            (object instanceof StructureStorage || object instanceof StructureContainer) &&
+            task.resourceType !== undefined &&
+            task.amount !== undefined
+        ) {
+            if (
+                object.store.getFreeCapacity(task.resourceType) !== null &&
+                object.store.getFreeCapacity(task.resourceType)! < task.amount
+            ) {
+                memory.tasks.splice(i, 1);
+                continue;
+            }
+        }
+        if (
+            task.type === "transfer" &&
+            (object instanceof StructureTower ||
                 object instanceof StructureSpawn ||
-                object instanceof StructureExtension ||
-                object instanceof StructureTower) &&
+                object instanceof StructureExtension) &&
             task.resourceType !== undefined &&
             task.amount !== undefined
         ) {
@@ -79,6 +91,23 @@ function getTasks(creep: Creep): Task[] {
             const res = getter.fn(creep);
             if (res !== null) {
                 return res;
+            }
+        }
+    } else {
+        const carriedResources = Object.keys(creep.store) as ResourceConstant[];
+        for (const getter of taskGetters) {
+            let compatible = true;
+            for (const resource of carriedResources) {
+                if (!getter.resources.includes(resource)) {
+                    compatible = false;
+                    break;
+                }
+            }
+            if (compatible) {
+                const res = getter.fn(creep);
+                if (res !== null) {
+                    return res;
+                }
             }
         }
     }
@@ -203,7 +232,8 @@ function getEnergy(creep: Creep, amount: number): Task[] | null {
                 tasks.push({
                     id: energySource.id,
                     type: "withdraw",
-                    amount: amt
+                    amount: amt,
+                    resourceType: RESOURCE_ENERGY
                 });
             }
         } else if (energySource instanceof Resource && energySource.resourceType === RESOURCE_ENERGY) {
@@ -277,7 +307,8 @@ const taskGetters: GetTaskData[] = [
             for (const tower of fillTargets) {
                 tasks.push({
                     id: tower.id,
-                    type: "transfer"
+                    type: "transfer",
+                    resourceType: RESOURCE_ENERGY
                 });
             }
 
@@ -341,7 +372,8 @@ const taskGetters: GetTaskData[] = [
             for (const target of fillTargets) {
                 tasks.push({
                     id: target.id,
-                    type: "transfer"
+                    type: "transfer",
+                    resourceType: RESOURCE_ENERGY
                 });
             }
 

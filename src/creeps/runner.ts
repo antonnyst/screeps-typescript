@@ -1,13 +1,14 @@
 import * as roles from "./roles";
+import { logic } from "./basic";
 
-type CreepRole = keyof typeof roles;
+export type CreepRole = keyof typeof roles;
 
 declare global {
     interface CreepMemory {
-        frole?: CreepRole;
+        role: CreepRole;
     }
 }
 
 export function runCreep(creep: Creep): void {
-    roles[creep.memory.frole!](creep);
+    logic(roles[creep.memory.role], creep);
 }

@@ -1,5 +1,5 @@
 import { CreepRole } from "./creepRole";
-
+/*
 export class ArmedDismantlerRole extends CreepRole {
     runRole() {
         if (
@@ -47,3 +47,4 @@ export class ArmedDismantlerRole extends CreepRole {
         }
     }
 }
+*/
