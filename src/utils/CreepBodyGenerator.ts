@@ -90,7 +90,7 @@ export function GenerateBodyFromPattern(pattern: string, energy: number): BodyPa
 }
 
 export const rolePatterns: { [roleName: string]: string } = {
-    builder: "[wmc]11[mww]5mw",
+    worker: "[wmc]11[mww]5mw",
     filler: "[mcc]8",
     foot: "[mcw]*",
     hauler: "[mcc]8",
