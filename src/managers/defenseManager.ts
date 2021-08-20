@@ -37,8 +37,8 @@ interface Strategy {
     run: StrategyFunction;
 }
 
-const STRATEGY_TIME = 200;
-const STRATEGY_TIME_VARIATION = 50;
+const STRATEGY_TIME = 50;
+const STRATEGY_TIME_VARIATION = 25;
 
 ////// DEFENSE MANAGER //////
 // The DefendeManager should calculate damage and healing potentials and control towers and creep defenders
@@ -298,7 +298,7 @@ function RunCreeps(room: string, towers: TowerDirective): void {}
 const STRATEGIES: Strategy[] = [
     {
         // conservative (only confirm kills)
-        weight: 10,
+        weight: 70,
         run: (room: string, data: DefenseData, towers: StructureTower[]) => {
             //confirm kills
             let highestDiff: number = 0;
