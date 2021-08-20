@@ -9,25 +9,11 @@ interface RawMemory {
 }
 
 interface CreepMemory {
-    //role: string;
     home: string;
-    /*roleData?: {
-        target?: string;
-        targetId?: string;
-        hasEnergy?: boolean;
-        anyStore?: any;
-    };*/
     checkIdle?: {
         idleCount: number;
         lastPos: RoomPosition;
     };
-    getEnergy?: {
-        target?: string;
-    };
-    boost?: {
-        [resource in MineralBoostConstant]: number;
-    };
-    _move?: any;
 }
 
 interface RoomMemory {
