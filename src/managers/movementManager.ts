@@ -455,6 +455,12 @@ const roomCallback = (roomName: string): boolean | CostMatrix => {
                 }
             }
         }
+        if (describeRoom(roomName) === "highway_portal") {
+            const portals = room.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_PORTAL } });
+            for (const portal of portals) {
+                lazyMatrix.set(portal.pos.x, portal.pos.y, 255);
+            }
+        }
         saveToCache("rccostmatrixlazy" + roomName, lazyMatrix);
     }
     let finalMatrix = lazyMatrix.clone();
