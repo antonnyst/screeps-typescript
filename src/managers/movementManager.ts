@@ -9,6 +9,10 @@ declare global {
     interface CreepMemory {
         movementData?: MovementData;
     }
+    interface Memory {
+        cacheHits: number;
+        totalQueries: number;
+    }
 }
 
 export interface MovementData {

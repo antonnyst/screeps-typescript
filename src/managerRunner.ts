@@ -12,6 +12,12 @@ import { MovementManager } from "managers/movementManager";
 import { LayoutManager } from "managers/layoutManager";
 import { ErrorMapper } from "utils/ErrorMapper";
 
+declare global {
+    interface Memory {
+        msplit: { [key in string]: number };
+    }
+}
+
 const managers: Manager[] = [
     new FlagManager(),
     new RoomManager(),
