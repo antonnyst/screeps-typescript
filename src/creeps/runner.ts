@@ -1,5 +1,5 @@
 import * as roles from "./roles";
-import { logic } from "./basic";
+import { logic } from "./logic";
 
 export type CreepRole = keyof typeof roles;
 
