@@ -254,7 +254,11 @@ const needChecks: CreepNeedCheckFunction[] = [
         const haulerTarget =
             room.controller!.level === 1 || room.controller!.level > 6 ? 0 : room.controller!.level > 5 ? 1 : 2;
 
-        if (counts["miner"] < room.memory.genLayout!.sources.length && haulerTarget === 0) {
+        if (room.memory.genLayout === undefined) {
+            return null;
+        }
+
+        if (counts["miner"] < room.memory.genLayout.sources.length && haulerTarget === 0) {
             if (counts["miner"] === 0) {
                 return {
                     role: "miner",
@@ -306,8 +310,8 @@ const needChecks: CreepNeedCheckFunction[] = [
             }
         }
 
-        if (counts["miner"] < room.memory.genLayout!.sources.length || counts["hauler"] < haulerTarget) {
-            for (let i = 0; i < room.memory.genLayout!.sources.length; i++) {
+        if (counts["miner"] < room.memory.genLayout.sources.length || counts["hauler"] < haulerTarget) {
+            for (let i = 0; i < room.memory.genLayout.sources.length; i++) {
                 let hasMiner = false;
                 for (const miner of roles["miner"]) {
                     if ((miner.memory as MinerMemory).source === i) {
@@ -726,6 +730,14 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check workers
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+        if (
+            room.memory.repair === undefined ||
+            room.memory.placedCS === undefined ||
+            room.memory.plannedCS === undefined
+        ) {
+            return null;
+        }
+
         let workerTarget = Math.min(
             Math.max(
                 Math.ceil(
