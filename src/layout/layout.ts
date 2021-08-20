@@ -228,7 +228,7 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
     let candidatesFitness: { p: GenLayoutData; v: number }[] = [];
 
     for (const candidate of candidates) {
-        const a = fitness(basicLayout, candidate, roomName);
+        const a = yield* fitness(basicLayout, candidate, roomName);
 
         let b = 0;
         for (const source of basicLayout.sources) {
@@ -247,10 +247,10 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
             v: tf
         });
 
-        yield "done for " + candidate.prefabs[0].x + "/" + candidate.prefabs[0].y + " with fitness " + tf;
+        yield "1done for " + candidate.prefabs[0].x + "/" + candidate.prefabs[0].y + " with fitness " + tf;
     }
 
-    yield null;
+    yield "1111";
 
     // Sort candidates and keep best 10
     candidatesFitness.sort((a, b) => a.v - b.v);
@@ -271,6 +271,8 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
                 }
             }
         }
+
+        yield null;
 
         let distance = 2;
         for (let x = distance; x <= 49 - distance; x++) {
@@ -438,6 +440,8 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
             }
         }
 
+        yield null;
+
         const dist: CostMatrix = applyDistanceTransform(matrix);
 
         // Search in a spiral to find closest dist values >= 5
@@ -520,7 +524,7 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
                 controller: candidate.p.controller
             };
             const range = Math.abs(location[0]) + Math.abs(location[1]);
-            const f = fitness(basicLayout, layout, roomName) + range * 2;
+            const f = (yield* fitness(basicLayout, layout, roomName)) + range * 2;
             locationFitness.push({
                 p: location,
                 v: f
@@ -554,7 +558,9 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
     // Calculate candidate fitness
 
     for (const candidate of candidatesFitness) {
-        const c = cutLayout(basicLayout, candidate.p, roomName);
+        yield null;
+        const c = yield* cutLayout(basicLayout, candidate.p, roomName);
+        yield null;
         const a = c.length;
 
         candidate.p.ramparts = c.map((a) => packPosition(new RoomPosition(a.x, a.y, roomName)));
@@ -573,10 +579,10 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
 
         candidate.v = tf;
 
-        yield "done for " + candidate.p.prefabs[0].x + "/" + candidate.p.prefabs[0].y + " with fitness " + tf;
+        yield "2done for " + candidate.p.prefabs[0].x + "/" + candidate.p.prefabs[0].y + " with fitness " + tf;
     }
 
-    yield null;
+    yield "2222";
 
     // Sort candidates
     candidatesFitness.sort((a, b) => a.v - b.v);
@@ -585,6 +591,7 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
 
     // Add roads to layouts
     for (const candidate of candidatesFitness) {
+        yield "sta";
         let roads: number[] = [];
 
         const roadCostMatrix = (room: string): boolean | CostMatrix => {
@@ -647,6 +654,8 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
         ).path;
         roads = roads.concat(quickFillPath.map((a) => packPosition(a)));
 
+        yield null;
+
         for (let i = 0; i < candidate.p.sources.length; i++) {
             const cpos = offsetPositionByDirection(
                 unpackPosition(basicLayout.sources[i].pos),
@@ -666,6 +675,7 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
                 }
             ).path;
             roads = roads.concat(sourcePath.map((a) => packPosition(a)));
+            yield null;
         }
 
         yield null;
@@ -793,7 +803,7 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
         yield null;
     }
 
-    yield null;
+    yield "4444";
 
     // Add in the extensions and towers by filling in gaps in the base and adding roads if needed
     for (const candidate of candidatesFitness) {
@@ -812,6 +822,8 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
         //+2 for nuker + observer
 
         let foundLocations: { x: number; y: number }[] = [];
+
+        yield null;
 
         do {
             const matrix: CostMatrix = new PathFinder.CostMatrix();
@@ -909,6 +921,8 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
                 }
             }
 
+            yield null;
+
             // count possible locations
             foundLocations = [];
             for (let x = 0; x < 50; x++) {
@@ -931,8 +945,11 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
                 let bestCount: number = 1;
                 let bestRange: number = Infinity;
                 let bestPos: { x: number; y: number } | undefined = undefined;
+                yield null;
 
                 for (let location of foundLocations) {
+                    yield null;
+
                     let neighborCount = 0;
                     let range = new RoomPosition(location.x, location.y, roomName).getRangeTo(
                         candidate.p.prefabs[0].x,
@@ -964,6 +981,8 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
                     let newLocations: { x: number; y: number }[] = [];
 
                     for (let location of foundLocations) {
+                        yield null;
+
                         let neighborCount = 0;
                         let range = new RoomPosition(location.x, location.y, roomName).getRangeTo(
                             candidate.p.prefabs[0].x,
@@ -996,7 +1015,7 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
                         //console.log("trying " + bestPos);
                         candidate.p.roads.push(packPosition(new RoomPosition(bestPos.x, bestPos.y, roomName)));
                         foundLocations = foundLocations.concat(newLocations);
-                        const cut = cutLayout(basicLayout, candidate.p, roomName, foundLocations);
+                        const cut = yield* cutLayout(basicLayout, candidate.p, roomName, foundLocations);
                         candidate.p.ramparts = cut.map((a) => packPosition(new RoomPosition(a.x, a.y, roomName)));
                     } else {
                         bestCount = 1;
@@ -1005,6 +1024,8 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
                         let newLocations: { x: number; y: number }[] = [];
 
                         for (let location of foundLocations) {
+                            yield null;
+
                             let neighborCount = 0;
                             let range = new RoomPosition(location.x, location.y, roomName).getRangeTo(
                                 candidate.p.prefabs[0].x,
@@ -1038,7 +1059,7 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
                             //console.log("trying " + bestPos);
                             candidate.p.roads.push(packPosition(new RoomPosition(bestPos.x, bestPos.y, roomName)));
                             foundLocations = foundLocations.concat(newLocations);
-                            const cut = cutLayout(basicLayout, candidate.p, roomName, foundLocations);
+                            const cut = yield* cutLayout(basicLayout, candidate.p, roomName, foundLocations);
                             candidate.p.ramparts = cut.map((a) => packPosition(new RoomPosition(a.x, a.y, roomName)));
                         }
                     }
@@ -1046,6 +1067,8 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
             }
             yield null;
         } while (foundLocations.length < targetCount);
+
+        yield null;
 
         const matrix: CostMatrix = new PathFinder.CostMatrix();
 
@@ -1119,7 +1142,9 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
             })
         );
 
+        yield null;
         for (let x = 0; x < 50; x++) {
+            yield null;
             for (let y = 0; y < 50; y++) {
                 if (damageMatrix.get(x, y) === 0) {
                     for (let dx = -3; dx <= 3; dx++) {
@@ -1152,6 +1177,7 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
             }
         }
 
+        yield null;
         candidate.p.towers = [];
         candidate.p.extensions = [];
 
@@ -1179,6 +1205,8 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
 
         locations.splice(targetCount - 1);
 
+        yield null;
+
         locations.sort((a, b) => {
             const aRange = new RoomPosition(a.x, a.y, roomName).getRangeTo(towerMidPos.x, towerMidPos.y);
             const bRange = new RoomPosition(b.x, b.y, roomName).getRangeTo(towerMidPos.x, towerMidPos.y);
@@ -1190,6 +1218,8 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
         }
 
         locations.splice(0, CONTROLLER_STRUCTURES[STRUCTURE_TOWER][8]);
+
+        yield null;
 
         locations.sort((a, b) => {
             const aRange = new RoomPosition(a.x, a.y, roomName).getRangeTo(midPos.x, midPos.y);
@@ -1214,7 +1244,7 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
     // Calculate candidate fitness
 
     for (const candidate of candidatesFitness) {
-        const a = fitness(basicLayout, candidate.p, roomName);
+        const a = yield* fitness(basicLayout, candidate.p, roomName);
 
         let b = 0;
         for (const source of basicLayout.sources) {
@@ -1230,10 +1260,10 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
 
         candidate.v = tf;
 
-        yield "done for " + candidate.p.prefabs[0].x + "/" + candidate.p.prefabs[0].y + " with fitness " + tf;
+        yield "3done for " + candidate.p.prefabs[0].x + "/" + candidate.p.prefabs[0].y + " with fitness " + tf;
     }
 
-    yield null;
+    yield "333";
 
     // Sort candidates
     candidatesFitness.sort((a, b) => a.v - b.v);
@@ -1349,23 +1379,24 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
 
     yield null;
 
-    candidatesFitness[0].p.ramparts = cutLayout(basicLayout, candidatesFitness[0].p, roomName).map((v) =>
+    candidatesFitness[0].p.ramparts = (yield* cutLayout(basicLayout, candidatesFitness[0].p, roomName)).map((v) =>
         packPosition(new RoomPosition(v.x, v.y, roomName))
     );
 
     return candidatesFitness[0].p;
 }
 
-function fitness(
+function* fitness(
     basicLayout: BasicRoomData,
     layout: GenLayoutData,
     roomName: string,
     protect?: { x: number; y: number }[]
-): number {
-    return cutLayout(basicLayout, layout, roomName, protect).length;
+) {
+    const result = yield* cutLayout(basicLayout, layout, roomName, protect);
+    return result.length;
 }
 
-function cutLayout(
+function* cutLayout(
     basicLayout: BasicRoomData,
     layout: GenLayoutData,
     roomName: string,
@@ -1499,7 +1530,7 @@ function cutLayout(
         });
     }
 
-    let positions = min_cut(matrix, rectangles);
+    let positions = yield* min_cut(matrix, rectangles);
 
     const floodMatrix = floodFill(roomName, positions);
 
