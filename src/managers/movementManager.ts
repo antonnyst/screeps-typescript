@@ -116,7 +116,17 @@ export class MovementManager implements Manager {
                                 );
                                 if (route !== -2) {
                                     if (route.length > 3) {
-                                        partialTarget = new RoomPosition(25, 25, route[1].room);
+                                        for (let i = 0; i < route.length - 1; i++) {
+                                            const description = describeRoom(route[i].room);
+                                            if (
+                                                description === "highway_portal" ||
+                                                description === "source_keeper" ||
+                                                i === 2
+                                            ) {
+                                                partialTarget = new RoomPosition(25, 25, route[i].room);
+                                                break;
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -126,7 +136,7 @@ export class MovementManager implements Manager {
                                     ? unpackPosition(creep.memory.movementData.targetPos)
                                     : partialTarget;
 
-                            const targetRange = partialTarget === undefined ? creep.memory.movementData.range : 20;
+                            const targetRange = partialTarget === undefined ? creep.memory.movementData.range : 23;
 
                             const pathName =
                                 "path_" +
