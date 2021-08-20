@@ -175,3 +175,13 @@ function getEnergyTarget(creep: Creep): Structure | Resource | Tombstone | Ruin 
         }
     }
 }
+
+export function onEdge(pos: RoomPosition | Creep): boolean {
+    if (pos instanceof Creep) {
+        pos = pos.pos;
+    }
+    if (pos.x === 0 || pos.x === 49 || pos.y === 0 || pos.y === 49) {
+        return true;
+    }
+    return false;
+}

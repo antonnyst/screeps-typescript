@@ -1,4 +1,4 @@
-import { setMovementData } from "creeps/creep";
+import { onEdge, setMovementData } from "creeps/creep";
 import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
 import { unpackPosition } from "utils/RoomPositionPacker";
 
@@ -118,7 +118,7 @@ export function remoteHauler(creep: Creep) {
                     creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant);
                 }
             }
-        } else {
+        } else if (!onEdge(creep)) {
             const cpos = new RoomPosition(
                 home.memory.genLayout!.prefabs[0].x,
                 home.memory.genLayout!.prefabs[0].y,
