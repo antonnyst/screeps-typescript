@@ -26,7 +26,7 @@ interface Edge {
     u?: number;
 }
 
-export function min_cut(matrix: CostMatrix, protect: Rectangle[]) {
+export function* min_cut(matrix: CostMatrix, protect: Rectangle[]) {
     for (const rect of protect) {
         matrix = apply_bounds(matrix, rect);
     }
@@ -56,10 +56,12 @@ export function min_cut(matrix: CostMatrix, protect: Rectangle[]) {
 
     let graph = create_graph(matrix);
 
+    yield null;
+
     const source = 2 * 50 * 50;
     const sink = 2 * 50 * 50 + 1;
 
-    graph = calc_min_cut(graph, source, sink);
+    graph = yield* calc_min_cut(graph, source, sink);
 
     let cut_edges = BFSCut(graph, source);
 
@@ -151,7 +153,7 @@ function add_edge(graph: Graph, from: number, to: number, capacity: number) {
     return graph;
 }
 
-function calc_min_cut(graph: Graph, source: number, sink: number) {
+function* calc_min_cut(graph: Graph, source: number, sink: number) {
     if (source === sink) {
         graph.rb = false;
         return graph;
@@ -160,6 +162,7 @@ function calc_min_cut(graph: Graph, source: number, sink: number) {
 
     graph = BFS(graph, source, sink);
     while (graph.rb === true) {
+        yield null;
         for (let i = 0; i < 2 * 50 * 50 + 2; i++) {
             count[i] = 0;
         }
