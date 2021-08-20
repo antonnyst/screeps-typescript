@@ -25,6 +25,7 @@ export function worker(creep: Creep): void {
     }
     if (memory.energy === false && creep.store.getFreeCapacity() === 0) {
         memory.energy = true;
+        memory.workerTarget = undefined;
     }
     if (memory.energy === true && creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
         memory.energy = false;
