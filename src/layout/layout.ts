@@ -247,10 +247,10 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
             v: tf
         });
 
-        yield "1done for " + candidate.prefabs[0].x + "/" + candidate.prefabs[0].y + " with fitness " + tf;
+        yield "done for " + candidate.prefabs[0].x + "/" + candidate.prefabs[0].y + " with fitness " + tf;
     }
 
-    yield "1111";
+    yield null;
 
     // Sort candidates and keep best 10
     candidatesFitness.sort((a, b) => a.v - b.v);
@@ -579,10 +579,10 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
 
         candidate.v = tf;
 
-        yield "2done for " + candidate.p.prefabs[0].x + "/" + candidate.p.prefabs[0].y + " with fitness " + tf;
+        yield "done for " + candidate.p.prefabs[0].x + "/" + candidate.p.prefabs[0].y + " with fitness " + tf;
     }
 
-    yield "2222";
+    yield null;
 
     // Sort candidates
     candidatesFitness.sort((a, b) => a.v - b.v);
@@ -803,7 +803,7 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
         yield null;
     }
 
-    yield "4444";
+    yield null;
 
     // Add in the extensions and towers by filling in gaps in the base and adding roads if needed
     for (const candidate of candidatesFitness) {
@@ -1260,10 +1260,10 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
 
         candidate.v = tf;
 
-        yield "3done for " + candidate.p.prefabs[0].x + "/" + candidate.p.prefabs[0].y + " with fitness " + tf;
+        yield "done for " + candidate.p.prefabs[0].x + "/" + candidate.p.prefabs[0].y + " with fitness " + tf;
     }
 
-    yield "333";
+    yield null;
 
     // Sort candidates
     candidatesFitness.sort((a, b) => a.v - b.v);

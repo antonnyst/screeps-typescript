@@ -71,9 +71,6 @@ const doWork = () => {
     while (Game.cpu.getUsed() < Game.cpu.tickLimit * 0.5) {
         try {
             const res = currentWork.generator.next();
-            if (res.value !== null) {
-                console.log(res.value);
-            }
             if (res.done) {
                 const used = Game.cpu.getUsed() - cpu;
                 currentWork.usedCpu += used;
