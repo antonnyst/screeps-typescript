@@ -40,7 +40,7 @@ export const runAllManagers = (): void => {
         const b = Game.cpu.getUsed() - a;
         Memory.msplit[(managers[i] as Object).constructor.name] = b;
         if (Config.cpuLog) {
-            console.log(i + " => " + b);
+            console.log((managers[i] as Object).constructor.name + " took " + b);
         }
     }
 };
