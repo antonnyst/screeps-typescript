@@ -20,6 +20,7 @@ import { CreepRole } from "creeps/runner";
 
 declare global {
     interface RoomMemory {
+        spawnAttempts?: number;
         spawnQueue: SpawnData[];
         waitingCreep?: SpawnData;
     }

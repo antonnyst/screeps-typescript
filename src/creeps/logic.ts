@@ -1,3 +1,12 @@
+declare global {
+    interface CreepMemory {
+        checkIdle?: {
+            idleCount: number;
+            lastPos: RoomPosition;
+        };
+    }
+}
+
 /**
  * Runs common logic for creep and then the specified role function
  * @param role The role function to run

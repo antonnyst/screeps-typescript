@@ -5,6 +5,14 @@ import { ErrorMapper } from "./utils/ErrorMapper";
 import { RunEvery } from "./utils/RunEvery";
 import { saveInit, saveRooms, saveTick } from "stats/stats";
 
+declare global {
+    interface Memory {
+        cpuAvg: number;
+    }
+}
+
+Memory.cpuAvg = Memory.cpuAvg ?? 0;
+
 saveInit();
 
 export const loop = ErrorMapper.wrapLoop(() => {
@@ -12,6 +20,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     if (
         Config.burnForPixels &&
         Game.shard.name === "shard3" &&
+        Memory.cpuAvg &&
         Memory.cpuAvg < Game.cpu.limit &&
         Game.cpu.bucket >= PIXEL_CPU_COST
     ) {
@@ -25,10 +34,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
     const globalStartTick = Memory.stats?.globalReset || Game.time;
 
     const age = Game.time - globalStartTick + 1;
-
-    if (Memory.cpuAvg === undefined) {
-        Memory.cpuAvg = 0;
-    }
 
     Memory.cpuAvg = Memory.cpuAvg + (uTime - Memory.cpuAvg) / Math.min(age, 250);
 

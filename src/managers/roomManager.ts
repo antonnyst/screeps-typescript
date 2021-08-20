@@ -14,8 +14,13 @@ import { describeRoom } from "utils/RoomCalc";
 
 declare global {
     interface RoomMemory {
+        roomLevel: number;
+        reservation: ReservationDefinition | undefined;
         basicRoomData: BasicRoomData;
         hostiles: { [key: string]: HostileData };
+        remotes: string[];
+        remoteSupportRooms: string[];
+        lastUpdate: number;
     }
 }
 
