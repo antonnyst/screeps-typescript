@@ -8,7 +8,14 @@ import { RunEvery } from "utils/RunEvery";
 import { generateName } from "utils/CreepNames";
 import { bucketTarget, pushGCL } from "config/config";
 import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
-import { HaulerMemory, MinerMemory, RemoteHaulerMemory, RemoteMinerMemory, ReserverMemory } from "creeps/roles";
+import {
+    HaulerMemory,
+    MinerMemory,
+    QuickFillerMemory,
+    RemoteHaulerMemory,
+    RemoteMinerMemory,
+    ReserverMemory
+} from "creeps/roles";
 import { CreepRole } from "creeps/runner";
 
 declare global {
@@ -402,7 +409,6 @@ const needChecks: CreepNeedCheckFunction[] = [
                         }
                     }
                 }
-                let count = 0;
 
                 const spawnDirections = spawnDirectionInside(
                     2,
@@ -419,8 +425,8 @@ const needChecks: CreepNeedCheckFunction[] = [
                     for (const creep of roles["quickFiller"]) {
                         if (
                             creep.pos.isEqualTo(pos) ||
-                            (creep.memory.targetPos !== undefined &&
-                                unpackPosition(creep.memory.targetPos).isEqualTo(pos))
+                            ((creep.memory as QuickFillerMemory).pos !== undefined &&
+                                unpackPosition((creep.memory as QuickFillerMemory).pos).isEqualTo(pos))
                         ) {
                             has = true;
                             break;
