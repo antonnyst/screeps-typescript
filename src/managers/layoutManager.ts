@@ -12,45 +12,39 @@ interface LayoutRequest {
 interface OngoingWork {
     generator: Generator<string | null, GenLayoutData, unknown>;
     request: LayoutRequest;
+    usedCpu: number;
 }
 
 export class LayoutManager implements Manager {
     minSpeed = 0.1;
     maxSpeed = 1;
     public run(speed: number) {
-        if (Game.cpu.bucket > bucketTarget) {
-            if (currentWork === undefined && workQueue.length > 0) {
+        if (Game.cpu.bucket < bucketTarget) {
+            return;
+        }
+        if (currentWork === undefined && workQueue.length > 0) {
+        }
+
+        if (currentWork === undefined) {
+            if (workQueue.length > 0) {
                 // Start new work if we have no current work
                 let request = workQueue.shift();
 
                 if (request !== undefined) {
-                    console.log("Starting new work for room " + request.room);
+                    console.log(`LayoutManager: Starting new work for room ${request.room}`);
                     currentWork = {
                         generator: generateLayout(request.basicRoomData, request.room),
-                        request
+                        request,
+                        usedCpu: 0
                     };
+                } else {
+                    return;
                 }
-            }
-            if (currentWork !== undefined) {
-                RunEvery(
-                    () => {
-                        while (Game.cpu.getUsed() < Game.cpu.tickLimit * 0.5) {
-                            const res = currentWork!.generator.next();
-                            if (res.done) {
-                                console.log("Done with work for room " + currentWork!.request.room);
-                                if (res.value !== undefined) {
-                                    currentWork!.request.callback(res.value);
-                                }
-                                currentWork = undefined;
-                                break;
-                            }
-                        }
-                    },
-                    "layoutmanagermain",
-                    1 / speed
-                );
+            } else {
+                return;
             }
         }
+        RunEvery(doWork, "layoutmanagerdowork", 1 / speed);
     }
 }
 
@@ -68,3 +62,38 @@ export function GetCurrentWorkQueue(): LayoutRequest[] {
         return workQueue;
     }
 }
+
+const doWork = () => {
+    if (currentWork === undefined) {
+        return;
+    }
+    const cpu = Game.cpu.getUsed();
+    while (Game.cpu.getUsed() < Game.cpu.tickLimit * 0.5) {
+        try {
+            const res = currentWork.generator.next();
+            if (res.value !== null) {
+                console.log(res.value);
+            }
+            if (res.done) {
+                const used = Game.cpu.getUsed() - cpu;
+                currentWork.usedCpu += used;
+                console.log(
+                    `LayoutManager: Done with work on room ${currentWork.request.room} using ${currentWork.usedCpu} cpu`
+                );
+                if (res.value !== undefined) {
+                    currentWork.request.callback(res.value);
+                }
+                currentWork = undefined;
+                break;
+            }
+        } catch (error) {
+            console.log(`LayoutManager: Error during work ${error}`);
+            currentWork = undefined;
+            break;
+        }
+    }
+    const used = Game.cpu.getUsed() - cpu;
+    if (currentWork !== undefined) {
+        currentWork.usedCpu += used;
+    }
+};
