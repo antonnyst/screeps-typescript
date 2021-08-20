@@ -6,6 +6,7 @@ export interface RemoteHaulerMemory extends CreepMemory {
     room: string;
     source: number;
     working?: boolean;
+    target?: Id<AnyStoreStructure>;
 }
 
 export function remoteHauler(creep: Creep) {
@@ -17,16 +18,16 @@ export function remoteHauler(creep: Creep) {
     }
     const containerPos = offsetPositionByDirection(unpackPosition(sourceData.pos), sourceData.container);
 
-    if (creep.memory.working === undefined) {
-        creep.memory.working = false;
+    if (memory.working === undefined) {
+        memory.working = false;
     }
 
-    if (creep.memory.working === false && creep.store.getFreeCapacity() === 0) {
-        creep.memory.working = true;
+    if (memory.working === false && creep.store.getFreeCapacity() === 0) {
+        memory.working = true;
     }
 
-    if (creep.memory.working === true && creep.store.getUsedCapacity() === 0) {
-        creep.memory.working = false;
+    if (memory.working === true && creep.store.getUsedCapacity() === 0) {
+        memory.working = false;
         if (creep.ticksToLive !== undefined && creep.ticksToLive < sourceData.dist * 2) {
             //we do not have enough time to live
             //so we should recycle ourself!
@@ -35,7 +36,7 @@ export function remoteHauler(creep: Creep) {
         }
     }
 
-    if (creep.memory.working === false) {
+    if (memory.working === false) {
         setMovementData(creep, {
             pos: containerPos,
             range: 1
@@ -67,26 +68,26 @@ export function remoteHauler(creep: Creep) {
         }
     } else {
         let target: AnyStoreStructure | null = null;
-        if (creep.memory.target !== undefined) {
-            target = Game.getObjectById(creep.memory.target);
+        if (memory.target !== undefined) {
+            target = Game.getObjectById(memory.target);
         }
 
-        if (target === null && Memory.rooms[creep.memory.home].genBuildings?.storage?.id !== undefined) {
-            const storage = Game.getObjectById(Memory.rooms[creep.memory.home].genBuildings!.storage.id!);
+        if (target === null && Memory.rooms[memory.home].genBuildings?.storage?.id !== undefined) {
+            const storage = Game.getObjectById(Memory.rooms[memory.home].genBuildings!.storage.id!);
             if (storage instanceof StructureStorage && storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
                 target = storage;
             }
         }
 
-        if (target === null && Memory.rooms[creep.memory.home].genBuildings?.containers[0].id !== undefined) {
-            const container = Game.getObjectById(Memory.rooms[creep.memory.home].genBuildings!.containers[0].id!);
+        if (target === null && Memory.rooms[memory.home].genBuildings?.containers[0].id !== undefined) {
+            const container = Game.getObjectById(Memory.rooms[memory.home].genBuildings!.containers[0].id!);
             if (container instanceof StructureContainer && container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
                 target = container;
             }
         }
 
         if (target === null) {
-            const targets = Game.rooms[creep.memory.home].find(FIND_MY_STRUCTURES, {
+            const targets = Game.rooms[memory.home].find(FIND_MY_STRUCTURES, {
                 filter: (s) =>
                     (s.structureType === STRUCTURE_EXTENSION ||
                         s.structureType === STRUCTURE_SPAWN ||
@@ -103,7 +104,7 @@ export function remoteHauler(creep: Creep) {
                 pos: target.pos,
                 range: 1
             });
-            creep.memory.target = target.id;
+            memory.target = target.id;
             if (creep.pos.isNearTo(target.pos)) {
                 if (
                     ((target instanceof StructureExtension ||
@@ -113,7 +114,7 @@ export function remoteHauler(creep: Creep) {
                     ((target instanceof StructureContainer || target instanceof StructureStorage) &&
                         target.store.getFreeCapacity(Object.keys(creep.store)[0] as ResourceConstant) === 0)
                 ) {
-                    creep.memory.target = undefined;
+                    memory.target = undefined;
                 } else {
                     creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant);
                 }
