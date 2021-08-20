@@ -1,5 +1,12 @@
 import { ClaimerMemory } from "creeps/roles";
 import { Manager } from "./manager";
+
+declare global {
+    interface FlagMemory {
+        processed?: boolean;
+    }
+}
+
 export class FlagManager implements Manager {
     minSpeed = 1;
     maxSpeed = 1;
