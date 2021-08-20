@@ -1,3 +1,8 @@
+/**
+ * Runs common logic for creep and then the specified role function
+ * @param role The role function to run
+ * @param creep The creep to not move
+ */
 export function logic(role: (creep: Creep) => void, creep: Creep): void {
     if (creep.spawning) {
         return;
