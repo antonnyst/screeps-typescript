@@ -31,7 +31,3 @@ interface Memory {
     cacheHits: number;
     totalQueries: number;
 }
-
-interface FlagMemory {
-    processed?: boolean;
-}
