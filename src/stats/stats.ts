@@ -90,12 +90,12 @@ export function saveTick(): void {
         cacheHits: Memory.cacheHits,
         totalQueries: Memory.totalQueries
     };
-    /*Memory.stats.accountResources = {
+    Memory.stats.accountResources = {
         token: Game.resources[SUBSCRIPTION_TOKEN],
         cpuUnlock: Game.resources[CPU_UNLOCK],
         pixel: Game.resources[PIXEL],
         accessKey: Game.resources[ACCESS_KEY]
-    };*/
+    };
     Memory.stats.credits = Game.market.credits;
     Memory.stats.prices = Memory.marketData.prices;
 
