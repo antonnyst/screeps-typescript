@@ -1,5 +1,6 @@
 import { setMovementData } from "creeps/creep";
 import { fromRoomCoordinate, toRoomCoordinate } from "utils/RoomCoordinate";
+import { PLAYER_USERNAME } from "utils/username";
 
 export interface ScoutMemory extends CreepMemory {
     room?: string;
@@ -11,7 +12,21 @@ export function scout(creep: Creep) {
     const memory = creep.memory as ScoutMemory;
     const home = Game.rooms[creep.memory.home];
 
-    if (memory.room === undefined || memory.room === creep.room.name) {
+    if (
+        creep.room.controller !== undefined &&
+        (creep.room.controller.my ||
+            (creep.room.controller.reservation !== undefined &&
+                creep.room.controller.reservation.username === PLAYER_USERNAME)) &&
+        creep.room.controller.sign !== undefined
+    ) {
+        setMovementData(creep, {
+            pos: creep.room.controller.pos,
+            range: 1
+        });
+        if (creep.pos.isNearTo(creep.room.controller)) {
+            creep.signController(creep.room.controller, "");
+        }
+    } else if (memory.room === undefined || memory.room === creep.room.name) {
         let leastUpdatedRoom: string | null = null;
         let leastUpdatedValue: number = Infinity;
         let leastUpdatedDistance: number = Infinity;
