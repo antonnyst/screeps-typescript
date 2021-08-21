@@ -112,7 +112,7 @@ function roomLogic(roomName: string, speed: number): void {
     VisualHandler(room, speed);
 
     //RemoteHandler
-    RunEvery(RemoteHandler, "roomlogicremotehandler" + roomName, 750 / speed, room);
+    RunEvery(RemoteHandler, "roomlogicremotehandler" + roomName, 250 / speed, room);
 
     //RemoteDecisions
     RunEvery(
