@@ -554,9 +554,9 @@ const needChecks: CreepNeedCheckFunction[] = [
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (room.memory.remotes.length === 0 && Object.keys(room.memory.hostiles).length === 0) return null;
 
-        if (counts["peacekeeper"] < 1) {
+        if (counts["protector"] < 1) {
             return {
-                role: "peacekeeper",
+                role: "protector",
                 pattern: rolePatterns["peacekeeper"],
                 energy: GetEnergyCapacity(room)
             };
