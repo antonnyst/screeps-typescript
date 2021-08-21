@@ -34,9 +34,9 @@ export function miner(creep: Creep) {
         }
         if (
             creep.getActiveBodyparts(CARRY) > 0 &&
-            home.memory.genBuildings.containers[memory.source].id !== undefined
+            home.memory.genBuildings.containers[memory.source + 1].id !== undefined
         ) {
-            const container = Game.getObjectById(home.memory.genBuildings.containers[memory.source].id!);
+            const container = Game.getObjectById(home.memory.genBuildings.containers[memory.source + 1].id!);
             if (container instanceof StructureContainer) {
                 if (container.hits < container.hitsMax) {
                     creep.repair(container);
