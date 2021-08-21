@@ -6,6 +6,8 @@ export * from "./garbage";
 export * from "./hauler";
 export * from "./manager";
 export * from "./miner";
+export * from "./mineralHauler";
+export * from "./mineralMiner";
 export * from "./protector";
 export * from "./quickFiller";
 export * from "./remoteHauler";
