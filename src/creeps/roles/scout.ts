@@ -12,9 +12,9 @@ export function scout(creep: Creep) {
     const home = Game.rooms[creep.memory.home];
 
     if (memory.room === undefined || memory.room === creep.room.name) {
-        let found = false;
         let leastUpdatedRoom: string | null = null;
         let leastUpdatedValue: number = Infinity;
+        let leastUpdatedDistance: number = Infinity;
 
         const roomCoord = toRoomCoordinate(home.name);
         if (roomCoord === null) {
@@ -22,9 +22,6 @@ export function scout(creep: Creep) {
         }
 
         for (let dx = -SCOUT_RANGE; dx <= SCOUT_RANGE; dx++) {
-            if (found) {
-                break;
-            }
             for (let dy = -SCOUT_RANGE; dy <= SCOUT_RANGE; dy++) {
                 if (dx === 0 && dy === 0) {
                     continue;
@@ -33,23 +30,27 @@ export function scout(creep: Creep) {
                     x: roomCoord.x + dx,
                     y: roomCoord.y + dy
                 });
-                if (Memory.rooms[room] === undefined) {
-                    memory.room = room;
-                    found = true;
-                    break;
-                } else {
-                    const route = Game.map.findRoute(creep.room.name, room);
-                    if (route !== -2 && route.length * 50 > creep.ticksToLive!) {
-                        if (leastUpdatedRoom === null || Memory.rooms[room].lastUpdate < leastUpdatedValue) {
-                            leastUpdatedRoom = room;
-                            leastUpdatedValue = Memory.rooms[room].lastUpdate;
-                        }
+                const route = Game.map.findRoute(creep.room.name, room);
+                if (route === -2 || route.length * 50 > creep.ticksToLive!) {
+                    continue;
+                }
+                if (
+                    Memory.rooms[room] === undefined &&
+                    (leastUpdatedRoom === null || route.length < leastUpdatedDistance)
+                ) {
+                    leastUpdatedRoom = room;
+                    leastUpdatedValue = 0;
+                    leastUpdatedDistance = route.length;
+                } else if (Memory.rooms[room] !== undefined) {
+                    if (leastUpdatedRoom === null || Memory.rooms[room].lastUpdate < leastUpdatedValue) {
+                        leastUpdatedRoom = room;
+                        leastUpdatedValue = Memory.rooms[room].lastUpdate;
+                        leastUpdatedDistance = route.length;
                     }
                 }
             }
         }
-
-        if (!found && leastUpdatedRoom !== null) {
+        if (leastUpdatedRoom !== null) {
             memory.room = leastUpdatedRoom;
         }
     } else {
