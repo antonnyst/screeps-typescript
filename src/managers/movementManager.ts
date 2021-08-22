@@ -104,28 +104,29 @@ export class MovementManager implements Manager {
                                     unpackPosition(creep.memory.movementData.targetPos).roomName,
                                     {
                                         routeCallback: (roomName, fromRoomName) => {
-                                            if (Memory.rooms[roomName]?.roomLevel === -2) {
-                                                return 25;
-                                            }
-                                            if (Memory.rooms[roomName]?.roomLevel === -1) {
-                                                return 2;
+                                            if (Memory.rooms[roomName] !== undefined) {
+                                                if (Memory.rooms[roomName].roomLevel === -2) {
+                                                    return 25;
+                                                }
+                                                if (Memory.rooms[roomName].roomLevel === -1) {
+                                                    return 5;
+                                                }
                                             }
                                             if (describeRoom(roomName) === "source_keeper") {
-                                                return 2;
+                                                return 5;
                                             }
-
                                             return 1;
                                         }
                                     }
                                 );
                                 if (route !== -2) {
-                                    if (route.length > 3) {
+                                    if (route.length >= 3) {
                                         for (let i = 0; i < route.length - 1; i++) {
                                             const description = describeRoom(route[i].room);
                                             if (
                                                 description === "highway_portal" ||
                                                 description === "source_keeper" ||
-                                                i === 2
+                                                i === 1
                                             ) {
                                                 partialTarget = new RoomPosition(25, 25, route[i].room);
                                                 break;
@@ -382,6 +383,9 @@ export class MovementManager implements Manager {
 }
 
 const roomCallback = (roomName: string): boolean | CostMatrix => {
+    if (Memory.rooms[roomName] !== undefined && Memory.rooms[roomName].roomLevel === -2) {
+        return false;
+    }
     const cache: CostMatrix | null = getFromCache("rccostmatrixfinal" + roomName, 0);
     if (cache !== null) {
         return cache;
