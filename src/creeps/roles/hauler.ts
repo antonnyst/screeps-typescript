@@ -19,7 +19,7 @@ export function hauler(creep: Creep) {
         return;
     }
 
-    memory.gathering = memory.gathering || true;
+    memory.gathering = memory.gathering ?? true;
 
     if (memory.gathering && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
         memory.gathering = false;
@@ -36,7 +36,7 @@ export function hauler(creep: Creep) {
         setMovementData(creep, { pos: minerPos, range: 1 });
         if (creep.pos.isNearTo(minerPos)) {
             if (home.memory.genBuildings.containers[memory.source].id !== undefined) {
-                const container = Game.getObjectById(home.memory.genBuildings.containers[memory.source].id!);
+                const container = Game.getObjectById(home.memory.genBuildings.containers[memory.source + 1].id!);
                 if (container instanceof StructureContainer) {
                     if (
                         container.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.store.getFreeCapacity(RESOURCE_ENERGY)

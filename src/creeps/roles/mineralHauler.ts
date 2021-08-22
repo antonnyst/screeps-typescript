@@ -14,7 +14,7 @@ export function mineralHauler(creep: Creep) {
         return;
     }
 
-    memory.gathering = memory.gathering || true;
+    memory.gathering = memory.gathering ?? true;
     if (memory.gathering && creep.store.getFreeCapacity() === 0) {
         memory.gathering = false;
     }
