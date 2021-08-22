@@ -28,7 +28,7 @@ declare global {
 
 interface SpawnData {
     pattern?: string;
-    role?: string;
+    role?: CreepRole;
     energy?: number;
     memory?: CreepMemory;
     body?: BodyPartConstant[];
@@ -366,7 +366,6 @@ const needChecks: CreepNeedCheckFunction[] = [
     //Check scouts
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (
-            (Game.time % 10000 < 5000 || room.controller?.level === 2) &&
             counts["scout"] < 1 &&
             room.controller &&
             room.controller.level < 8
