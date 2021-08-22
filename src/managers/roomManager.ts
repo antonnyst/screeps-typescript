@@ -244,12 +244,17 @@ function remoteDecisions(room: Room): void {
         const bRoute = Game.map.findRoute(room.name, b);
         if (aRoute !== -2 && bRoute !== -2) {
             if (aRoute.length - bRoute.length === 0) {
-                const aCoord = toRoomCoordinate(a);
-                const bCoord = toRoomCoordinate(b);
-                if (aCoord!.x - bCoord!.x === 0) {
-                    return aCoord!.y - bCoord!.y;
+                const aSources = Memory.rooms[a].basicRoomData.sources.length;
+                const bSources = Memory.rooms[b].basicRoomData.sources.length;
+                if (aSources - bSources === 0) {
+                    const aCoord = toRoomCoordinate(a);
+                    const bCoord = toRoomCoordinate(b);
+                    if (aCoord!.x - bCoord!.x === 0) {
+                        return aCoord!.y - bCoord!.y;
+                    }
+                    return aCoord!.x - bCoord!.x;
                 }
-                return aCoord!.x - bCoord!.x;
+                return bSources - aSources;
             }
             return aRoute.length - bRoute.length;
         } else {
