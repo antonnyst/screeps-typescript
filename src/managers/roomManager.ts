@@ -20,6 +20,7 @@ declare global {
         hostiles: { [key: string]: HostileData };
         remotes: string[];
         remoteSupportRooms: string[];
+        targetRemoteCount?: number;
         lastUpdate: number;
     }
 }
@@ -268,6 +269,9 @@ function remoteDecisions(room: Room): void {
 function GetRemoteLimit(room: Room): number {
     if (room.memory.genBuildings === undefined) {
         return 0;
+    }
+    if (room.memory.targetRemoteCount !== undefined) {
+        return room.memory.targetRemoteCount;
     }
     let spawnCount = 0;
     for (const spawn of room.memory.genBuildings?.spawns) {
