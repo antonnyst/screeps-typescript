@@ -762,6 +762,9 @@ const needChecks: CreepNeedCheckFunction[] = [
         );
         if (room.controller !== undefined && room.controller.level < 8 && room.memory.remotes !== undefined) {
             workerTarget += room.memory.remotes.length;
+            if (room.controller.level < 4) {
+                workerTarget += 4 - room.controller.level;
+            }
         }
         if (counts["worker"] < workerTarget) {
             return {
