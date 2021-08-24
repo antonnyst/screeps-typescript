@@ -547,6 +547,13 @@ function BuildBuildings(room: Room): void {
         return;
     }
 
+    if (room.find(FIND_MY_SPAWNS).length === 0) {
+        for (const spawn of room.memory.genBuildings.spawns) {
+            BuildBuilding(spawn, STRUCTURE_SPAWN, room.name);
+        }
+        return;
+    }
+
     for (const extension of room.memory.genBuildings.extensions) {
         BuildBuilding(extension, STRUCTURE_EXTENSION, room.name);
     }
