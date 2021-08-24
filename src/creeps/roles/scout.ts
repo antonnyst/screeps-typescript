@@ -1,4 +1,5 @@
 import { setMovementData } from "creeps/creep";
+import { describeRoom } from "utils/RoomCalc";
 import { fromRoomCoordinate, toRoomCoordinate } from "utils/RoomCoordinate";
 import { PLAYER_USERNAME } from "utils/username";
 
@@ -45,7 +46,22 @@ export function scout(creep: Creep) {
                     x: roomCoord.x + dx,
                     y: roomCoord.y + dy
                 });
-                const route = Game.map.findRoute(creep.room.name, room);
+                const route = Game.map.findRoute(creep.room.name, room, {
+                    routeCallback: (roomName, fromRoomName) => {
+                        if (Memory.rooms[roomName] !== undefined) {
+                            if (Memory.rooms[roomName].roomLevel === -2) {
+                                return Infinity;
+                            }
+                            if (Memory.rooms[roomName].roomLevel === -1) {
+                                return 5;
+                            }
+                        }
+                        if (describeRoom(roomName) === "source_keeper") {
+                            return 5;
+                        }
+                        return 1;
+                    }
+                });
                 if (route === -2 || route.length * 50 > creep.ticksToLive!) {
                     continue;
                 }
