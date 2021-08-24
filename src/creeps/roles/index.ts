@@ -1,5 +1,6 @@
 export * from "./claimer";
 export * from "./defender";
+export * from "./dismantler";
 export * from "./filler";
 export * from "./foot";
 export * from "./garbage";
