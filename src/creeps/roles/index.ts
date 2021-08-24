@@ -15,5 +15,6 @@ export * from "./remoteHauler";
 export * from "./remoteMiner";
 export * from "./reserver";
 export * from "./scout";
+export * from "./swarmling";
 export * from "./upgrader";
 export * from "./worker";
