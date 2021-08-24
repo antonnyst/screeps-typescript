@@ -12,6 +12,9 @@ export interface RemoteHaulerMemory extends CreepMemory {
 export function remoteHauler(creep: Creep) {
     const memory = creep.memory as RemoteHaulerMemory;
     const home = Game.rooms[creep.memory.home];
+    if (home.memory.remoteData?.data[memory.room] == undefined) {
+        return;
+    }
     const sourceData = home.memory.remoteData?.data[memory.room].sources[memory.source];
     if (sourceData === undefined) {
         return;
