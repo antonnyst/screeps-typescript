@@ -119,20 +119,8 @@ export class MovementManager implements Manager {
                                         }
                                     }
                                 );
-                                if (route !== -2) {
-                                    if (route.length >= 3) {
-                                        for (let i = 0; i < route.length - 1; i++) {
-                                            const description = describeRoom(route[i].room);
-                                            if (
-                                                description === "highway_portal" ||
-                                                description === "source_keeper" ||
-                                                i === 1
-                                            ) {
-                                                partialTarget = new RoomPosition(25, 25, route[i].room);
-                                                break;
-                                            }
-                                        }
-                                    }
+                                if (route !== -2 && route.length > 1) {
+                                    partialTarget = new RoomPosition(25, 25, route[0].room);
                                 }
                             }
 
@@ -383,9 +371,6 @@ export class MovementManager implements Manager {
 }
 
 const roomCallback = (roomName: string): boolean | CostMatrix => {
-    if (Memory.rooms[roomName] !== undefined && Memory.rooms[roomName].roomLevel === -2) {
-        return false;
-    }
     const cache: CostMatrix | null = getFromCache("rccostmatrixfinal" + roomName, 0);
     if (cache !== null) {
         return cache;
