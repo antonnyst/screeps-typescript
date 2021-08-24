@@ -35,7 +35,7 @@ export function hauler(creep: Creep) {
         );
         setMovementData(creep, { pos: minerPos, range: 1 });
         if (creep.pos.isNearTo(minerPos)) {
-            if (home.memory.genBuildings.containers[memory.source].id !== undefined) {
+            if (home.memory.genBuildings.containers[memory.source + 1].id !== undefined) {
                 const container = Game.getObjectById(home.memory.genBuildings.containers[memory.source + 1].id!);
                 if (container instanceof StructureContainer) {
                     if (
@@ -50,7 +50,7 @@ export function hauler(creep: Creep) {
         // TODO: Add target locking
         let target: StructureContainer | StructureStorage | null = null;
         if (home.memory.genBuildings.containers[0].id !== undefined) {
-            const container = Game.getObjectById(home.memory.genBuildings.containers[memory.source].id!);
+            const container = Game.getObjectById(home.memory.genBuildings.containers[0].id!);
             if (
                 container instanceof StructureContainer &&
                 container.store.getFreeCapacity(RESOURCE_ENERGY) > creep.store.getUsedCapacity(RESOURCE_ENERGY)
@@ -60,7 +60,7 @@ export function hauler(creep: Creep) {
         }
 
         if (target === null && home.memory.genBuildings.storage.id !== undefined) {
-            const storage = Game.getObjectById(home.memory.genBuildings.containers[memory.source].id!);
+            const storage = Game.getObjectById(home.memory.genBuildings.storage.id);
             if (
                 storage instanceof StructureStorage &&
                 storage.store.getFreeCapacity(RESOURCE_ENERGY) >= creep.store.getUsedCapacity(RESOURCE_ENERGY)
