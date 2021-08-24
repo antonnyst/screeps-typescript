@@ -365,11 +365,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check scouts
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (
-            counts["scout"] < 1 &&
-            room.controller &&
-            room.controller.level < 8
-        ) {
+        if (counts["scout"] < 1 && room.controller && room.controller.level < 8) {
             return {
                 role: "scout",
                 pattern: rolePatterns["scout"],
@@ -562,7 +558,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         }
         return null;
     },
-    //Check remote support peacekeeper
+    //Check remote support protector
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (room.memory.remoteSupportRooms.length > 0) {
             for (const r of room.memory.remoteSupportRooms) {
@@ -573,7 +569,11 @@ const needChecks: CreepNeedCheckFunction[] = [
                     return {
                         role: "protector",
                         pattern: rolePatterns["peacekeeper"],
-                        energy: GetEnergyCapacity(room)
+                        energy: GetEnergyCapacity(room),
+                        memory: {
+                            role: "protector",
+                            home: r
+                        }
                     };
                 }
             }
