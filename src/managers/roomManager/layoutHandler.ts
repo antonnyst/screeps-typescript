@@ -509,11 +509,15 @@ function UpdateBuildingsData(room: Room): void {
         room.memory.genBuildings.spawns[i].active = true;
     }
 
-    for (let i = 0; i < room.memory.genBuildings.containers.length - 1; i++) {
+    for (let i = 2; i < room.memory.genBuildings.containers.length - 1; i++) {
         room.memory.genBuildings.containers[i].active = true;
     }
+    if (room.controller.level >= 4) {
+        room.memory.genBuildings.containers[0].active = true;
+        room.memory.genBuildings.containers[1].active = true;
+    }
     if (room.controller.level >= 5) {
-        room.memory.genBuildings.containers[0].active = false;
+        room.memory.genBuildings.containers[2].active = false;
     }
     if (room.controller.level >= 6) {
         room.memory.genBuildings.containers[room.memory.genBuildings.containers.length - 1].active = true;

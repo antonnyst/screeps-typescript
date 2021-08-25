@@ -37,11 +37,11 @@ export const quickFillPrefab: LayoutPrefab = {
         { dx: -2, dy: -1, type: STRUCTURE_EXTENSION },
         { dx: 0, dy: -1, type: STRUCTURE_EXTENSION },
         { dx: 2, dy: -1, type: STRUCTURE_EXTENSION },
-        { dx: -2, dy: 0, type: STRUCTURE_EXTENSION },
+        { dx: -2, dy: 0, type: STRUCTURE_CONTAINER },
         { dx: -1, dy: 0, type: STRUCTURE_EXTENSION },
         { dx: 0, dy: 0, type: STRUCTURE_LINK },
         { dx: 1, dy: 0, type: STRUCTURE_EXTENSION },
-        { dx: 2, dy: 0, type: STRUCTURE_EXTENSION },
+        { dx: 2, dy: 0, type: STRUCTURE_CONTAINER },
         { dx: -2, dy: 1, type: STRUCTURE_EXTENSION },
         { dx: 0, dy: 1, type: STRUCTURE_EXTENSION },
         { dx: 2, dy: 1, type: STRUCTURE_EXTENSION },
@@ -78,7 +78,7 @@ export const labArrayPrefab: LayoutPrefab = {
         { dx: 0, dy: -1, type: STRUCTURE_LAB },
         { dx: 1, dy: -2, type: STRUCTURE_LAB },
         { dx: 2, dy: -1, type: STRUCTURE_LAB },
-        
+
         { dx: 0, dy: -2, type: STRUCTURE_LAB },
         { dx: 1, dy: -3, type: STRUCTURE_LAB },
         { dx: 2, dy: -3, type: STRUCTURE_LAB },
