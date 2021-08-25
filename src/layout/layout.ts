@@ -1227,11 +1227,7 @@ export function* generateLayout(basicLayout: BasicRoomData, roomName: string) {
             return aRange - bRange;
         });
 
-        for (
-            let i = 0;
-            i < Math.min(locations.length, targetCount - CONTROLLER_STRUCTURES[STRUCTURE_TOWER][8] - 1);
-            i++
-        ) {
+        for (let i = 0; i < locations.length - 1; i++) {
             candidate.p.extensions.push(packPosition(new RoomPosition(locations[i].x, locations[i].y, roomName)));
         }
         candidate.p.observer = packPosition(
