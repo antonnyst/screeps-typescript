@@ -12,7 +12,6 @@ const SCOUT_RANGE = 8;
 export function scout(creep: Creep) {
     const memory = creep.memory as ScoutMemory;
     const home = Game.rooms[creep.memory.home];
-
     if (
         creep.room.controller !== undefined &&
         (creep.room.controller.my ||
@@ -50,7 +49,7 @@ export function scout(creep: Creep) {
                     routeCallback: (roomName, fromRoomName) => {
                         if (Memory.rooms[roomName] !== undefined) {
                             if (Memory.rooms[roomName].roomLevel === -2) {
-                                return Infinity;
+                                return 25;
                             }
                             if (Memory.rooms[roomName].roomLevel === -1) {
                                 return 5;
@@ -63,6 +62,16 @@ export function scout(creep: Creep) {
                     }
                 });
                 if (route === -2 || route.length * 50 > creep.ticksToLive!) {
+                    continue;
+                }
+                let dangerous = false;
+                for (const room of route) {
+                    if (Memory.rooms[room.room] !== undefined && Memory.rooms[room.room].roomLevel === -2) {
+                        dangerous = true;
+                        break;
+                    }
+                }
+                if (dangerous) {
                     continue;
                 }
                 if (
