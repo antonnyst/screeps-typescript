@@ -39,6 +39,7 @@ interface Stats {
             buy: number;
         };
     };
+    heap?: HeapStatistics;
 }
 
 interface RoomStats {
@@ -98,8 +99,10 @@ export function saveTick(): void {
     };
     Memory.stats.credits = Game.market.credits;
     Memory.stats.prices = Memory.marketData.prices;
-
-    Memory.stats.cpu!.used = Game.cpu.getUsed();
+    if (Game.cpu.getHeapStatistics !== undefined) {
+        Memory.stats.heap = Game.cpu.getHeapStatistics();
+    }
+    Memory.stats.cpu.used = Game.cpu.getUsed();
 }
 
 export function saveRooms(): void {
