@@ -82,8 +82,8 @@ export function remoteHauler(creep: Creep) {
             }
         }
 
-        if (target === null && Memory.rooms[memory.home].genBuildings?.containers[0].id !== undefined) {
-            const container = Game.getObjectById(Memory.rooms[memory.home].genBuildings!.containers[0].id!);
+        if (target === null && Memory.rooms[memory.home].genBuildings?.containers[2].id !== undefined) {
+            const container = Game.getObjectById(Memory.rooms[memory.home].genBuildings!.containers[2].id!);
             if (container instanceof StructureContainer && container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
                 target = container;
             }
