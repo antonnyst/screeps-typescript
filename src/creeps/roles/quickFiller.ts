@@ -39,7 +39,9 @@ export function quickFiller(creep: Creep): void {
                     if (link !== null && link instanceof StructureLink) {
                         if (
                             link.store.getUsedCapacity(RESOURCE_ENERGY) >=
-                            targets[0].store.getFreeCapacity(RESOURCE_ENERGY)
+                            (targets[0] instanceof StructureContainer
+                                ? targets[0].store.getFreeCapacity(RESOURCE_ENERGY)
+                                : targets[0].store.getFreeCapacity(RESOURCE_ENERGY))
                         ) {
                             creep.withdraw(link, RESOURCE_ENERGY);
                             withdrawn = true;
