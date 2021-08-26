@@ -112,8 +112,8 @@ export const bodySortingValues: { [bodyPartName: string]: number } = {
     attack: 4,
     carry: 3,
     claim: 1,
-    heal: 6,
-    move: 7,
+    heal: 7,
+    move: 6,
     ranged_attack: 5,
     tough: 0,
     work: 2
