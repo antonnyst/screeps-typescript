@@ -17,10 +17,10 @@ export function mineralMiner(creep: Creep) {
     if (mineral === null) {
         return;
     }
-    if (home.memory.genBuildings.containers[3].id === undefined) {
+    if (home.memory.genBuildings.containers[5].id === undefined) {
         return;
     }
-    const container = Game.getObjectById(home.memory.genBuildings.containers[3].id);
+    const container = Game.getObjectById(home.memory.genBuildings.containers[5].id);
     if (container === null || !(container instanceof StructureContainer)) {
         return;
     }
