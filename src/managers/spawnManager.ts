@@ -246,17 +246,6 @@ const needChecks: CreepNeedCheckFunction[] = [
         }
         return null;
     },
-    //Check fillers
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (counts["filler"] < 2) {
-            return {
-                role: "filler",
-                pattern: rolePatterns["filler"],
-                energy: GetEnergyCapacity(room)
-            };
-        }
-        return null;
-    },
     //Check miners and haulers
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         const haulerTarget =
@@ -360,6 +349,17 @@ const needChecks: CreepNeedCheckFunction[] = [
                     }
                 }
             }
+        }
+        return null;
+    },
+    //Check fillers
+    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+        if (counts["filler"] < 2) {
+            return {
+                role: "filler",
+                pattern: rolePatterns["filler"],
+                energy: GetEnergyCapacity(room)
+            };
         }
         return null;
     },
