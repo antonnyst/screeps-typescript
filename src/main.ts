@@ -82,7 +82,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     }
     if (Config.cpuLog) console.log("t => " + Game.cpu.getUsed());
 
-    if (Game.time % 50 === 0) {
+    if (Game.time % 10 === 0) {
         saveRooms();
     }
     saveTick();
