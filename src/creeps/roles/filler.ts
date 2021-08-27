@@ -1,6 +1,7 @@
 import { Storage } from "buildings";
 import { setMovementData } from "creeps/creep";
 import { BuildingData } from "managers/roomManager/layoutHandler";
+import { baseCenter } from "utils/baseCenter";
 
 export interface FillerMemory extends CreepMemory {
     tasks?: Task[];
@@ -111,7 +112,7 @@ export function filler(creep: Creep): void {
             }
         } else {
             setMovementData(creep, {
-                pos: new RoomPosition(25, 25, home.name),
+                pos: baseCenter(home),
                 range: 10
             });
         }
