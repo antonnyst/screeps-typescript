@@ -5,7 +5,7 @@ import { unpackPosition } from "utils/RoomPositionPacker";
 
 export interface QuickFillerMemory extends CreepMemory {
     pos?: number;
-    containerIndex: number;
+    containerIndex?: number;
 }
 
 export function quickFiller(creep: Creep): void {
@@ -18,12 +18,22 @@ export function quickFiller(creep: Creep): void {
     if (memory.pos !== undefined) {
         setMovementData(creep, {
             pos: unpackPosition(memory.pos),
-            range: 0
+            range: 0,
+            heavy: true
         });
         if (unpackPosition(memory.pos).isEqualTo(creep.pos)) {
             memory.pos = undefined;
         }
     } else {
+        if (memory.containerIndex === undefined) {
+            for (const [i, container] of home.memory.genBuildings.containers.entries()) {
+                const object = Building(container);
+                if (object !== null && object.pos.isNearTo(creep)) {
+                    memory.containerIndex = i;
+                    break;
+                }
+            }
+        }
         const targets: (StructureExtension | StructureSpawn | StructureContainer)[] = GetEnergyBuildings(
             home.memory.genBuildings,
             creep
@@ -48,7 +58,11 @@ export function quickFiller(creep: Creep): void {
                         }
                     }
                 }
-                if (!withdrawn && targets[0].structureType !== STRUCTURE_CONTAINER) {
+                if (
+                    !withdrawn &&
+                    targets[0].structureType !== STRUCTURE_CONTAINER &&
+                    memory.containerIndex !== undefined
+                ) {
                     const container = Building(home.memory.genBuildings.containers[memory.containerIndex]);
                     if (container !== null && container instanceof StructureContainer) {
                         if (
@@ -72,10 +86,24 @@ export function quickFiller(creep: Creep): void {
                 }
             }
         } else if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-            const link = Game.getObjectById(Memory.rooms[memory.home].genBuildings!.links[2].id!);
-            if (link !== null && link instanceof StructureLink) {
-                if (link.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
-                    creep.withdraw(link, RESOURCE_ENERGY);
+            let withdrawn = false;
+            if (Memory.rooms[memory.home].genBuildings!.links[2].id !== undefined) {
+                const link = Game.getObjectById(Memory.rooms[memory.home].genBuildings!.links[2].id!);
+                if (link !== null && link instanceof StructureLink) {
+                    if (link.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
+                        creep.withdraw(link, RESOURCE_ENERGY);
+                        withdrawn = true;
+                    }
+                }
+            }
+            if (!withdrawn && memory.containerIndex !== undefined) {
+                const container = Building(home.memory.genBuildings.containers[memory.containerIndex]);
+                if (container !== null && container instanceof StructureContainer) {
+                    if (
+                        container.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.store.getFreeCapacity(RESOURCE_ENERGY)
+                    ) {
+                        creep.withdraw(container, RESOURCE_ENERGY);
+                    }
                 }
             }
         }
@@ -112,10 +140,12 @@ function GetEnergyBuildings(
         }
     }
     const memory = creep.memory as QuickFillerMemory;
-    const object = Building(buildings.containers[memory.containerIndex]);
-    if (object !== null && object instanceof StructureContainer) {
-        if (object.store.getFreeCapacity(RESOURCE_ENERGY) > CONTAINER_CAPACITY * 0.25) {
-            structures.push(object);
+    if (memory.containerIndex !== undefined) {
+        const object = Building(buildings.containers[memory.containerIndex]);
+        if (object !== null && object instanceof StructureContainer) {
+            if (object.store.getFreeCapacity(RESOURCE_ENERGY) > CONTAINER_CAPACITY * 0.25) {
+                structures.push(object);
+            }
         }
     }
     return structures;

@@ -17,6 +17,7 @@ import {
     ReserverMemory
 } from "creeps/roles";
 import { CreepRole } from "creeps/runner";
+import { Building } from "buildings";
 
 declare global {
     interface RoomMemory {
@@ -376,114 +377,76 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     // Check QuickFillers
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (room.memory.genLayout === undefined || room.memory.genBuildings === undefined) {
-            return null;
-        }
-        if (room.controller!.level < 7) {
+        if (
+            room.memory.genLayout === undefined ||
+            room.memory.genBuildings === undefined ||
+            room.controller === undefined ||
+            room.controller.level < 5
+        ) {
             return null;
         }
 
-        if (counts["quickFiller"] < 4) {
-            if (room.controller!.level === 7) {
-                if (Memory.rooms[room.name].genBuildings!.spawns[1].id !== undefined) {
-                    const spawner = Game.getObjectById(Memory.rooms[room.name].genBuildings!.spawns[1].id!);
-                    if (spawner !== null && spawner instanceof StructureSpawn) {
-                        let count = 0;
-                        for (const creep of roles["quickFiller"]) {
-                            if (creep.pos.isNearTo(spawner.pos)) {
-                                count++;
-                            }
-                        }
-                        if (count < 2) {
-                            return {
-                                role: "quickFiller",
-                                pattern: rolePatterns["quickFiller"],
-                                energy: GetEnergyCapacity(room),
-                                index: 1,
-                                inside: true
-                            };
-                        }
+        let shouldSpawn = true;
+        if (room.controller.level < 7) {
+            const qfContainers = [Building(room.memory.genBuildings.containers[0])].concat(
+                Building(room.memory.genBuildings.containers[1])
+            );
+            for (const container of qfContainers) {
+                if (
+                    container === null ||
+                    (container instanceof StructureContainer &&
+                        container.store.getUsedCapacity(RESOURCE_ENERGY) < container.store.getCapacity() * 0.25)
+                ) {
+                    shouldSpawn = false;
+                    break;
+                }
+            }
+        }
+
+        if (counts["quickFiller"] < 4 && shouldSpawn) {
+            // [dx,dy,spawnIndex]
+            const offsets: number[][] = [
+                [-1, -1, 1],
+                [1, -1, 1],
+                [-1, 1, 2],
+                [1, 1, 2]
+            ];
+            const center = new RoomPosition(
+                room.memory.genLayout.prefabs[2].x,
+                room.memory.genLayout.prefabs[2].y,
+                room.name
+            );
+
+            for (const position of offsets) {
+                const pos = new RoomPosition(center.x + position[0], center.y + position[1], room.name);
+                let has = false;
+                for (const creep of roles["quickFiller"]) {
+                    if (creep.pos.isEqualTo(pos) || (creep.memory as QuickFillerMemory).pos === packPosition(pos)) {
+                        has = true;
+                        break;
                     }
                 }
-
-                const spawnDirections = spawnDirectionInside(
-                    2,
-                    Memory.rooms[room.name].genLayout!.prefabs[2].rotx,
-                    Memory.rooms[room.name].genLayout!.prefabs[2].roty
-                )!;
-
-                for (const spawnDirection of spawnDirections) {
-                    const pos = offsetPositionByDirection(
-                        unpackPosition(Memory.rooms[room.name].genBuildings!.spawns[2].pos),
-                        spawnDirection
-                    );
-                    let has = false;
-                    for (const creep of roles["quickFiller"]) {
-                        if (
-                            creep.pos.isEqualTo(pos) ||
-                            ((creep.memory as QuickFillerMemory).pos !== undefined &&
-                                unpackPosition((creep.memory as QuickFillerMemory).pos).isEqualTo(pos))
-                        ) {
-                            has = true;
-                            break;
-                        }
-                    }
-                    if (!has) {
+                if (!has) {
+                    const spawn = Building(room.memory.genBuildings.spawns[position[2]]);
+                    if (spawn !== null) {
                         return {
                             role: "quickFiller",
-                            pattern: rolePatterns["quickFiller"] + "m",
+                            pattern: rolePatterns["quickFiller"],
                             energy: GetEnergyCapacity(room),
-                            inside: false,
-                            memory: {
-                                role: "quickFiller",
-                                home: room.name,
-                                pos: packPosition(pos)
-                            }
+                            index: position[2],
+                            inside: true
                         };
                     }
-                }
-            } else if (room.controller!.level === 8) {
-                if (Memory.rooms[room.name].genBuildings!.spawns[1].id !== undefined) {
-                    const spawner = Game.getObjectById(Memory.rooms[room.name].genBuildings!.spawns[1].id!);
-                    if (spawner !== null && spawner instanceof StructureSpawn) {
-                        let count = 0;
-                        for (const creep of roles["quickFiller"]) {
-                            if (creep.pos.isNearTo(spawner.pos)) {
-                                count++;
-                            }
-                        }
-
-                        if (count < 2) {
-                            return {
-                                role: "quickFiller",
-                                pattern: rolePatterns["quickFiller"],
-                                energy: GetEnergyCapacity(room),
-                                index: 1,
-                                inside: true
-                            };
-                        }
-                    }
-                }
-                if (Memory.rooms[room.name].genBuildings!.spawns[2].id !== undefined) {
-                    const spawner = Game.getObjectById(Memory.rooms[room.name].genBuildings!.spawns[2].id!);
-                    if (spawner !== null && spawner instanceof StructureSpawn) {
-                        let count = 0;
-                        for (const creep of roles["quickFiller"]) {
-                            if (creep.pos.isNearTo(spawner.pos)) {
-                                count++;
-                            }
-                        }
-
-                        if (count < 2) {
-                            return {
-                                role: "quickFiller",
-                                pattern: rolePatterns["quickFiller"],
-                                energy: GetEnergyCapacity(room),
-                                index: 2,
-                                inside: true
-                            };
-                        }
-                    }
+                    return {
+                        role: "quickFiller",
+                        pattern: rolePatterns["quickFiller"] + "m",
+                        energy: GetEnergyCapacity(room),
+                        memory: {
+                            role: "quickFiller",
+                            home: room.name,
+                            pos: packPosition(pos)
+                        } as QuickFillerMemory
+                    };
                 }
             }
         }
