@@ -1,4 +1,4 @@
-import { Storage } from "buildings";
+import { Building, Storage } from "buildings";
 import { setMovementData } from "creeps/creep";
 import { BuildingData } from "managers/roomManager/layoutHandler";
 import { baseCenter } from "utils/baseCenter";
@@ -86,7 +86,10 @@ export function filler(creep: Creep): void {
         const energyNeedBuildings = GetEnergyNeedBuildings(home);
         const closestNeed = creep.pos.findClosestByRange(energyNeedBuildings);
         let target: AnyStoreStructure | null = closestNeed;
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > creep.store.getCapacity() * 0.25) {
+        if (
+            creep.store.getFreeCapacity(RESOURCE_ENERGY) > creep.store.getCapacity() * 0.25 &&
+            energyNeedBuildings.length > 0
+        ) {
             const energySupplyBuildings = GetEnergySupplyBuildings(home);
             const closestSupply = creep.pos.findClosestByRange(energySupplyBuildings);
             if (
@@ -110,12 +113,69 @@ export function filler(creep: Creep): void {
                     creep.transfer(target, RESOURCE_ENERGY);
                 }
             }
-        } else {
-            setMovementData(creep, {
-                pos: baseCenter(home),
-                range: 10
-            });
+            return;
         }
+
+        const storage = Storage(home);
+        if (storage !== null && storage.store.getUsedCapacity(RESOURCE_ENERGY) > 10000) {
+            const qfContainers = [Building(home.memory.genBuildings.containers[0])].concat(
+                Building(home.memory.genBuildings.containers[1])
+            );
+            let target = null;
+            for (const container of qfContainers) {
+                if (
+                    container !== null &&
+                    container instanceof StructureContainer &&
+                    container.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                ) {
+                    target = container;
+                    break;
+                }
+            }
+            if (target !== null) {
+                if (
+                    creep.store.getUsedCapacity(RESOURCE_ENERGY) < target.store.getFreeCapacity(RESOURCE_ENERGY) &&
+                    creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                ) {
+                    setMovementData(creep, {
+                        pos: storage.pos,
+                        range: 1
+                    });
+                    if (creep.pos.isNearTo(storage)) {
+                        creep.withdraw(storage, RESOURCE_ENERGY);
+                    }
+                } else {
+                    setMovementData(creep, {
+                        pos: target.pos,
+                        range: 1
+                    });
+                    if (creep.pos.isNearTo(target)) {
+                        creep.transfer(target, RESOURCE_ENERGY);
+                    }
+                }
+                return;
+            }
+        }
+
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > creep.store.getCapacity() * 0.25) {
+            const energySupplyBuildings = GetEnergySupplyBuildings(home);
+            const closestSupply = creep.pos.findClosestByRange(energySupplyBuildings);
+            if (closestSupply !== null) {
+                setMovementData(creep, {
+                    pos: closestSupply.pos,
+                    range: 1
+                });
+                if (creep.pos.isNearTo(closestSupply)) {
+                    creep.withdraw(closestSupply, RESOURCE_ENERGY);
+                }
+                return;
+            }
+        }
+
+        setMovementData(creep, {
+            pos: baseCenter(home),
+            range: 3
+        });
     }
 }
 
