@@ -1,8 +1,10 @@
+import { Storage } from "buildings";
 import { setMovementData } from "creeps/creep";
 import { BuildingData } from "managers/roomManager/layoutHandler";
 
 export interface FillerMemory extends CreepMemory {
     tasks?: Task[];
+    //working?: boolean;
 }
 
 interface Task {
@@ -38,44 +40,80 @@ export function filler(creep: Creep): void {
         memory.tasks = getTasks(creep);
     }
 
-    doTasks(creep);
+    if (memory.tasks.length > 0) {
+        doTasks(creep);
 
-    for (let i = memory.tasks.length - 1; i >= 0; i--) {
-        const task = memory.tasks[i];
-        const object = Game.getObjectById(task.id);
-        if (object === null) {
-            memory.tasks.splice(i, 1);
-            continue;
-        }
-        if (
-            task.type === "transfer" &&
-            (object instanceof StructureStorage || object instanceof StructureContainer) &&
-            task.resourceType !== undefined &&
-            task.amount !== undefined
-        ) {
-            if (
-                object.store.getFreeCapacity(task.resourceType) !== null &&
-                object.store.getFreeCapacity(task.resourceType)! < task.amount
-            ) {
+        for (let i = memory.tasks.length - 1; i >= 0; i--) {
+            const task = memory.tasks[i];
+            const object = Game.getObjectById(task.id);
+            if (object === null) {
                 memory.tasks.splice(i, 1);
                 continue;
             }
-        }
-        if (
-            task.type === "transfer" &&
-            (object instanceof StructureTower ||
-                object instanceof StructureSpawn ||
-                object instanceof StructureExtension) &&
-            task.resourceType !== undefined &&
-            task.amount !== undefined
-        ) {
             if (
-                object.store.getFreeCapacity(task.resourceType) !== null &&
-                object.store.getFreeCapacity(task.resourceType)! < task.amount
+                task.type === "transfer" &&
+                (object instanceof StructureStorage || object instanceof StructureContainer) &&
+                task.resourceType !== undefined &&
+                task.amount !== undefined
             ) {
-                memory.tasks.splice(i, 1);
-                continue;
+                if (
+                    object.store.getFreeCapacity(task.resourceType) !== null &&
+                    object.store.getFreeCapacity(task.resourceType)! < task.amount
+                ) {
+                    memory.tasks.splice(i, 1);
+                    continue;
+                }
             }
+            if (
+                task.type === "transfer" &&
+                (object instanceof StructureTower ||
+                    object instanceof StructureSpawn ||
+                    object instanceof StructureExtension) &&
+                task.resourceType !== undefined &&
+                task.amount !== undefined
+            ) {
+                if (
+                    object.store.getFreeCapacity(task.resourceType) !== null &&
+                    object.store.getFreeCapacity(task.resourceType)! < task.amount
+                ) {
+                    memory.tasks.splice(i, 1);
+                    continue;
+                }
+            }
+        }
+    } else {
+        const energyNeedBuildings = GetEnergyNeedBuildings(home);
+        const closestNeed = creep.pos.findClosestByRange(energyNeedBuildings);
+        let target: AnyStoreStructure | null = closestNeed;
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > creep.store.getCapacity() * 0.25) {
+            const energySupplyBuildings = GetEnergySupplyBuildings(home);
+            const closestSupply = creep.pos.findClosestByRange(energySupplyBuildings);
+            if (
+                target === null ||
+                creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0 ||
+                (closestSupply !== null && closestSupply.pos.getRangeTo(creep) < target.pos.getRangeTo(creep))
+            ) {
+                target = closestSupply;
+            }
+        }
+
+        if (target !== null) {
+            setMovementData(creep, {
+                pos: target.pos,
+                range: 1
+            });
+            if (creep.pos.isNearTo(target)) {
+                if (target instanceof StructureStorage || target instanceof StructureContainer) {
+                    creep.withdraw(target, RESOURCE_ENERGY);
+                } else {
+                    creep.transfer(target, RESOURCE_ENERGY);
+                }
+            }
+        } else {
+            setMovementData(creep, {
+                pos: new RoomPosition(25, 25, home.name),
+                range: 10
+            });
         }
     }
 }
@@ -117,6 +155,9 @@ function getTasks(creep: Creep): Task[] {
         if (storage instanceof StructureStorage) {
             const tasks: Task[] = [];
             for (const key of Object.keys(creep.store)) {
+                if (key === RESOURCE_ENERGY) {
+                    continue;
+                }
                 const amt = creep.store.getUsedCapacity(key as ResourceConstant);
                 tasks.push({
                     type: "transfer",
@@ -128,7 +169,6 @@ function getTasks(creep: Creep): Task[] {
             return tasks;
         }
     }
-
     return [];
 }
 
@@ -314,92 +354,89 @@ const taskGetters: GetTaskData[] = [
 
             return tasks;
         }
-    },
-    {
-        // Fill spawns and extensions
-        resources: [RESOURCE_ENERGY],
-        fn: (creep: Creep): Task[] | null => {
-            const home = Game.rooms[creep.memory.home];
-            const controller = home.controller;
-            if (
-                controller === undefined ||
-                home.memory.genLayout === undefined ||
-                home.memory.genBuildings === undefined
-            ) {
-                return null;
-            }
-            const targets: (StructureSpawn | StructureExtension)[] = ([] as (
-                | StructureSpawn
-                | StructureExtension
-            )[]).concat(
-                GetEnergyBuildings(home.memory.genBuildings.spawns) as StructureSpawn[],
-                GetEnergyBuildings(
-                    home.memory.genBuildings.extensions,
-                    FillerIgnoreExtensions[controller.level]
-                ) as StructureExtension[]
-            );
-
-            let capacity: number = creep.store.getCapacity();
-            let fill: number = 0;
-            const fillTargets: (StructureSpawn | StructureExtension)[] = [];
-            while (targets.length > 0) {
-                if (fill === capacity) {
-                    break;
-                }
-                const target = targets.pop();
-                if (target !== undefined) {
-                    if (target.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-                        const amt = Math.min(capacity - fill, target.store.getFreeCapacity(RESOURCE_ENERGY));
-                        if (amt > 0) {
-                            fill += amt;
-                            fillTargets.push(target);
-                        }
-                    }
-                }
-            }
-            if (fill === 0) {
-                return null;
-            }
-            let tasks: Task[] = [];
-            fill -= creep.store.getUsedCapacity(RESOURCE_ENERGY);
-            if (fill > 0) {
-                let energyTasks: Task[] | null = getEnergy(creep, fill);
-                if (energyTasks !== null) {
-                    tasks = tasks.concat(energyTasks);
-                }
-            }
-
-            for (const target of fillTargets) {
-                tasks.push({
-                    id: target.id,
-                    type: "transfer",
-                    resourceType: RESOURCE_ENERGY
-                });
-            }
-
-            return tasks;
-        }
     }
     //TODO: fill labs, nuker and powerspawn
 ];
 
-function GetEnergyBuildings(buildings: BuildingData[], ignoreIndexes?: number[]): Structure[] {
-    const structures: Structure[] = [];
-    for (const [i, building] of buildings.entries()) {
-        if (building.id !== undefined && !ignoreIndexes?.includes(i)) {
+const _energyNeedBuildings: Partial<
+    Record<string, { time: number; data: (StructureExtension | StructureSpawn | StructureLab)[] }>
+> = {};
+
+function GetEnergyNeedBuildings(room: Room) {
+    if (_energyNeedBuildings[room.name] !== undefined && _energyNeedBuildings[room.name]?.time === Game.time) {
+        return _energyNeedBuildings[room.name]!.data;
+    }
+
+    if (room.memory.genBuildings === undefined || room.controller === undefined) {
+        return [];
+    }
+    const structures = [];
+    for (const [i, building] of room.memory.genBuildings.extensions.entries()) {
+        if (
+            building.id !== undefined &&
+            (FillerIgnoreExtensions[room.controller.level] === undefined ||
+                !FillerIgnoreExtensions[room.controller.level]!.includes(i))
+        ) {
             const object = Game.getObjectById(building.id);
-            if (
-                (object instanceof StructureExtension ||
-                    object instanceof StructureTower ||
-                    object instanceof StructureSpawn) &&
-                object.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-            ) {
+            console.log(object);
+            if (object instanceof StructureExtension && object.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
                 structures.push(object);
             }
+        }
+    }
+    for (const building of room.memory.genBuildings.spawns) {
+        if (building.id !== undefined) {
+            const object = Game.getObjectById(building.id);
+            if (object instanceof StructureSpawn && object.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                structures.push(object);
+            }
+        }
+    }
+    for (const building of room.memory.genBuildings.labs) {
+        if (building.id !== undefined) {
+            const object = Game.getObjectById(building.id);
             if (object instanceof StructureLab && object.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
                 structures.push(object);
             }
         }
     }
+    _energyNeedBuildings[room.name] = {
+        time: Game.time,
+        data: structures
+    };
+    return structures;
+}
+
+const _energySupplyBuildings: Partial<
+    Record<string, { time: number; data: (StructureStorage | StructureContainer)[] }>
+> = {};
+
+function GetEnergySupplyBuildings(room: Room) {
+    if (_energySupplyBuildings[room.name] !== undefined && _energySupplyBuildings[room.name]?.time === Game.time) {
+        return _energySupplyBuildings[room.name]!.data;
+    }
+
+    if (room.memory.genBuildings === undefined || room.controller === undefined) {
+        return [];
+    }
+    const structures = [];
+
+    const storage = Storage(room);
+    if (storage !== null && storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+        structures.push(storage);
+    }
+
+    for (const building of room.memory.genBuildings.containers) {
+        if (building.id !== undefined) {
+            const object = Game.getObjectById(building.id);
+            if (object instanceof StructureContainer && object.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+                structures.push(object);
+            }
+        }
+    }
+    _energySupplyBuildings[room.name] = {
+        time: Game.time,
+        data: structures
+    };
     return structures;
 }
