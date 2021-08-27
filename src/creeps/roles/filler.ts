@@ -24,8 +24,8 @@ interface GetTaskData {
 type GetTaskFunction = (creep: Creep) => Task[] | null;
 
 const FillerIgnoreExtensions: Partial<Record<number, number[]>> = {
-    7: [5, 8, 9],
-    8: [5, 8, 9, 12]
+    7: [5],
+    8: [5, 10]
 };
 
 export function filler(creep: Creep): void {
@@ -158,7 +158,9 @@ export function filler(creep: Creep): void {
         }
 
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > creep.store.getCapacity() * 0.25) {
-            const energySupplyBuildings = GetEnergySupplyBuildings(home);
+            const energySupplyBuildings = GetEnergySupplyBuildings(home).filter(
+                (a) => a.structureType !== STRUCTURE_CONTAINER
+            );
             const closestSupply = creep.pos.findClosestByRange(energySupplyBuildings);
             if (closestSupply !== null) {
                 setMovementData(creep, {
