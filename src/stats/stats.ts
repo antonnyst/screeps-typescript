@@ -55,6 +55,9 @@ interface RoomStats {
     resources?: {
         [key in ResourceConstant]: number;
     };
+    energyCapacityAvailable: number;
+    energyAvailable: number;
+    sources: { energy: number; capacity: number }[];
 }
 
 export function saveInit(): void {
@@ -116,7 +119,8 @@ export function saveRooms(): void {
             room.controller &&
             room.controller.my &&
             room.memory.genBuildings !== undefined &&
-            room.memory.resources !== undefined
+            room.memory.resources !== undefined &&
+            room.memory.genLayout !== undefined
         ) {
             const energystored = room.memory.resources.total.energy;
             const resources = room.memory.resources.total;
@@ -140,6 +144,18 @@ export function saveRooms(): void {
 
             let rampartavg = ramparthits / rampartamt;
 
+            const sources: { energy: number; capacity: number }[] = [];
+
+            for (const source of room.memory.basicRoomData.sources) {
+                const object = Game.getObjectById(source.id);
+                if (object !== null) {
+                    sources.push({
+                        energy: object.energy,
+                        capacity: object.energyCapacity
+                    });
+                }
+            }
+
             Memory.stats.rooms![roomName] = {
                 controller: {
                     level: room.controller.level,
@@ -150,7 +166,10 @@ export function saveRooms(): void {
                 rampartavg,
                 rampartmin,
                 rampartmax,
-                resources
+                resources,
+                energyCapacityAvailable: room.energyCapacityAvailable,
+                energyAvailable: room.energyAvailable,
+                sources
             };
         }
     }
