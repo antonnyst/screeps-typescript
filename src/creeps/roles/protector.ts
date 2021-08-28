@@ -1,4 +1,5 @@
 import { setMovementData } from "creeps/creep";
+import { baseCenter } from "utils/baseCenter";
 
 export interface ProtectorMemory extends CreepMemory {
     room?: string;
@@ -70,24 +71,18 @@ export function protector(creep: Creep) {
             }
         }
     } else if (creep.room.name === memory.home && memory.room === memory.home) {
-        if (Memory.rooms[creep.memory.home].genLayout !== undefined) {
-            const cpos = new RoomPosition(
-                Memory.rooms[creep.memory.home].genLayout!.prefabs[0].x,
-                Memory.rooms[creep.memory.home].genLayout!.prefabs[0].y,
-                creep.memory.home
-            );
-            if (creep.pos.getRangeTo(cpos) === 1) {
-                setMovementData(creep, {
-                    pos: cpos,
-                    range: 2,
-                    flee: true
-                });
-            } else {
-                setMovementData(creep, {
-                    pos: cpos,
-                    range: 3
-                });
-            }
+        const cpos = baseCenter(home);
+        if (creep.pos.getRangeTo(cpos) === 1) {
+            setMovementData(creep, {
+                pos: cpos,
+                range: 2,
+                flee: true
+            });
+        } else {
+            setMovementData(creep, {
+                pos: cpos,
+                range: 3
+            });
         }
     }
 }
