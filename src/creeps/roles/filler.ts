@@ -1,11 +1,9 @@
 import { Building, Storage } from "buildings";
 import { setMovementData } from "creeps/creep";
-import { BuildingData } from "managers/roomManager/layoutHandler";
 import { baseCenter } from "utils/baseCenter";
 
 export interface FillerMemory extends CreepMemory {
     tasks?: Task[];
-    //working?: boolean;
 }
 
 interface Task {
@@ -441,7 +439,6 @@ function GetEnergyNeedBuildings(room: Room) {
                 !FillerIgnoreExtensions[room.controller.level]!.includes(i))
         ) {
             const object = Game.getObjectById(building.id);
-            console.log(object);
             if (object instanceof StructureExtension && object.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
                 structures.push(object);
             }
