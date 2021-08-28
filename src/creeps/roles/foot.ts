@@ -34,14 +34,27 @@ export function foot(creep: Creep): void {
                         creep.upgradeController(home.controller);
                     }
                 } else {
-                    const constructionSites = home.find(FIND_MY_CONSTRUCTION_SITES);
-                    if (constructionSites.length > 0) {
+                    const ramparts = home.find(FIND_MY_STRUCTURES, {
+                        filter: (s) => s.structureType === STRUCTURE_RAMPART && s.hits < 5000
+                    });
+                    if (ramparts.length > 0) {
                         setMovementData(creep, {
-                            pos: constructionSites[0].pos,
+                            pos: ramparts[0].pos,
                             range: 3
                         });
-                        if (creep.pos.inRangeTo(constructionSites[0].pos, 3)) {
-                            creep.build(constructionSites[0]);
+                        if (creep.pos.inRangeTo(ramparts[0].pos, 3)) {
+                            creep.repair(ramparts[0]);
+                        }
+                    } else {
+                        const constructionSites = home.find(FIND_MY_CONSTRUCTION_SITES);
+                        if (constructionSites.length > 0) {
+                            setMovementData(creep, {
+                                pos: constructionSites[0].pos,
+                                range: 3
+                            });
+                            if (creep.pos.inRangeTo(constructionSites[0].pos, 3)) {
+                                creep.build(constructionSites[0]);
+                            }
                         }
                     }
                 }
