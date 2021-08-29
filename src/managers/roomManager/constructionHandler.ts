@@ -70,7 +70,7 @@ export function ConstructionHandler(room: Room): void {
             if (plcs !== undefined) {
                 let res = -1;
                 if (plcs.type === STRUCTURE_SPAWN && plcs.name !== undefined) {
-                    res = unpackPosition(plcs.pos).createConstructionSite(plcs.type);//,plcs.name);
+                    res = unpackPosition(plcs.pos).createConstructionSite(plcs.type, plcs.name);
                 } else {
                     res = unpackPosition(plcs.pos).createConstructionSite(plcs.type);
                 }
