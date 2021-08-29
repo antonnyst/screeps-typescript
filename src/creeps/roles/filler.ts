@@ -83,13 +83,13 @@ export function filler(creep: Creep): void {
     } else {
         const energyNeedBuildings = GetEnergyNeedBuildings(home);
         const closestNeed = creep.pos.findClosestByRange(energyNeedBuildings);
-        let target: AnyStoreStructure | null = closestNeed;
+        let target: AnyStoreStructure | Tombstone | Resource | null = closestNeed;
         if (
             creep.store.getFreeCapacity(RESOURCE_ENERGY) > creep.store.getCapacity() * 0.25 &&
             energyNeedBuildings.length > 0
         ) {
-            const energySupplyBuildings = GetEnergySupplyBuildings(home);
-            const closestSupply = creep.pos.findClosestByRange(energySupplyBuildings);
+            const energySupplyObjects = GetEnergySupplyObjects(home);
+            const closestSupply = creep.pos.findClosestByRange(energySupplyObjects);
             if (
                 target === null ||
                 creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0 ||
@@ -105,8 +105,14 @@ export function filler(creep: Creep): void {
                 range: 1
             });
             if (creep.pos.isNearTo(target)) {
-                if (target instanceof StructureStorage || target instanceof StructureContainer) {
+                if (
+                    target instanceof StructureStorage ||
+                    target instanceof StructureContainer ||
+                    target instanceof Tombstone
+                ) {
                     creep.withdraw(target, RESOURCE_ENERGY);
+                } else if (target instanceof Resource) {
+                    creep.pickup(target);
                 } else {
                     creep.transfer(target, RESOURCE_ENERGY);
                 }
@@ -156,26 +162,39 @@ export function filler(creep: Creep): void {
         }
 
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > creep.store.getCapacity() * 0.25) {
-            const energySupplyBuildings = GetEnergySupplyBuildings(home).filter(
-                (a) => a.structureType !== STRUCTURE_CONTAINER
+            const energySupplyObjects = GetEnergySupplyObjects(home).filter(
+                (a) => !(a instanceof Structure) || a.structureType !== STRUCTURE_CONTAINER
             );
-            const closestSupply = creep.pos.findClosestByRange(energySupplyBuildings);
+            const closestSupply = creep.pos.findClosestByRange(energySupplyObjects);
             if (closestSupply !== null) {
                 setMovementData(creep, {
                     pos: closestSupply.pos,
                     range: 1
                 });
                 if (creep.pos.isNearTo(closestSupply)) {
-                    creep.withdraw(closestSupply, RESOURCE_ENERGY);
+                    if (closestSupply instanceof Resource) {
+                        creep.pickup(closestSupply);
+                    } else {
+                        creep.withdraw(closestSupply, RESOURCE_ENERGY);
+                    }
                 }
                 return;
             }
         }
 
-        setMovementData(creep, {
-            pos: baseCenter(home),
-            range: 3
-        });
+        const cPos = baseCenter(home);
+        if (creep.pos.isEqualTo(cPos)) {
+            setMovementData(creep, {
+                pos: cPos,
+                range: 2,
+                flee: true
+            });
+        } else {
+            setMovementData(creep, {
+                pos: cPos,
+                range: 3
+            });
+        }
     }
 }
 
@@ -467,36 +486,50 @@ function GetEnergyNeedBuildings(room: Room) {
     return structures;
 }
 
-const _energySupplyBuildings: Partial<
-    Record<string, { time: number; data: (StructureStorage | StructureContainer)[] }>
+const _energySupplyObjects: Partial<
+    Record<string, { time: number; data: (StructureStorage | StructureContainer | Tombstone | Resource)[] }>
 > = {};
 
-function GetEnergySupplyBuildings(room: Room) {
-    if (_energySupplyBuildings[room.name] !== undefined && _energySupplyBuildings[room.name]?.time === Game.time) {
-        return _energySupplyBuildings[room.name]!.data;
+function GetEnergySupplyObjects(room: Room) {
+    if (_energySupplyObjects[room.name] !== undefined && _energySupplyObjects[room.name]?.time === Game.time) {
+        return _energySupplyObjects[room.name]!.data;
     }
-
     if (room.memory.genBuildings === undefined || room.controller === undefined) {
         return [];
     }
-    const structures = [];
+    const objects = [];
 
     const storage = Storage(room);
     if (storage !== null && storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-        structures.push(storage);
+        objects.push(storage);
     }
 
     for (const building of room.memory.genBuildings.containers) {
         if (building.id !== undefined) {
             const object = Game.getObjectById(building.id);
             if (object instanceof StructureContainer && object.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-                structures.push(object);
+                objects.push(object);
             }
         }
     }
-    _energySupplyBuildings[room.name] = {
+
+    const resources = room.find(FIND_DROPPED_RESOURCES, {
+        filter: (s) => s.resourceType === RESOURCE_ENERGY && s.amount > 50
+    });
+    for (const resource of resources) {
+        objects.push(resource);
+    }
+
+    const tombstones = room.find(FIND_TOMBSTONES, {
+        filter: (s) => s.store.getUsedCapacity(RESOURCE_ENERGY) > 0
+    });
+    for (const tombstone of tombstones) {
+        objects.push(tombstone);
+    }
+
+    _energySupplyObjects[room.name] = {
         time: Game.time,
-        data: structures
+        data: objects
     };
-    return structures;
+    return objects;
 }
