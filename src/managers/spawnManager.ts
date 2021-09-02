@@ -250,7 +250,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     //Check miners and haulers
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         const haulerTarget =
-            room.controller!.level === 1 || room.controller!.level > 6 ? 0 : room.controller!.level > 5 ? 1 : 2;
+            room.controller!.level === 1 || room.controller!.level > 7 ? 0 : room.controller!.level > 6 ? 1 : 2;
 
         if (room.memory.genLayout === undefined) {
             return null;
@@ -366,7 +366,12 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check scouts
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (counts["scout"] < 1 && room.controller && room.controller.level < 8) {
+        if (
+            counts["scout"] < 1 &&
+            room.controller &&
+            room.controller.level < 8 &&
+            Game.time % (1500 * Math.max(1, room.controller.level - 1)) < 1500
+        ) {
             return {
                 role: "scout",
                 pattern: rolePatterns["scout"],
