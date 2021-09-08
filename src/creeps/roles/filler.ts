@@ -161,7 +161,27 @@ export function filler(creep: Creep): void {
             }
         }
 
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > creep.store.getCapacity() * 0.25) {
+        if (creep.ticksToLive && creep.ticksToLive < 50) {
+            if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+                const storage = Storage(home);
+                if (storage !== null) {
+                    setMovementData(creep, {
+                        pos: storage.pos,
+                        range: 1
+                    });
+                    if (creep.pos.isNearTo(storage)) {
+                        creep.transfer(storage, RESOURCE_ENERGY);
+                    }
+                    return;
+                }
+            }
+        }
+
+        if (
+            creep.ticksToLive &&
+            creep.ticksToLive > 50 &&
+            creep.store.getFreeCapacity(RESOURCE_ENERGY) > creep.store.getCapacity() * 0.25
+        ) {
             const energySupplyObjects = GetEnergySupplyObjects(home).filter(
                 (a) => !(a instanceof Structure) || a.structureType !== STRUCTURE_CONTAINER
             );
