@@ -104,14 +104,14 @@ export class DefenseManager implements Manager {
                                     STRATEGY_TIME_VARIATION
                             );
 
-                        console.log(
+                        /*console.log(
                             room +
                                 ": Selected strategy " +
                                 Memory.rooms[room].defenseData!.strategy +
                                 " for " +
                                 (Memory.rooms[room].defenseData!.until - Game.time) +
                                 " ticks!"
-                        );
+                        );*/
                     }
                 }
 
