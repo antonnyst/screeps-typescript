@@ -425,14 +425,20 @@ const needChecks: CreepNeedCheckFunction[] = [
             for (const position of offsets) {
                 const pos = new RoomPosition(center.x + position[0], center.y + position[1], room.name);
                 let has = false;
+                const spawn = Building(room.memory.genBuildings.spawns[position[2]]);
                 for (const creep of roles["quickFiller"]) {
                     if (creep.pos.isEqualTo(pos) || (creep.memory as QuickFillerMemory).pos === packPosition(pos)) {
                         has = true;
                         break;
                     }
+                    if (spawn !== null) {
+                        if (creep.pos.isEqualTo(spawn.pos)) {
+                            has = true;
+                            break;
+                        }
+                    }
                 }
                 if (!has) {
-                    const spawn = Building(room.memory.genBuildings.spawns[position[2]]);
                     if (spawn !== null) {
                         return {
                             role: "quickFiller",
