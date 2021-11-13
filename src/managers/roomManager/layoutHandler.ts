@@ -501,7 +501,7 @@ function UpdateBuildingsData(room: Room): void {
         room.memory.genBuildings.labs[i].active = true;
     }
 
-    for (let i = 0; i < CONTROLLER_STRUCTURES[STRUCTURE_LINK][room.controller.level]; i++) {
+    for (let i = 0; i < Math.min(5, CONTROLLER_STRUCTURES[STRUCTURE_LINK][room.controller.level]); i++) {
         room.memory.genBuildings.links[i].active = true;
     }
 
