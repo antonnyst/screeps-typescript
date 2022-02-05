@@ -152,11 +152,14 @@ function getEnergyTarget(creep: Creep): Structure | Resource | Tombstone | Ruin 
                             return false;
                         }
                     }
-                    if (s.store.getUsedCapacity(RESOURCE_ENERGY) >= requiredAmount) {
-                        return true;
-                    } else {
-                        return false;
+                    if (s.pos.isEqualTo(unpackPosition(Memory.rooms[memory.home].genBuildings!.links[0].pos))) {
+                        if (s.store.getUsedCapacity(RESOURCE_ENERGY) >= requiredAmount) {
+                            return true;
+                        } else {
+                            return false;
+                        }
                     }
+                    return false;
                 } else {
                     return false;
                 }
