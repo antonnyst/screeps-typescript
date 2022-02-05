@@ -486,7 +486,9 @@ const needChecks: CreepNeedCheckFunction[] = [
         if (
             counts["upgrader"] < 1 &&
             (room.controller.level < 8 ||
-                pushGCL ||
+                (pushGCL &&
+                    room.memory.resources !== undefined &&
+                    room.memory.resources.total[RESOURCE_ENERGY] > C.PUSH_GCL_ENERGY_NEEDED) ||
                 room.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[room.controller.level] * 0.2)
         ) {
             return {

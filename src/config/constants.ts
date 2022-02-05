@@ -2,6 +2,7 @@ export const MINERAL_MINING_ENERGY_NEEDED = 50000;
 export const BASE_LINK_GREEDY_LIMIT = 35000;
 export const FULL_UPGRADER_ENERGY_NEEDED = 80000;
 export const EXTRA_ENERGY_FILL_ENERGY_NEEDED = 100000;
+export const PUSH_GCL_ENERGY_NEEDED = 100000;
 
 // How much of each resource type should be stored in the terminal
 export const TERMINAL_ENERGY_MIN = 30000;
