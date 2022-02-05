@@ -1,3 +1,4 @@
+import { PUSH_GCL_ENERGY_NEEDED } from "config/constants";
 import { getEnergy, setMovementData } from "../creep";
 
 export interface WorkerMemory extends CreepMemory {
@@ -54,7 +55,11 @@ export function worker(creep: Creep): void {
                     creep.build(target);
                 }
             }
-        } else {
+        } else if (
+            (home.controller !== undefined &&
+                (home.controller.level < 7 || home.controller.ticksToDowngrade < 40000)) ||
+            (home.memory.resources !== undefined && home.memory.resources.total.energy > PUSH_GCL_ENERGY_NEEDED)
+        ) {
             setMovementData(creep, { pos: controller.pos, range: 3 });
             if (creep.pos.inRangeTo(controller.pos, 3)) {
                 creep.upgradeController(controller);
