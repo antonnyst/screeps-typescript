@@ -11,6 +11,7 @@ import { BasicRoomData, generateBasicRoomData } from "layout/layout";
 import { RemoteHandler } from "./roomManager/remoteHandler";
 import { fromRoomCoordinate, toRoomCoordinate } from "utils/RoomCoordinate";
 import { describeRoom } from "utils/RoomCalc";
+import { Observer } from "buildings";
 
 declare global {
     interface RoomMemory {
@@ -79,6 +80,15 @@ function roomLogic(roomName: string, speed: number): void {
         "roomlogicgeneratebasicroomdata" + roomName,
         100 / speed
     );
+
+    // Observer logic
+    if (room.memory.roomLevel === 2 && Observer(room) !== null) {
+        if (room.memory.scoutTargets !== undefined && room.memory.scoutTargets.length > 0) {
+            const obt = room.memory.scoutTargets.shift()!;
+            Observer(room)!.observeRoom(obt);
+            console.log(room + " observing " + obt);
+        }
+    }
 
     //Update room reservation
     RunEvery(
