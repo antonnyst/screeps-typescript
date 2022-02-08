@@ -11,6 +11,7 @@ import { MapManager } from "./managers/mapManager";
 import { MovementManager } from "managers/movementManager";
 import { LayoutManager } from "managers/layoutManager";
 import { ErrorMapper } from "utils/ErrorMapper";
+import { ScoutManager } from "managers/scoutManager";
 
 declare global {
     interface Memory {
@@ -28,6 +29,7 @@ const managers: Manager[] = [
     new ResourceManager(),
     new MapManager(),
     new OperationManager(),
+    new ScoutManager(),
     new LayoutManager()
 ];
 
@@ -39,7 +41,7 @@ export const runAllManagers = (): void => {
         const speed = managers[i].minSpeed + (managers[i].maxSpeed - managers[i].minSpeed) * globalSpeed;
         try {
             managers[i].run(speed);
-        } catch (error) {
+        } catch (error: any) {
             console.log("Error in " + (managers[i] as Object).constructor.name);
             console.log(ErrorMapper.sourceMappedStackTrace(error));
         }
