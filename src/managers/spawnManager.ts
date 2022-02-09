@@ -494,7 +494,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         ) {
             return {
                 role: "upgrader",
-                pattern: rolePatterns["upgrader"],
+                pattern: room.controller.level < 8 ? rolePatterns["upgrader"] : "[mwcwmw]5",
                 energy: Math.min(GetEnergyCapacity(room), 3000)
             };
         }
