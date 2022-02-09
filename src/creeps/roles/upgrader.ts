@@ -9,11 +9,11 @@ export function upgrader(creep: Creep): void {
     const memory = creep.memory as UpgraderMemory;
     const home = Game.rooms[creep.memory.home];
     const controller = home.controller;
-    if (controller === undefined || home.memory.genLayout === undefined || home.memory.genBuildings === undefined) {
+    if (controller === undefined) {
         return;
     }
 
-    if (controller.level >= 7) {
+    if (controller.level >= 7 && home.memory.genLayout !== undefined && home.memory.genBuildings !== undefined) {
         const containerPos = unpackPosition(home.memory.genLayout.controller);
         setMovementData(creep, { pos: containerPos, range: 1 });
         if (creep.pos.isNearTo(containerPos)) {
