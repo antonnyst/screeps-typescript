@@ -41,9 +41,9 @@ export const runAllManagers = (): void => {
         const speed = managers[i].minSpeed + (managers[i].maxSpeed - managers[i].minSpeed) * globalSpeed;
         try {
             managers[i].run(speed);
-        } catch (error: any) {
+        } catch (error) {
             console.log("Error in " + (managers[i] as Object).constructor.name);
-            console.log(ErrorMapper.sourceMappedStackTrace(error));
+            //console.log(ErrorMapper.sourceMappedStackTrace(error));
         }
         const b = Game.cpu.getUsed() - a;
         Memory.msplit[(managers[i] as Object).constructor.name] = b;
