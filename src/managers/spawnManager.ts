@@ -370,7 +370,8 @@ const needChecks: CreepNeedCheckFunction[] = [
             counts["scout"] < 1 &&
             room.controller &&
             room.controller.level < 8 &&
-            Game.time % (1500 * Math.max(1, room.controller.level - 1)) < 1500
+            Memory.rooms[room.name].scoutTargets !== undefined &&
+            Memory.rooms[room.name].scoutTargets!.length > 0
         ) {
             return {
                 role: "scout",
