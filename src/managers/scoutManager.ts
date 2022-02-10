@@ -9,7 +9,7 @@ declare global {
     }
 }
 
-const SCOUT_RANGE: number = 10;
+const SCOUT_RANGE: number = 6;
 
 export class ScoutManager implements Manager {
     minSpeed = 1;
@@ -38,6 +38,9 @@ export class ScoutManager implements Manager {
                                 x: roomCoord.x + dx,
                                 y: roomCoord.y + dy
                             });
+                            if (otherRoom === null) {
+                                continue;
+                            }
 
                             const index = rooms.map((a) => a[0]).findIndex((a) => a === otherRoom);
                             if (index >= 0) {

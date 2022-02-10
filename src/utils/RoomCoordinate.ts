@@ -23,9 +23,13 @@ export function toRoomCoordinate(room: string): RoomCoordinate | null {
     return null;
 }
 
-export function fromRoomCoordinate(coordinate: RoomCoordinate): string {
-    return (
+export function fromRoomCoordinate(coordinate: RoomCoordinate): string | null {
+    let roomName =
         (coordinate.x < 0 ? "W" + ~coordinate.x : "E" + coordinate.x) +
-        (coordinate.y < 0 ? "N" + ~coordinate.y : "S" + coordinate.y)
-    );
+        (coordinate.y < 0 ? "N" + ~coordinate.y : "S" + coordinate.y);
+
+    if (Game.map.getRoomStatus(roomName) == null) {
+        return null;
+    }
+    return roomName;
 }
