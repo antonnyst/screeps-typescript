@@ -224,6 +224,9 @@ function remoteDecisions(room: Room): void {
                 x: roomCoord.x + dx,
                 y: roomCoord.y + dy
             });
+            if (remote === null) {
+                continue;
+            }
             if (
                 Memory.rooms[remote] === undefined ||
                 Memory.rooms[remote].roomLevel < 0 ||
