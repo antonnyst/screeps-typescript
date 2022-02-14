@@ -1,9 +1,11 @@
+import { RAMPART_PERCENTAGE_MAX } from "config/constants";
 import { packPosition, unpackPosition } from "utils/RoomPositionPacker";
 
 declare global {
     interface RoomMemory {
         placedCS: PlacedConstructionData[];
         plannedCS: PlannedConstructionData[];
+        buildEnergy: number;
     }
 }
 
@@ -43,9 +45,17 @@ export function ConstructionHandler(room: Room): void {
         const sites: ConstructionSite[] = room.find(FIND_MY_CONSTRUCTION_SITES).concat(remoteSites);
         const siteMap: { [key in string]: number } = {};
 
+        let energyNeed = 0;
         for (const site of sites) {
+            energyNeed += Math.ceil((site.progressTotal - site.progress) / BUILD_POWER);
+            if (site.structureType === STRUCTURE_RAMPART) {
+                energyNeed += Math.ceil(
+                    (RAMPART_HITS_MAX[room.controller.level] * RAMPART_PERCENTAGE_MAX) / REPAIR_POWER
+                );
+            }
             siteMap[site.id] = 1;
         }
+        room.memory.buildEnergy = Math.ceil(energyNeed);
 
         for (let i = room.memory.placedCS.length - 1; i >= 0; i--) {
             if (siteMap[room.memory.placedCS[i].id] === undefined) {

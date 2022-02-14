@@ -54,6 +54,27 @@ export function VisualHandler(room: Room, speed: number): void {
                 );
             }
 
+            if (
+                room.memory.energySupply !== undefined &&
+                room.memory.buildEnergy !== undefined &&
+                room.memory.repairEnergy !== undefined
+            ) {
+                room.visual.text(
+                    "Energy demand: " + Math.round((room.memory.buildEnergy + room.memory.repairEnergy) / 1000) + "k",
+                    1,
+                    4.275,
+                    {
+                        align: "left",
+                        font: "0.8"
+                    }
+                );
+
+                room.visual.text("Energy supply: " + Math.round(room.memory.energySupply / 1000) + "k", 1, 5.275, {
+                    align: "left",
+                    font: "0.8"
+                });
+            }
+
             saveToCache("visualhandlerdata" + room.name, room.visual.export());
         } else {
             room.visual.import(data);

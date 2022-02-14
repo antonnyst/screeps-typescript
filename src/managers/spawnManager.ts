@@ -6,8 +6,7 @@ import * as C from "../config/constants";
 import * as roles from "../creeps/roles";
 import { RunEvery } from "utils/RunEvery";
 import { generateName } from "utils/CreepNames";
-import { bucketTarget, pushGCL } from "config/config";
-import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
+import { pushGCL } from "config/config";
 import {
     HaulerMemory,
     MinerMemory,
@@ -24,6 +23,7 @@ declare global {
         spawnAttempts?: number;
         spawnQueue: SpawnData[];
         waitingCreep?: SpawnData;
+        energySupply?: number;
     }
 }
 
@@ -713,37 +713,27 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check workers
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (
-            room.memory.repair === undefined ||
-            room.memory.placedCS === undefined ||
-            room.memory.plannedCS === undefined
-        ) {
+        if (room.memory.buildEnergy === undefined || room.memory.repairEnergy === undefined) {
             return null;
         }
 
-        let workerTarget = Math.min(
-            Math.max(
-                Math.ceil(
-                    (room.memory.placedCS.length + room.memory.plannedCS.length) /
-                        (Math.min(room.energyCapacityAvailable, 3000) * 0.00167)
-                ),
-                Math.min(
-                    Math.ceil(
-                        Math.min(Object.keys(room.memory.repair).length + room.memory.rampartTargets || 0, 20) /
-                            (Math.min(room.energyCapacityAvailable, 3000) * 0.0012)
-                    ),
-                    2
-                )
-            ),
-            10
-        );
-        if (room.controller !== undefined && room.controller.level < 8 && room.memory.remotes !== undefined) {
-            workerTarget += room.memory.remotes.length;
-            if (room.controller.level < 4) {
-                workerTarget += 4 - room.controller.level;
+        let energySupply = 0;
+        for (let creep of roles["worker"]) {
+            for (let part of creep.body) {
+                if (part.type === "work") {
+                    energySupply += (creep.ticksToLive ?? 1500) * 0.4;
+                }
             }
         }
-        if (counts["worker"] < workerTarget) {
+
+        room.memory.energySupply = energySupply;
+
+        const energyDemand = room.memory.buildEnergy + room.memory.repairEnergy - energySupply;
+
+        if (
+            energyDemand > 0 &&
+            counts["worker"] < Math.ceil(2 / (Math.min(room.energyCapacityAvailable, 3000) * 0.0002))
+        ) {
             return {
                 role: "worker",
                 pattern: rolePatterns["worker"],
