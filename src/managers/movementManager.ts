@@ -146,12 +146,39 @@ export class MovementManager implements Manager {
 
                             if (serializedPath === null) {
                                 totalQueries++;
+
+                                let goals = [];
+                                if (targetRange <= 5 && !creep.memory.movementData.flee) {
+                                    for (let dx = -targetRange; dx <= targetRange; dx++) {
+                                        for (let dy = -targetRange; dy <= targetRange; dy++) {
+                                            let x = targetPos.x + dx;
+                                            let y = targetPos.y + dy;
+
+                                            if (
+                                                x <= 0 ||
+                                                x >= 49 ||
+                                                y <= 0 ||
+                                                y >= 49 ||
+                                                terrain.get(x, y) === TERRAIN_MASK_WALL
+                                            ) {
+                                                continue;
+                                            }
+
+                                            goals.push(
+                                                new RoomPosition(targetPos.x + dx, targetPos.y + dy, targetPos.roomName)
+                                            );
+                                        }
+                                    }
+                                }
+
                                 path = PathFinder.search(
                                     creep.pos,
-                                    {
-                                        pos: targetPos,
-                                        range: targetRange
-                                    },
+                                    goals.length === 0
+                                        ? {
+                                              pos: targetPos,
+                                              range: targetRange
+                                          }
+                                        : goals,
                                     {
                                         flee: creep.memory.movementData.flee,
                                         roomCallback,
