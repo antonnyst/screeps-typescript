@@ -1,5 +1,7 @@
 import { ClaimerMemory } from "creeps/roles";
 import { Manager } from "./manager";
+import { displayBase } from "../layout/layout";
+import { packPosition } from "utils/RoomPositionPacker";
 
 declare global {
     interface FlagMemory {
@@ -54,6 +56,32 @@ function HandleFlag(flag: Flag): void {
                 Memory.rooms[flag.name].remotes !== undefined
             ) {
                 Memory.rooms[flag.name].remotes.push(flag.pos.roomName);
+            }
+            flag.memory.processed = true;
+        }
+        //show base layout
+        if (primaryColor === COLOR_WHITE && secondaryColor === COLOR_WHITE) {
+            if (
+                Memory.rooms[flag.pos.roomName] !== undefined &&
+                Memory.rooms[flag.pos.roomName].roomLevel === 2 &&
+                Memory.rooms[flag.pos.roomName].basicRoomData !== undefined &&
+                Memory.rooms[flag.pos.roomName].genLayout !== undefined
+            ) {
+                displayBase(
+                    flag.pos.roomName,
+                    Memory.rooms[flag.pos.roomName].basicRoomData!,
+                    Memory.rooms[flag.pos.roomName].genLayout!
+                );
+            }
+        }
+        // add road to layout
+        if (primaryColor === COLOR_GREY && secondaryColor === COLOR_RED) {
+            if (
+                Memory.rooms[flag.pos.roomName] !== undefined &&
+                Memory.rooms[flag.pos.roomName].roomLevel === 2 &&
+                Memory.rooms[flag.pos.roomName].genLayout !== undefined
+            ) {
+                Memory.rooms[flag.pos.roomName].genLayout!.roads.push(packPosition(flag.pos));
             }
             flag.memory.processed = true;
         }
