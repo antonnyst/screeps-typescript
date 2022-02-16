@@ -1,7 +1,7 @@
 import * as C from "../../config/constants";
 
 declare global {
-    interface RoomMemory{
+    interface RoomMemory {
         resources?: ResourcesData;
     }
 }
@@ -23,6 +23,7 @@ function ResourceData(room: Room): void {
     const total: { [resourceType in ResourceConstant]: number } = {} as { [resourceType in ResourceConstant]: number };
     const delta: { [resourceType in ResourceConstant]: number } = {} as { [resourceType in ResourceConstant]: number };
 
+    let unclaimReady = true;
     for (const resource of RESOURCES_ALL) {
         const storage = room.storage === undefined ? 0 : room.storage.store.getUsedCapacity(resource);
         const terminal = room.terminal === undefined ? 0 : room.terminal.store.getUsedCapacity(resource);
@@ -58,7 +59,10 @@ function ResourceData(room: Room): void {
         let importLimit: number | null = null;
         let exportLimit: number | null = null;
 
-        if (resource === RESOURCE_ENERGY) {
+        if (room.memory.unclaim !== undefined) {
+            importLimit = -1;
+            exportLimit = 0;
+        } else if (resource === RESOURCE_ENERGY) {
             importLimit = C.ROOM_ENERGY_IMPORT_LIMIT;
             exportLimit = C.ROOM_ENERGY_EXPORT_LIMIT;
         } else if (C.TERMINAL_MINERALS.includes(resource)) {
@@ -78,7 +82,21 @@ function ResourceData(room: Room): void {
             }
         }
 
+        if (resource === RESOURCE_ENERGY) {
+            if (d > 1000) {
+                unclaimReady = false;
+            }
+        } else {
+            if (d !== 0) {
+                unclaimReady = false;
+            }
+        }
+
         delta[resource] = d;
+    }
+
+    if (room.memory.unclaim === 1 && unclaimReady === true) {
+        room.memory.unclaim = 2;
     }
 
     room.memory.resources = {
