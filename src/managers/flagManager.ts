@@ -85,5 +85,12 @@ function HandleFlag(flag: Flag): void {
             }
             flag.memory.processed = true;
         }
+        // unclaim room
+        if (primaryColor === COLOR_BLUE && secondaryColor === COLOR_WHITE) {
+            if (Memory.rooms[flag.pos.roomName] !== undefined && Memory.rooms[flag.pos.roomName].roomLevel === 2) {
+                Memory.rooms[flag.pos.roomName].unclaim = 1;
+            }
+            flag.memory.processed = true;
+        }
     }
 }

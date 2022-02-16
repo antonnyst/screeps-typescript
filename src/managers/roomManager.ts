@@ -23,6 +23,7 @@ declare global {
         remoteSupportRooms: string[];
         targetRemoteCount?: number;
         lastUpdate: number;
+        unclaim?: number;
     }
 }
 
@@ -80,6 +81,19 @@ function roomLogic(roomName: string, speed: number): void {
         "roomlogicgeneratebasicroomdata" + roomName,
         100 / speed
     );
+
+
+    if (room.memory.unclaim === 2) {
+        for (const creep of _.filter(Game.creeps, (c) => c.memory.home === room.name)) {
+            creep.suicide();
+        }
+        for (const structure of room.find(FIND_MY_STRUCTURES)) {
+            structure.destroy();
+        }
+        room.memory.roomLevel = 0;
+        room.controller!.unclaim();
+        return;
+    }
 
     // Observer logic
     if (room.memory.roomLevel === 2 && Observer(room) !== null) {

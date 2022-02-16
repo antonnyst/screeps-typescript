@@ -206,7 +206,7 @@ export class SpawnManager implements Manager {
 const needChecks: CreepNeedCheckFunction[] = [
     //Check zero creeps => foots
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (creeps.length === 0) {
+        if (creeps.length === 0 && !room.memory.unclaim) {
             const potentialEnergy = roomTotalStoredEnergy(room);
             if (potentialEnergy >= 1000) {
                 return {
@@ -226,7 +226,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check minimum operation (filler + miner)
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (counts["miner"] === 0) {
+        if (counts["miner"] === 0 && !room.memory.unclaim) {
             return {
                 role: "miner",
                 pattern: rolePatterns["miner"],
@@ -238,7 +238,7 @@ const needChecks: CreepNeedCheckFunction[] = [
                 }
             };
         }
-        if (counts["filler"] === 0) {
+        if (counts["filler"] === 0 && !room.memory.unclaim) {
             return {
                 role: "filler",
                 pattern: rolePatterns["filler"],
@@ -252,7 +252,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         const haulerTarget =
             room.controller!.level === 1 || room.controller!.level > 7 ? 0 : room.controller!.level > 6 ? 1 : 2;
 
-        if (room.memory.genLayout === undefined) {
+        if (room.memory.genLayout === undefined || room.memory.unclaim) {
             return null;
         }
 
@@ -355,7 +355,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check fillers
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (counts["filler"] < 2) {
+        if (counts["filler"] < 2 && !room.memory.unclaim) {
             return {
                 role: "filler",
                 pattern: rolePatterns["filler"],
@@ -371,7 +371,8 @@ const needChecks: CreepNeedCheckFunction[] = [
             room.controller &&
             room.controller.level < 8 &&
             Memory.rooms[room.name].scoutTargets !== undefined &&
-            Memory.rooms[room.name].scoutTargets!.length > 0
+            Memory.rooms[room.name].scoutTargets!.length > 0 &&
+            !room.memory.unclaim
         ) {
             return {
                 role: "scout",
@@ -387,7 +388,8 @@ const needChecks: CreepNeedCheckFunction[] = [
             room.memory.genLayout === undefined ||
             room.memory.genBuildings === undefined ||
             room.controller === undefined ||
-            room.controller.level < 5
+            room.controller.level < 5 ||
+            room.memory.unclaim
         ) {
             return null;
         }
@@ -469,7 +471,8 @@ const needChecks: CreepNeedCheckFunction[] = [
         if (
             counts["worker"] === 0 &&
             (room.memory.placedCS.length > 0 ||
-                (room.memory.repair !== undefined && Object.keys(room.memory.repair).length > 0))
+                (room.memory.repair !== undefined && Object.keys(room.memory.repair).length > 0)) &&
+            !room.memory.unclaim
         ) {
             return {
                 role: "worker",
@@ -481,7 +484,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check upgrader
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (room.controller === undefined) {
+        if (room.controller === undefined || room.memory.unclaim) {
             return null;
         }
         if (
@@ -502,7 +505,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check remote support
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (room.memory.remoteSupportRooms.length > 0) {
+        if (room.memory.remoteSupportRooms.length > 0 && !room.memory.unclaim) {
             for (const r of room.memory.remoteSupportRooms) {
                 const fAmt = _.filter(Game.creeps, (c: Creep) => c.memory.role === "foot" && c.memory.home === r)
                     .length;
@@ -524,8 +527,12 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check peacekeeper
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (room.memory.remotes.length === 0 && Object.keys(room.memory.hostiles).length === 0) return null;
-
+        if (
+            (room.memory.remotes.length === 0 && Object.keys(room.memory.hostiles).length === 0) ||
+            room.memory.unclaim
+        ) {
+            return null;
+        }
         if (counts["protector"] < 1) {
             return {
                 role: "protector",
@@ -537,7 +544,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check remote support protector
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (room.memory.remoteSupportRooms.length > 0) {
+        if (room.memory.remoteSupportRooms.length > 0 && !room.memory.unclaim) {
             for (const r of room.memory.remoteSupportRooms) {
                 const fAmt = _.filter(Game.creeps, (c: Creep) => c.memory.role === "protector" && c.memory.home === r)
                     .length;
@@ -559,7 +566,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check remote miners and haulers
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (room.memory.remoteData === undefined) {
+        if (room.memory.remoteData === undefined || room.memory.unclaim) {
             return null;
         }
 
@@ -645,7 +652,11 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check reservers
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (room.memory.remoteData === undefined || Object.keys(room.memory.remoteData.data).length === 0) {
+        if (
+            room.memory.remoteData === undefined ||
+            Object.keys(room.memory.remoteData.data).length === 0 ||
+            room.memory.unclaim
+        ) {
             return null;
         }
 
@@ -713,7 +724,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check workers
     (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (room.memory.buildEnergy === undefined || room.memory.repairEnergy === undefined) {
+        if (room.memory.buildEnergy === undefined || room.memory.repairEnergy === undefined || room.memory.unclaim) {
             return null;
         }
 
@@ -748,7 +759,8 @@ const needChecks: CreepNeedCheckFunction[] = [
             (room.controller && room.controller.level < 6) ||
             (room.memory.resources !== undefined &&
                 room.memory.resources.total[RESOURCE_ENERGY] < C.MINERAL_MINING_ENERGY_NEEDED) ||
-            room.memory.genBuildings === undefined
+            room.memory.genBuildings === undefined ||
+            room.memory.unclaim
         ) {
             return null;
         }
