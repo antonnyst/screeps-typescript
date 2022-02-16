@@ -33,9 +33,9 @@ export class ResourceManager implements Manager {
                         TerminalRooms.push(r);
                     }
                 }
-
+                const usedRooms: string[] = [];
                 if (TerminalRooms.length > 0) {
-                    for (const resource of RESOURCES_ALL) {
+                    for (const resource of _.clone(RESOURCES_ALL).reverse()) {
                         const needRooms: { roomName: string; amt: number }[] = [];
                         const haveRooms: { roomName: string; amt: number }[] = [];
 
@@ -46,7 +46,7 @@ export class ResourceManager implements Manager {
                                     roomName: r,
                                     amt: a
                                 });
-                            } else if (a > 0) {
+                            } else if (a > 0 && Game.rooms[r].terminal!.cooldown === 0 && !usedRooms.includes(r)) {
                                 haveRooms.push({
                                     roomName: r,
                                     amt: a
@@ -81,6 +81,7 @@ export class ResourceManager implements Manager {
                                 }
 
                                 Game.rooms[sr.roomName].terminal!.send(resource, possibleAmount, nr.roomName);
+                                usedRooms.push(sr.roomName);
                             }
                         } else if (
                             haveRooms.length > 0 &&
@@ -118,6 +119,7 @@ export class ResourceManager implements Manager {
                                     }
 
                                     Game.market.deal(order.id, possibleAmount, hr.roomName);
+                                    usedRooms.push(hr.roomName);
                                 }
                             }
                         }
