@@ -11,6 +11,7 @@ import { MapManager } from "./managers/mapManager";
 import { MovementManager } from "managers/movementManager";
 import { LayoutManager } from "managers/layoutManager";
 import { ErrorMapper } from "utils/ErrorMapper";
+import { DataManager } from "managers/dataManager";
 import { ScoutManager } from "managers/scoutManager";
 
 declare global {
@@ -30,7 +31,8 @@ const managers: Manager[] = [
     new MapManager(),
     new OperationManager(),
     new ScoutManager(),
-    new LayoutManager()
+    new LayoutManager(),
+    new DataManager()
 ];
 
 export const runAllManagers = (): void => {

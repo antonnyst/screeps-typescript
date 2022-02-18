@@ -12,6 +12,7 @@ import { RemoteHandler } from "./roomManager/remoteHandler";
 import { fromRoomCoordinate, toRoomCoordinate } from "utils/RoomCoordinate";
 import { describeRoom } from "utils/RoomCalc";
 import { Observer } from "buildings";
+import { HostileData, RoomData } from "data/room/room";
 
 declare global {
     interface RoomMemory {
@@ -25,13 +26,6 @@ declare global {
         lastUpdate: number;
         unclaim?: number;
     }
-}
-
-interface HostileData {
-    id: string;
-    pos: RoomPosition;
-    body: BodyPartDefinition[];
-    firstSeen: number;
 }
 
 export class RoomManager implements Manager {
