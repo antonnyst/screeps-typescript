@@ -304,7 +304,7 @@ interface DataInterface<T> {
     has: () => boolean;
     prepare: () => void;
     get: () => T | null;
-    set: (value: T) => void;
+    set: (value: T | null) => void;
 }
 
 export const DataInterface = <T>(dataName: string, packer: Packer<T>, layer: Layer): DataInterface<T> => {
