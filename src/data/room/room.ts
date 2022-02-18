@@ -1,4 +1,4 @@
-import { DataInterface } from "../data";
+import { DataInterface } from "../interface";
 import { RoomDataPacking } from "./pack";
 
 export interface HostileData {
