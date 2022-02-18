@@ -54,6 +54,14 @@ let RoomDataPacking = {
         unpack: (data: string): HostileData[] => {
             return JSON.parse(data) as HostileData[];
         }
+    },
+    reservation: {
+        pack: (data: ReservationDefinition): string => {
+            return JSON.stringify(data);
+        },
+        unpack: (data: string): ReservationDefinition => {
+            return JSON.parse(data) as ReservationDefinition;
+        }
     }
 };
 

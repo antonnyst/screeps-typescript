@@ -13,7 +13,8 @@ let RoomData = (room: string) => {
         control: DataInterface(room + ".c", RoomDataPacking.control, "heap"),
         lastUpdate: DataInterface(room + ".lU", RoomDataPacking.lastUpdate, "heap"),
         basicRoomData: DataInterface(room + ".bRD", RoomDataPacking.basicRoomData, "segment"),
-        hostiles: DataInterface(room + ".h", RoomDataPacking.hostiles, "heap")
+        hostiles: DataInterface(room + ".h", RoomDataPacking.hostiles, "heap"),
+        reservation: DataInterface(room + ".r", RoomDataPacking.reservation, "heap")
     };
 };
 
