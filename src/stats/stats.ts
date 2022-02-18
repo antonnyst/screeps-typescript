@@ -40,6 +40,8 @@ interface Stats {
         };
     };
     heap?: HeapStatistics;
+    memory?: number;
+    segments?: { [key in string]?: number };
 }
 
 interface RoomStats {
@@ -105,6 +107,14 @@ export function saveTick(): void {
     if (Game.cpu.getHeapStatistics !== undefined) {
         Memory.stats.heap = Game.cpu.getHeapStatistics();
     }
+
+    Memory.stats.segments = Memory.stats.segments ?? {};
+    for (const segment of Object.keys(RawMemory.segments)) {
+        Memory.stats.segments[segment] = RawMemory.segments[parseInt(segment)].length;
+    }
+
+    Memory.stats.memory = RawMemory.get().length;
+
     Memory.stats.cpu.used = Game.cpu.getUsed();
 }
 
