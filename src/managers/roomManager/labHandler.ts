@@ -1,5 +1,5 @@
 declare global {
-    interface RoomMemory {
+    interface OwnedRoomMemory {
         labs?: LabsData;
     }
 }
@@ -18,11 +18,11 @@ export interface LabData {
 ////// LAB HANDLER //////
 // The LabHandler should run the lab reactions
 
-export function LabHandler(room: Room): void {
+export function LabHandler(room: OwnedRoom): void {
     runLabData(room);
 }
 
-function runLabData(room: Room): void {
+function runLabData(room: OwnedRoom): void {
     if (room.controller === undefined || !room.controller.my) {
         return;
     }
@@ -67,7 +67,7 @@ function runLabData(room: Room): void {
         }
     }
 }
-function RunLabs(room: Room): void {
+function RunLabs(room: OwnedRoom): void {
     if (room.memory.labs && room.memory.labs.status === "react") {
         const inLabs: StructureLab[] = [];
         const outLabs: StructureLab[] = [];
@@ -95,7 +95,7 @@ function RunLabs(room: Room): void {
     }
 }
 
-function GenerateLabsData(room: Room): LabsData | undefined {
+function GenerateLabsData(room: OwnedRoom): LabsData | undefined {
     if (room.memory.genLayout === undefined) {
         return undefined;
     }
@@ -143,7 +143,7 @@ function GenerateLabsData(room: Room): LabsData | undefined {
         outLabs
     };
 }
-function UpdateLabData(room: Room) {
+function UpdateLabData(room: OwnedRoom) {
     if (room.memory.labs === undefined || room.memory.genLayout === undefined) {
         return;
     }

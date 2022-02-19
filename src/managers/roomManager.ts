@@ -13,19 +13,34 @@ import { fromRoomCoordinate, toRoomCoordinate } from "utils/RoomCoordinate";
 import { describeRoom } from "utils/RoomCalc";
 import { Observer } from "buildings";
 import { HostileData, RoomData } from "data/room/room";
+import { isOwnedRoom } from "../utils/ownedRoom";
 
 declare global {
     interface RoomMemory {
-        roomLevel: number;
-        reservation: ReservationDefinition | undefined;
-        basicRoomData: BasicRoomData;
-        hostiles: { [key: string]: HostileData };
+        //roomLevel: number;
+        //reservation: ReservationDefinition | undefined;
+        //basicRoomData: BasicRoomData;
+        //hostiles: { [key: string]: HostileData };
+        //remotes: string[];
+        //remoteSupportRooms: string[];
+        //targetRemoteCount?: number;
+        //lastUpdate: number;
+        //unclaim?: number;
+    }
+    interface OwnedRoom extends Room {
+        controller: OwnedController;
+        memory: OwnedRoomMemory;
+    }
+    interface OwnedRoomMemory extends RoomMemory {
         remotes: string[];
         remoteSupportRooms: string[];
         targetRemoteCount?: number;
-        lastUpdate: number;
         unclaim?: number;
     }
+}
+
+interface OwnedController extends StructureController {
+    my: true;
 }
 
 export class RoomManager implements Manager {
@@ -33,11 +48,121 @@ export class RoomManager implements Manager {
     maxSpeed = 1;
     run(speed: number) {
         for (const room in Game.rooms) {
-            roomLogic(room, speed);
+            roomLogic(Game.rooms[room], speed);
         }
     }
 }
 
+function roomLogic(room: Room, speed: number): void {
+    generalRoomLogic(room, speed);
+    if (isOwnedRoom(room)) {
+        ownedRoomLogic(room, speed);
+    } else if (Memory.rooms[room.name] !== undefined) {
+        delete Memory.rooms[room.name];
+    }
+}
+
+function generalRoomLogic(room: Room, speed: number): void {
+    // Update control level
+    RunEvery(
+        () => {
+            RoomData(room.name).control.set(getRoomLevel(room));
+            RoomData(room.name).lastUpdate.set(Game.time);
+        },
+        room.name + "updateControl",
+        10 / speed
+    );
+
+    // Update hostiles
+    RunEvery(UpdateRoomHostiles, room.name + "updateHostiles", 10 / speed, room);
+
+    // Get basic room data
+    RunEvery(
+        () => {
+            if (RoomData(room.name).basicRoomData.has() === false) {
+                const data = generateBasicRoomData(room);
+                RoomData(room.name).basicRoomData.set(data);
+            }
+        },
+        room.name + "updateBasicRoomData",
+        500 / speed
+    );
+
+    // Update room reservation status
+    RunEvery(
+        () => {
+            let control = RoomData(room.name).control.get();
+            if (control !== null && (control === -1 || control === 1)) {
+                UpdateRoomReservation(room);
+            }
+        },
+        room.name + "updateReservation",
+        5 / speed
+    );
+}
+
+function ownedRoomLogic(room: OwnedRoom, speed: number): void {
+    if (room.memory.remoteSupportRooms === undefined) {
+        room.memory.remoteSupportRooms = [];
+    }
+
+    // Unclaim logic
+    if (room.memory.unclaim === 2) {
+        for (const creep of _.filter(Game.creeps, (c) => c.memory.home === room.name)) {
+            creep.suicide();
+        }
+        for (const structure of room.find(FIND_MY_STRUCTURES)) {
+            structure.destroy();
+        }
+        room.controller.unclaim();
+        return;
+    }
+
+    // Observer logic
+    if (Observer(room) !== null) {
+        if (room.memory.scoutTargets !== undefined && room.memory.scoutTargets.length > 0) {
+            const obt = room.memory.scoutTargets.shift()!;
+            Observer(room)!.observeRoom(obt);
+            console.log(room + " observing " + obt);
+        }
+    }
+
+    // ResourceHandler
+    RunEvery(ResourceHandler, room.name + "resourceHandler", 5 / speed, room);
+
+    // LayoutHandler
+    RunEvery(LayoutHandler, room.name + "layoutHandler", 10 / speed, room, speed);
+
+    // LabHandler
+    RunEvery(LabHandler, room.name + "labHandler", 5 / speed, room);
+
+    // ConstructionHandler
+    RunEvery(ConstructionHandler, room.name + "constructionHandler", 5 / speed, room);
+
+    // RepairHandler
+    RunEvery(RepairHandler, room.name + "repairHandler", 5 / speed, room);
+
+    // LinkHandler
+    RunEvery(LinkHandler, room.name + "linkHandler", 4 / speed, room);
+
+    // RemoteHandler
+    RunEvery(RemoteHandler, room.name + "remoteHandler", 250 / speed, room);
+
+    // RemoteDecisions
+    RunEvery(
+        () => {
+            remoteDecisions(room);
+        },
+        room.name + "remoteDecisions",
+        250 / speed,
+        room
+    );
+
+    // VisualHandler
+    VisualHandler(room, speed);
+}
+
+/*
 function roomLogic(roomName: string, speed: number): void {
     const room: Room = Game.rooms[roomName];
 
@@ -143,6 +268,7 @@ function roomLogic(roomName: string, speed: number): void {
         room
     );
 }
+*/
 
 function getRoomLevel(room: Room): number {
     if (room.controller === undefined) {
@@ -171,6 +297,44 @@ function getRoomLevel(room: Room): number {
         return -1;
     }
 }
+
+function UpdateRoomHostiles(room: Room): void {
+    const hostiles: Creep[] = room.find(FIND_HOSTILE_CREEPS);
+    if (hostiles.length === 0) {
+        RoomData(room.name).hostiles.set(null);
+        return;
+    }
+
+    const oldHostiles = RoomData(room.name).hostiles.get() ?? [];
+    const newHostiles: HostileData[] = [];
+    for (const creep of hostiles) {
+        const prev = oldHostiles.find((h) => h.id === creep.id);
+        if (prev !== undefined) {
+            newHostiles.push(prev);
+        } else if (
+            (RoomData(room.name).control.get() ?? 0) === 2 ||
+            creep.getActiveBodyparts(ATTACK) > 0 ||
+            creep.getActiveBodyparts(RANGED_ATTACK) > 0 ||
+            creep.getActiveBodyparts(CLAIM) > 0 ||
+            creep.getActiveBodyparts(CARRY) > 0 ||
+            creep.getActiveBodyparts(WORK) > 0 ||
+            creep.getActiveBodyparts(HEAL) > 0
+        ) {
+            newHostiles.push({
+                id: creep.id,
+                pos: creep.pos,
+                body: creep.body,
+                firstSeen: Game.time
+            });
+        }
+    }
+    RoomData(room.name).hostiles.set(newHostiles);
+}
+
+function UpdateRoomReservation(room: Room): void {
+    RoomData(room.name).reservation.set(room.controller?.reservation ?? null);
+}
+/*
 function updateRoomHostiles(room: Room): void {
     const hostiles: Creep[] = room.find(FIND_HOSTILE_CREEPS);
     if (hostiles.length === 0) {
@@ -207,13 +371,10 @@ function updateRoomHostiles(room: Room): void {
 }
 function updateRoomReservation(room: Room): void {
     room.memory.reservation = room.controller?.reservation;
-}
+}*/
 const REMOTE_SEARCH_RANGE = 2;
 
-function remoteDecisions(room: Room): void {
-    if (room.memory.roomLevel !== 2) {
-        return;
-    }
+function remoteDecisions(room: OwnedRoom): void {
     const roomCoord = toRoomCoordinate(room.name);
     if (roomCoord === null || room.memory.remotes === undefined) {
         return;
@@ -237,9 +398,9 @@ function remoteDecisions(room: Room): void {
             }
             if (
                 Memory.rooms[remote] === undefined ||
-                Memory.rooms[remote].roomLevel < 0 ||
+                (RoomData(remote).control.get() ?? 0) < 0 ||
                 describeRoom(remote) !== "room" ||
-                Memory.rooms[room.name].remotes.includes(remote)
+                room.memory.remotes.includes(remote)
             ) {
                 continue;
             }
@@ -249,7 +410,7 @@ function remoteDecisions(room: Room): void {
             }
             let validRoute = true;
             for (const routeRoom of route) {
-                if (Memory.rooms[routeRoom.room] === undefined || Memory.rooms[routeRoom.room].roomLevel < 0) {
+                if (Memory.rooms[routeRoom.room] === undefined || (RoomData(routeRoom.room).control.get() ?? 0) < 0) {
                     validRoute = false;
                     break;
                 }
@@ -266,8 +427,8 @@ function remoteDecisions(room: Room): void {
         const bRoute = Game.map.findRoute(room.name, b);
         if (aRoute !== -2 && bRoute !== -2) {
             if (aRoute.length - bRoute.length === 0) {
-                const aSources = Memory.rooms[a].basicRoomData.sources.length;
-                const bSources = Memory.rooms[b].basicRoomData.sources.length;
+                const aSources = RoomData(a).basicRoomData.get()?.sources.length ?? 0; // TODO: fix this
+                const bSources = RoomData(b).basicRoomData.get()?.sources.length ?? 0;
                 if (aSources - bSources === 0) {
                     const aCoord = toRoomCoordinate(a);
                     const bCoord = toRoomCoordinate(b);
@@ -287,7 +448,7 @@ function remoteDecisions(room: Room): void {
     room.memory.remotes = room.memory.remotes.concat(remotes);
 }
 
-function GetRemoteLimit(room: Room): number {
+function GetRemoteLimit(room: OwnedRoom): number {
     if (room.memory.genBuildings === undefined) {
         return 0;
     }
@@ -304,5 +465,6 @@ function GetRemoteLimit(room: Room): number {
         }
     }
 
-    return spawnCount;
+    return 0; // spawnCount;
+    // TODO: fix this
 }

@@ -1,4 +1,5 @@
 import { setMovementData } from "creeps/creep";
+import { isOwnedRoom } from "../../utils/ownedRoom";
 import { PLAYER_USERNAME } from "utils/username";
 
 export interface ScoutMemory extends CreepMemory {
@@ -8,6 +9,10 @@ export interface ScoutMemory extends CreepMemory {
 export function scout(creep: Creep) {
     const memory = creep.memory as ScoutMemory;
     const home = Game.rooms[creep.memory.home];
+
+    if (!isOwnedRoom(home)) {
+        return;
+    }
 
     // Remove signs from owned rooms
     if (
@@ -29,10 +34,10 @@ export function scout(creep: Creep) {
 
     // Find rooms to scout
     if (memory.room === undefined || memory.room === creep.room.name) {
-        if (Memory.rooms[home.name].scoutTargets !== undefined && Memory.rooms[home.name].scoutTargets!.length > 0) {
+        if (home.memory.scoutTargets !== undefined && home.memory.scoutTargets!.length > 0) {
             let closestRoom = undefined;
             let closestDistance = Infinity;
-            for (const room of Memory.rooms[home.name].scoutTargets!) {
+            for (const room of home.memory.scoutTargets!) {
                 let distance = Game.map.getRoomLinearDistance(creep.room.name, room);
                 if (distance < closestDistance) {
                     closestRoom = room;

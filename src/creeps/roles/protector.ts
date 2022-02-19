@@ -1,4 +1,6 @@
 import { setMovementData } from "creeps/creep";
+import { RoomData } from "data/room/room";
+import { isOwnedRoom } from "../../utils/ownedRoom";
 import { baseCenter } from "utils/baseCenter";
 
 export interface ProtectorMemory extends CreepMemory {
@@ -20,10 +22,10 @@ export function protector(creep: Creep) {
 
     if (hostiles.length === 0 && cores.length === 0 && creep.room.name === memory.room) {
         let foundRoom: boolean = false;
-        if (Memory.rooms[home.name].remotes !== undefined) {
-            for (const remote of Memory.rooms[home.name].remotes) {
+        if (isOwnedRoom(home) && home.memory.remotes !== undefined) {
+            for (const remote of home.memory.remotes) {
                 if (
-                    (Memory.rooms[remote] !== undefined && Object.keys(Memory.rooms[remote].hostiles).length > 0) ||
+                    (Memory.rooms[remote] !== undefined && (RoomData(remote).hostiles.get() ?? []).length > 0) ||
                     (Game.rooms[remote] !== undefined && Game.rooms[remote].find(FIND_HOSTILE_STRUCTURES).length > 0)
                 ) {
                     memory.room = remote;

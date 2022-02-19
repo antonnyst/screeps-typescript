@@ -1,6 +1,8 @@
+import { Terminal } from "buildings";
 import { RunEvery } from "utils/RunEvery";
 import * as C from "../config/constants";
 import { Manager } from "./manager";
+import { isOwnedRoom } from "../utils/ownedRoom";
 
 declare global {
     interface Memory {
@@ -25,11 +27,8 @@ export class ResourceManager implements Manager {
             () => {
                 const TerminalRooms: string[] = [];
                 for (const r in Game.rooms) {
-                    if (
-                        Memory.rooms[r] !== undefined &&
-                        Memory.rooms[r].resources !== undefined &&
-                        Game.rooms[r].terminal !== undefined
-                    ) {
+                    const room = Game.rooms[r];
+                    if (isOwnedRoom(room) && room.memory.resources !== undefined && Terminal(room) !== null) {
                         TerminalRooms.push(r);
                     }
                 }
@@ -40,17 +39,20 @@ export class ResourceManager implements Manager {
                         const haveRooms: { roomName: string; amt: number }[] = [];
 
                         for (const r of TerminalRooms) {
-                            const a = Memory.rooms[r].resources!.delta[resource];
-                            if (a < 0) {
-                                needRooms.push({
-                                    roomName: r,
-                                    amt: a
-                                });
-                            } else if (a > 0 && Game.rooms[r].terminal!.cooldown === 0 && !usedRooms.includes(r)) {
-                                haveRooms.push({
-                                    roomName: r,
-                                    amt: a
-                                });
+                            const room = Game.rooms[r];
+                            if (isOwnedRoom(room)) {
+                                const a = room.memory.resources!.delta[resource];
+                                if (a < 0) {
+                                    needRooms.push({
+                                        roomName: r,
+                                        amt: a
+                                    });
+                                } else if (a > 0 && Game.rooms[r].terminal!.cooldown === 0 && !usedRooms.includes(r)) {
+                                    haveRooms.push({
+                                        roomName: r,
+                                        amt: a
+                                    });
+                                }
                             }
                         }
 

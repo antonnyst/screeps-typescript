@@ -4,6 +4,7 @@ import { packPosition, unpackPosition } from "utils/RoomPositionPacker";
 import { isPositionEdge, offsetPositionByDirection } from "utils/RoomPositionHelpers";
 import { describeRoom } from "utils/RoomCalc";
 import { RunEvery } from "utils/RunEvery";
+import { RoomData } from "data/room/room";
 
 declare global {
     interface CreepMemory {
@@ -105,10 +106,10 @@ export class MovementManager implements Manager {
                                     {
                                         routeCallback: (roomName, fromRoomName) => {
                                             if (Memory.rooms[roomName] !== undefined) {
-                                                if (Memory.rooms[roomName].roomLevel === -2) {
+                                                if (RoomData(roomName).control.get() === -2) {
                                                     return 25;
                                                 }
-                                                if (Memory.rooms[roomName].roomLevel === -1) {
+                                                if (RoomData(roomName).control.get() === -1) {
                                                     return 5;
                                                 }
                                             }
@@ -468,9 +469,9 @@ const roomCallback = (roomName: string): boolean | CostMatrix => {
                     }
                 }
             }*/
-            if (Object.keys(Memory.rooms[roomName].hostiles).length > 0) {
-                for (const hostile in Memory.rooms[roomName].hostiles) {
-                    const hostileData = Memory.rooms[roomName].hostiles[hostile];
+            let hostiles = RoomData(roomName).hostiles.get() ?? [];
+            if (hostiles.length > 0) {
+                for (const hostileData of hostiles) {
                     const pos = new RoomPosition(hostileData.pos.x, hostileData.pos.y, hostileData.pos.roomName);
                     for (let dx = -3; dx <= 3; dx++) {
                         for (let dy = 0; dy <= 3; dy++) {

@@ -1,9 +1,10 @@
 import { packPosition } from "utils/RoomPositionPacker";
 import { CalculateTowerDamage, CalculateTowerHeal } from "utils/towers";
 import { Manager } from "./manager";
+import { isOwnedRoom } from "../utils/ownedRoom";
 
 declare global {
-    interface RoomMemory {
+    interface OwnedRoomMemory {
         defenseData?: DefenseData;
     }
 }
@@ -70,11 +71,11 @@ export class DefenseManager implements Manager {
     minSpeed = 1;
     maxSpeed = 1;
     public run(speed: number) {
-        for (const room in Game.rooms) {
-            if (Memory.rooms[room].roomLevel === 2 && Memory.rooms[room].genBuildings !== undefined) {
+        for (const room of Object.values(Game.rooms)) {
+            if (isOwnedRoom(room) && room.memory.genBuildings !== undefined) {
                 GatherData(room);
 
-                if (Memory.rooms[room].defenseData !== undefined && Game.time > Memory.rooms[room].defenseData!.until) {
+                if (room.memory.defenseData !== undefined && Game.time > room.memory.defenseData.until) {
                     // Select new strategy;
                     const cdf: number[] = [];
                     for (let i = 0; i < STRATEGIES.length; i++) {
@@ -94,9 +95,9 @@ export class DefenseManager implements Manager {
                     }
 
                     if (strategy !== undefined) {
-                        Memory.rooms[room].defenseData!.strategy = strategy;
+                        room.memory.defenseData.strategy = strategy;
 
-                        Memory.rooms[room].defenseData!.until =
+                        room.memory.defenseData.until =
                             Game.time +
                             Math.floor(
                                 Math.random() * (STRATEGY_TIME_VARIATION * 2 + 1) +
@@ -117,15 +118,15 @@ export class DefenseManager implements Manager {
 
                 const towerDirective: TowerDirective = RunTowers(room);
 
-                RunCreeps(room, towerDirective);
+                RunCreeps(room.name, towerDirective);
             }
         }
     }
 }
 
-function GatherData(room: string): void {
-    if (Memory.rooms[room].defenseData === undefined) {
-        Memory.rooms[room].defenseData = {
+function GatherData(room: OwnedRoom): void {
+    if (room.memory.defenseData === undefined) {
+        room.memory.defenseData = {
             hostiles: [],
             defenders: [],
             strategy: 0,
@@ -133,10 +134,10 @@ function GatherData(room: string): void {
         };
     }
 
-    Memory.rooms[room].defenseData!.hostiles = [];
-    Memory.rooms[room].defenseData!.defenders = [];
+    room.memory.defenseData.hostiles = [];
+    room.memory.defenseData.defenders = [];
 
-    const towers: StructureTower[] = Memory.rooms[room]
+    const towers: StructureTower[] = room.memory
         .genBuildings!.towers.map((t) => {
             if (t.id === undefined) {
                 return null;
@@ -150,9 +151,9 @@ function GatherData(room: string): void {
         })
         .filter((x) => x !== null) as StructureTower[];
 
-    const hostiles: Creep[] = Game.rooms[room].find(FIND_HOSTILE_CREEPS);
-    const defenders: Creep[] = Game.rooms[room].find(FIND_MY_CREEPS, {
-        filter: (c) => c.memory.home === room && c.memory.role === "defender"
+    const hostiles: Creep[] = room.find(FIND_HOSTILE_CREEPS);
+    const defenders: Creep[] = room.find(FIND_MY_CREEPS, {
+        filter: (c) => c.memory.home === room.name && c.memory.role === "defender"
     });
 
     for (const hostile of hostiles) {
@@ -183,7 +184,7 @@ function GatherData(room: string): void {
             return RANGED_HEAL_POWER * h.getActiveBodyparts(HEAL);
         }) as number[]).reduce((a, b) => a + b);
 
-        Memory.rooms[room].defenseData!.hostiles.push({
+        room.memory.defenseData.hostiles.push({
             id: hostile.id,
             pos: packPosition(hostile.pos),
             updated: Game.time,
@@ -206,7 +207,7 @@ function GatherData(room: string): void {
             return sum;
         }) as number[]).reduce((a, b) => a + b);
 
-        Memory.rooms[room].defenseData!.defenders.push({
+        room.memory.defenseData.defenders.push({
             id: defender.id,
             pos: packPosition(defender.pos),
             updated: Game.time,
@@ -216,14 +217,14 @@ function GatherData(room: string): void {
     }
 }
 
-function RunTowers(room: string): TowerDirective {
-    if (Memory.rooms[room].defenseData === undefined || Memory.rooms[room].genBuildings === undefined) {
+function RunTowers(room: OwnedRoom): TowerDirective {
+    if (room.memory.defenseData === undefined || room.memory.genBuildings === undefined) {
         return {
             targets: []
         };
     }
 
-    const towers: StructureTower[] = Memory.rooms[room]
+    const towers: StructureTower[] = room.memory
         .genBuildings!.towers.map((t) => {
             if (t.id === undefined) {
                 return null;
@@ -237,9 +238,9 @@ function RunTowers(room: string): TowerDirective {
         })
         .filter((x) => x !== null) as StructureTower[];
 
-    const strategy: number = Memory.rooms[room].defenseData!.strategy;
+    const strategy: number = room.memory.defenseData.strategy;
 
-    const towerDirective: TowerDirective = STRATEGIES[strategy].run(room, Memory.rooms[room].defenseData!, towers);
+    const towerDirective: TowerDirective = STRATEGIES[strategy].run(room.name, room.memory.defenseData, towers);
 
     if (towerDirective.targets.length > 0) {
         const towersWithTargets: number[] = [];

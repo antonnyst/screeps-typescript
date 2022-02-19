@@ -1,3 +1,4 @@
+import { RoomData } from "data/room/room";
 import { unpackPosition } from "utils/RoomPositionPacker";
 import { RunEvery, RunNow } from "utils/RunEvery";
 
@@ -31,29 +32,27 @@ interface RemoteHaulerData {
 
 // The RemoteHandler should update the remoteData deciding on container positions and hauler needs
 
-export function RemoteHandler(room: Room): void {
-    if (room.memory.roomLevel === 2) {
-        if (room.memory.remotes === undefined) {
-            room.memory.remotes = [];
-        }
-
-        if (room.memory.remoteData === undefined || room.memory.remoteData.check !== GetRemoteChecksum(room)) {
-            RunNow(() => {
-                room.memory.remoteData = GenerateRemoteData(room);
-            }, "remotehandlergenerateremotedata" + room.name);
-        }
-
-        RunEvery(
-            () => {
-                room.memory.remoteData = GenerateRemoteData(room);
-            },
-            "remotehandlergenerateremotedata" + room.name,
-            1500
-        );
+export function RemoteHandler(room: OwnedRoom): void {
+    if (room.memory.remotes === undefined) {
+        room.memory.remotes = [];
     }
+
+    if (room.memory.remoteData === undefined || room.memory.remoteData.check !== GetRemoteChecksum(room)) {
+        RunNow(() => {
+            room.memory.remoteData = GenerateRemoteData(room);
+        }, "remotehandlergenerateremotedata" + room.name);
+    }
+
+    RunEvery(
+        () => {
+            room.memory.remoteData = GenerateRemoteData(room);
+        },
+        "remotehandlergenerateremotedata" + room.name,
+        1500
+    );
 }
 
-function GetRemoteChecksum(room: Room): string {
+function GetRemoteChecksum(room: OwnedRoom): string {
     let res = "" + room.controller!.level;
     for (const remote of room.memory.remotes) {
         res += remote;
@@ -61,7 +60,7 @@ function GetRemoteChecksum(room: Room): string {
     return res;
 }
 
-function GenerateRemoteData(room: Room): RemoteData {
+function GenerateRemoteData(room: OwnedRoom): RemoteData {
     const data: { [roomName in string]: RemoteRoomData } = {};
     for (const remote of room.memory.remotes) {
         const res = GenerateRemoteRoomData(room.name, remote);
@@ -77,7 +76,8 @@ function GenerateRemoteData(room: Room): RemoteData {
 }
 
 function GenerateRemoteRoomData(baseRoom: string, remoteRoom: string): RemoteRoomData | undefined {
-    if (Memory.rooms[remoteRoom]?.basicRoomData === undefined || Memory.rooms[baseRoom]?.genLayout === undefined) {
+    const basicRoomData = RoomData(remoteRoom).basicRoomData.get();
+    if (basicRoomData === null || Memory.rooms[baseRoom]?.genLayout === undefined) {
         return undefined;
     }
 
@@ -89,7 +89,7 @@ function GenerateRemoteRoomData(baseRoom: string, remoteRoom: string): RemoteRoo
         baseRoom
     );
 
-    for (const source of Memory.rooms[remoteRoom]?.basicRoomData.sources) {
+    for (const source of basicRoomData.sources) {
         const pos: number = source.pos;
         const id: Id<Source> = source.id;
 

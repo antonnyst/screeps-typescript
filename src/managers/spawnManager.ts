@@ -17,9 +17,11 @@ import {
 } from "creeps/roles";
 import { CreepRole } from "creeps/runner";
 import { Building } from "buildings";
+import { isOwnedRoom } from "../utils/ownedRoom";
+import { RoomData } from "data/room/room";
 
 declare global {
-    interface RoomMemory {
+    interface OwnedRoomMemory {
         spawnAttempts?: number;
         spawnQueue: SpawnData[];
         waitingCreep?: SpawnData;
@@ -38,7 +40,7 @@ interface SpawnData {
     name?: string;
 }
 type CreepNeedCheckFunction = (
-    room: Room,
+    room: OwnedRoom,
     creeps: Creep[],
     counts: _.Dictionary<number>,
     roles: _.Dictionary<Creep[]>
@@ -58,7 +60,7 @@ export class SpawnManager implements Manager {
             () => {
                 for (const i in Game.rooms) {
                     const room: Room = Game.rooms[i];
-                    if (room.memory.roomLevel === 2) {
+                    if (isOwnedRoom(room)) {
                         const spawns: StructureSpawn[] = room.find(FIND_MY_SPAWNS, {
                             filter: (s) => s.spawning === null || s.spawning === undefined
                         });
@@ -78,7 +80,7 @@ export class SpawnManager implements Manager {
             3 / speed
         );
     }
-    public checkWaiting(room: Room, spawns: StructureSpawn[]): boolean {
+    public checkWaiting(room: OwnedRoom, spawns: StructureSpawn[]): boolean {
         if (room.memory.waitingCreep === undefined) {
             return false;
         }
@@ -95,7 +97,7 @@ export class SpawnManager implements Manager {
         }
         return true;
     }
-    public checkNeeds(room: Room, spawns: StructureSpawn[]): boolean {
+    public checkNeeds(room: OwnedRoom, spawns: StructureSpawn[]): boolean {
         const creeps = _.filter(Game.creeps, (c) => c.memory.home === room.name);
         const creepCounts = _.countBy(creeps, (c) => c.memory.role);
         const creepRoles = _.groupBy(creeps, (c) => c.memory.role);
@@ -122,7 +124,7 @@ export class SpawnManager implements Manager {
         }
         return false;
     }
-    public checkQueue(room: Room, spawns: StructureSpawn[]): boolean {
+    public checkQueue(room: OwnedRoom, spawns: StructureSpawn[]): boolean {
         room.memory.spawnQueue = room.memory.spawnQueue || [];
         const spawnData: SpawnData | undefined = room.memory.spawnQueue.shift();
         if (spawnData !== undefined) {
@@ -135,7 +137,7 @@ export class SpawnManager implements Manager {
         }
         return false;
     }
-    public spawnCreep(room: Room, spawns: StructureSpawn[], spawnData: SpawnData): boolean {
+    public spawnCreep(room: OwnedRoom, spawns: StructureSpawn[], spawnData: SpawnData): boolean {
         let body: BodyPartConstant[] | undefined;
         if (spawnData.body === undefined) {
             if (spawnData.pattern !== undefined && spawnData.energy !== undefined) {
@@ -205,7 +207,7 @@ export class SpawnManager implements Manager {
 
 const needChecks: CreepNeedCheckFunction[] = [
     //Check zero creeps => foots
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (creeps.length === 0 && !room.memory.unclaim) {
             const potentialEnergy = roomTotalStoredEnergy(room);
             if (potentialEnergy >= 1000) {
@@ -225,7 +227,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check minimum operation (filler + miner)
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (counts["miner"] === 0 && !room.memory.unclaim) {
             return {
                 role: "miner",
@@ -248,7 +250,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check miners and haulers
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         const haulerTarget =
             room.controller!.level === 1 || room.controller!.level > 7 ? 0 : room.controller!.level > 6 ? 1 : 2;
 
@@ -354,7 +356,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check fillers
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (counts["filler"] < 2 && !room.memory.unclaim) {
             return {
                 role: "filler",
@@ -365,13 +367,13 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check scouts
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (
             counts["scout"] < 1 &&
             room.controller &&
             room.controller.level < 8 &&
-            Memory.rooms[room.name].scoutTargets !== undefined &&
-            Memory.rooms[room.name].scoutTargets!.length > 0 &&
+            room.memory.scoutTargets !== undefined &&
+            room.memory.scoutTargets!.length > 0 &&
             !room.memory.unclaim
         ) {
             return {
@@ -383,7 +385,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     // Check QuickFillers
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (
             room.memory.genLayout === undefined ||
             room.memory.genBuildings === undefined ||
@@ -467,7 +469,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check minimal workers
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (
             counts["worker"] === 0 &&
             (room.memory.placedCS.length > 0 ||
@@ -483,7 +485,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check upgrader
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (room.controller === undefined || room.memory.unclaim) {
             return null;
         }
@@ -504,7 +506,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check remote support
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (room.memory.remoteSupportRooms.length > 0 && !room.memory.unclaim) {
             for (const r of room.memory.remoteSupportRooms) {
                 const fAmt = _.filter(Game.creeps, (c: Creep) => c.memory.role === "foot" && c.memory.home === r)
@@ -526,11 +528,8 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check peacekeeper
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (
-            (room.memory.remotes.length === 0 && Object.keys(room.memory.hostiles).length === 0) ||
-            room.memory.unclaim
-        ) {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+        if (room.memory.remotes.length === 0 || room.memory.unclaim) {
             return null;
         }
         if (counts["protector"] < 1) {
@@ -543,7 +542,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check remote support protector
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (room.memory.remoteSupportRooms.length > 0 && !room.memory.unclaim) {
             for (const r of room.memory.remoteSupportRooms) {
                 const fAmt = _.filter(Game.creeps, (c: Creep) => c.memory.role === "protector" && c.memory.home === r)
@@ -565,7 +564,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check remote miners and haulers
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (room.memory.remoteData === undefined || room.memory.unclaim) {
             return null;
         }
@@ -651,7 +650,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check reservers
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (
             room.memory.remoteData === undefined ||
             Object.keys(room.memory.remoteData.data).length === 0 ||
@@ -690,7 +689,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check manager
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (
             (room.controller !== undefined && room.controller.level < 5) ||
             room.memory.genLayout === undefined ||
@@ -723,7 +722,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check workers
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (room.memory.buildEnergy === undefined || room.memory.repairEnergy === undefined || room.memory.unclaim) {
             return null;
         }
@@ -754,7 +753,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         return null;
     },
     //Check mineral mining crew
-    (room: Room, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
         if (
             (room.controller && room.controller.level < 6) ||
             (room.memory.resources !== undefined &&
@@ -765,8 +764,10 @@ const needChecks: CreepNeedCheckFunction[] = [
             return null;
         }
 
-        const mineralData = room.memory.genLayout!.mineral;
-        const basicMineralData = room.memory.basicRoomData.mineral!;
+        const basicMineralData = RoomData(room.name).basicRoomData.get()?.mineral; // TODO: fix this
+        if (basicMineralData === null || basicMineralData === undefined) {
+            return null;
+        }
         const mineral: Mineral | null = Game.getObjectById(basicMineralData.id);
         if (mineral === null || mineral.mineralAmount === 0) {
             return null;

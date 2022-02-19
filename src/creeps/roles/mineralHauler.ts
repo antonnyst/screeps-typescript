@@ -1,10 +1,13 @@
 import { Terminal } from "buildings";
 import { setMovementData } from "creeps/creep";
+import { RoomData } from "data/room/room";
 import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
 import { unpackPosition } from "utils/RoomPositionPacker";
 
 export interface MineralHaulerMemory extends CreepMemory {
     gathering?: boolean;
+    mineralPos?: number;
+    mineralId?: Id<Mineral>;
 }
 
 export function mineralHauler(creep: Creep) {
@@ -12,6 +15,19 @@ export function mineralHauler(creep: Creep) {
     const home = Game.rooms[creep.memory.home];
     if (home.memory.genLayout === undefined || home.memory.genBuildings === undefined) {
         return;
+    }
+
+    if (memory.mineralPos === undefined || memory.mineralId === undefined) {
+        const basicRoomData = RoomData(home.name).basicRoomData.get();
+        if (basicRoomData === null) {
+            RoomData(home.name).basicRoomData.prepare();
+            return;
+        }
+        if (basicRoomData.mineral === null) {
+            return;
+        }
+        memory.mineralPos = basicRoomData.mineral.pos;
+        memory.mineralId = basicRoomData.mineral.id;
     }
 
     memory.gathering = memory.gathering ?? true;
@@ -24,7 +40,7 @@ export function mineralHauler(creep: Creep) {
 
     if (memory.gathering) {
         const minerPos = offsetPositionByDirection(
-            unpackPosition(home.memory.basicRoomData.mineral!.pos),
+            unpackPosition(memory.mineralPos),
             home.memory.genLayout.mineral.container
         );
 
@@ -41,7 +57,7 @@ export function mineralHauler(creep: Creep) {
             if (container === null || !(container instanceof StructureContainer)) {
                 return;
             }
-            const mineral = Game.getObjectById(home.memory.basicRoomData.mineral!.id);
+            const mineral = Game.getObjectById(memory.mineralId);
             if (mineral === null) {
                 return;
             }
@@ -62,7 +78,7 @@ export function mineralHauler(creep: Creep) {
             });
 
             if (creep.pos.isNearTo(target)) {
-                const mineral = Game.getObjectById(home.memory.basicRoomData.mineral!.id);
+                const mineral = Game.getObjectById(memory.mineralId);
                 if (mineral === null) {
                     return;
                 }

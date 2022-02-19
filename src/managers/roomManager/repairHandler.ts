@@ -3,7 +3,7 @@ import { packPosition } from "utils/RoomPositionPacker";
 import { BuildingData } from "./layoutHandler";
 
 declare global {
-    interface RoomMemory {
+    interface OwnedRoomMemory {
         repair: {
             [id: string]: {
                 id: Id<Structure>;
@@ -17,13 +17,8 @@ declare global {
 const ROAD_REPAIR_THRESHOLD: number = 0.5;
 const ADJACENT_ROAD_REPAIR = 5;
 
-export function RepairHandler(room: Room): void {
-    if (
-        room.controller !== undefined &&
-        room.memory.genBuildings !== undefined &&
-        room.controller.my &&
-        room.memory.roomLevel === 2
-    ) {
+export function RepairHandler(room: OwnedRoom): void {
+    if (room.memory.genBuildings !== undefined) {
         if (room.memory.repair === undefined) {
             room.memory.repair = {};
         }
@@ -171,7 +166,7 @@ export function RepairHandler(room: Room): void {
                     }
                 }
             }
-            let hasRepairs = Object.values(room.memory.repair).length > 0;
+            let hasRepairs = Object.values(room.memory.repair).length > 0 || room.memory.placedCS.length > 0;
 
             for (const rampart of room.memory.genBuildings.ramparts) {
                 if (rampart.id !== undefined) {
@@ -192,6 +187,7 @@ export function RepairHandler(room: Room): void {
                                 id: buildingObject.id,
                                 pos: packPosition(buildingObject.pos)
                             };
+                            hasRepairs = true;
                         }
                         if (
                             buildingPercentage > RAMPART_PERCENTAGE_MAX &&

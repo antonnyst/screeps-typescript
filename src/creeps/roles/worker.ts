@@ -1,4 +1,5 @@
 import { PUSH_GCL_ENERGY_NEEDED } from "config/constants";
+import { isOwnedRoom } from "../../utils/ownedRoom";
 import { getEnergy, setMovementData } from "../creep";
 
 export interface WorkerMemory extends CreepMemory {
@@ -58,7 +59,9 @@ export function worker(creep: Creep): void {
         } else if (
             (home.controller !== undefined &&
                 (home.controller.level < 7 || home.controller.ticksToDowngrade < 40000)) ||
-            (home.memory.resources !== undefined && home.memory.resources.total.energy > PUSH_GCL_ENERGY_NEEDED)
+            (isOwnedRoom(home) &&
+                home.memory.resources !== undefined &&
+                home.memory.resources.total.energy > PUSH_GCL_ENERGY_NEEDED)
         ) {
             setMovementData(creep, { pos: controller.pos, range: 3 });
             if (creep.pos.inRangeTo(controller.pos, 3)) {
@@ -71,6 +74,10 @@ export function worker(creep: Creep): void {
 function getTarget(creep: Creep): ConstructionSite | Structure | null {
     const memory = creep.memory as WorkerMemory;
     const home = Game.rooms[creep.memory.home];
+
+    if (!isOwnedRoom(home)) {
+        return null;
+    }
 
     let target: ConstructionSite | Structure | null = null;
 
@@ -122,7 +129,7 @@ function getRange(pos1: RoomPosition, pos2: RoomPosition): number {
     }
 }
 
-function getTargets(room: Room): (ConstructionSite | Structure)[] {
+function getTargets(room: OwnedRoom): (ConstructionSite | Structure)[] {
     if (room.memory.repair !== undefined) {
         if (Object.keys(room.memory.repair).length > 0) {
             const targets: Structure[] = [];

@@ -1,15 +1,20 @@
 import { Observer } from "buildings";
+import { RoomData } from "data/room/room";
 import { fromRoomCoordinate, toRoomCoordinate } from "utils/RoomCoordinate";
 import { RunEvery } from "utils/RunEvery";
 import { Manager } from "./manager";
+import { isOwnedRoom } from "../utils/ownedRoom";
 
 declare global {
-    interface RoomMemory {
+    interface OwnedRoomMemory {
         scoutTargets?: string[];
+    }
+    interface Memory {
+        mapRooms?: string;
     }
 }
 
-const SCOUT_RANGE: number = 6;
+const SCOUT_RANGE: number = 10;
 
 export class ScoutManager implements Manager {
     minSpeed = 1;
@@ -17,12 +22,12 @@ export class ScoutManager implements Manager {
     public run(speed: number) {
         RunEvery(
             () => {
-                //Gather all owned rooms
+                // Gather all owned rooms
                 const ownedRooms: string[] = [];
-                for (const room of Object.keys(Memory.rooms)) {
-                    if (Memory.rooms[room].roomLevel === 2) {
-                        Memory.rooms[room].scoutTargets = [];
-                        ownedRooms.push(room);
+                for (const room of Object.values(Game.rooms)) {
+                    if (isOwnedRoom(room)) {
+                        room.memory.scoutTargets = [];
+                        ownedRooms.push(room.name);
                     }
                 }
                 // Gather all rooms and their closest owned room
@@ -53,7 +58,7 @@ export class ScoutManager implements Manager {
 
                                 let oDist = Game.map.getRoomLinearDistance(otherRoom, room);
                                 if (Observer(Game.rooms[room]) !== null && oDist <= OBSERVER_RANGE) {
-                                    tDist = 0;
+                                    oDist = 0;
                                 }
 
                                 if (oDist < tDist) {
@@ -66,15 +71,24 @@ export class ScoutManager implements Manager {
                     }
                 }
 
+                let mapRooms = ([] as string[]).concat(ownedRooms);
+
                 // Apply the pairs
                 for (const roomPair of rooms) {
+                    mapRooms.push(roomPair[0]);
                     if (
-                        Memory.rooms[roomPair[0]] === undefined ||
                         // TODO: constant or more dynamic system
-                        Game.time - Memory.rooms[roomPair[0]].lastUpdate > 10000
+                        Game.time - (RoomData(roomPair[0]).lastUpdate.get() ?? 0) >
+                        10000
                     ) {
-                        Memory.rooms[roomPair[1]]!.scoutTargets?.push(roomPair[0]);
+                        (Memory.rooms[roomPair[1]] as OwnedRoomMemory).scoutTargets?.push(roomPair[0]);
+                    } else {
                     }
+                }
+
+                Memory.mapRooms = "";
+                for (let i = 0; i < mapRooms.length; i++) {
+                    Memory.mapRooms += mapRooms[i] + (i === mapRooms.length - 1 ? "" : ",");
                 }
             },
             "scoutmanagerrun",
