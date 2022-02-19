@@ -16,7 +16,7 @@ import {
     ReserverMemory
 } from "creeps/roles";
 import { CreepRole } from "creeps/runner";
-import { Building } from "buildings";
+import { Building, Storage } from "buildings";
 import { isOwnedRoom } from "../utils/ownedRoom";
 import { RoomData } from "data/room/room";
 
@@ -723,7 +723,12 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check workers
     (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (room.memory.buildEnergy === undefined || room.memory.repairEnergy === undefined || room.memory.unclaim) {
+        if (
+            room.memory.buildEnergy === undefined ||
+            room.memory.repairEnergy === undefined ||
+            room.memory.unclaim ||
+            room.memory.resources === undefined
+        ) {
             return null;
         }
 
@@ -740,10 +745,12 @@ const needChecks: CreepNeedCheckFunction[] = [
 
         const energyDemand = room.memory.buildEnergy + room.memory.repairEnergy - energySupply;
 
-        if (
-            energyDemand > 0 &&
-            counts["worker"] < Math.ceil(2 / (Math.min(room.energyCapacityAvailable, 3000) * 0.0002))
-        ) {
+        const workerLimit = Math.min(
+            Storage(room) === null ? Infinity : Math.ceil(room.memory.resources.total.energy / 10000),
+            Math.ceil(2 / (Math.min(room.energyCapacityAvailable, 3000) * 0.0002))
+        );
+
+        if (energyDemand > 0 && counts["worker"] < workerLimit) {
             return {
                 role: "worker",
                 pattern: rolePatterns["worker"],
