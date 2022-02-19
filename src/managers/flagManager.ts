@@ -2,6 +2,8 @@ import { ClaimerMemory } from "creeps/roles";
 import { Manager } from "./manager";
 import { displayBase } from "../layout/layout";
 import { packPosition } from "utils/RoomPositionPacker";
+import { isOwnedRoom } from "../utils/ownedRoom";
+import { RoomData } from "data/room/room";
 
 declare global {
     interface FlagMemory {
@@ -34,8 +36,9 @@ function HandleFlag(flag: Flag): void {
     } else {
         //claim controller
         if (primaryColor === COLOR_RED && secondaryColor === COLOR_RED) {
-            if (Memory.rooms[flag.name] !== undefined && Memory.rooms[flag.name].roomLevel === 2) {
-                Memory.rooms[flag.name].spawnQueue.push({
+            const room = Game.rooms[flag.name];
+            if (room !== undefined && isOwnedRoom(room)) {
+                room.memory.spawnQueue.push({
                     role: "claimer",
                     body: [CLAIM, MOVE],
                     memory: {
@@ -44,51 +47,43 @@ function HandleFlag(flag: Flag): void {
                         room: flag.pos.roomName
                     } as ClaimerMemory
                 });
-                Memory.rooms[flag.name].remoteSupportRooms.push(flag.pos.roomName);
+                room.memory.remoteSupportRooms.push(flag.pos.roomName);
             }
             flag.memory.processed = true;
         }
         //add remote
         if (primaryColor === COLOR_RED && secondaryColor === COLOR_PURPLE) {
-            if (
-                Memory.rooms[flag.name] !== undefined &&
-                Memory.rooms[flag.name].roomLevel === 2 &&
-                Memory.rooms[flag.name].remotes !== undefined
-            ) {
-                Memory.rooms[flag.name].remotes.push(flag.pos.roomName);
+            const room = Game.rooms[flag.name];
+            if (room !== undefined && isOwnedRoom(room) && room.memory.remotes !== undefined) {
+                room.memory.remotes.push(flag.pos.roomName);
             }
             flag.memory.processed = true;
         }
         //show base layout
         if (primaryColor === COLOR_WHITE && secondaryColor === COLOR_WHITE) {
-            if (
-                Memory.rooms[flag.pos.roomName] !== undefined &&
-                Memory.rooms[flag.pos.roomName].roomLevel === 2 &&
-                Memory.rooms[flag.pos.roomName].basicRoomData !== undefined &&
-                Memory.rooms[flag.pos.roomName].genLayout !== undefined
-            ) {
-                displayBase(
-                    flag.pos.roomName,
-                    Memory.rooms[flag.pos.roomName].basicRoomData!,
-                    Memory.rooms[flag.pos.roomName].genLayout!
-                );
+            const room = Game.rooms[flag.pos.roomName];
+
+            let basicRoomData = RoomData(room.name).basicRoomData.get();
+
+            if (basicRoomData === null) {
+                RoomData(room.name).basicRoomData.prepare();
+            } else if (room !== undefined && isOwnedRoom(room) && room.memory.genLayout !== undefined) {
+                displayBase(flag.pos.roomName, basicRoomData, Memory.rooms[flag.pos.roomName].genLayout!);
             }
         }
         // add road to layout
         if (primaryColor === COLOR_GREY && secondaryColor === COLOR_RED) {
-            if (
-                Memory.rooms[flag.pos.roomName] !== undefined &&
-                Memory.rooms[flag.pos.roomName].roomLevel === 2 &&
-                Memory.rooms[flag.pos.roomName].genLayout !== undefined
-            ) {
-                Memory.rooms[flag.pos.roomName].genLayout!.roads.push(packPosition(flag.pos));
+            const room = Game.rooms[flag.pos.roomName];
+            if (room !== undefined && isOwnedRoom(room) && room.memory.genLayout !== undefined) {
+                room.memory.genLayout!.roads.push(packPosition(flag.pos));
             }
             flag.memory.processed = true;
         }
         // unclaim room
         if (primaryColor === COLOR_BLUE && secondaryColor === COLOR_WHITE) {
-            if (Memory.rooms[flag.pos.roomName] !== undefined && Memory.rooms[flag.pos.roomName].roomLevel === 2) {
-                Memory.rooms[flag.pos.roomName].unclaim = 1;
+            const room = Game.rooms[flag.pos.roomName];
+            if (room !== undefined && isOwnedRoom(room)) {
+                room.memory.unclaim = 1;
             }
             flag.memory.processed = true;
         }

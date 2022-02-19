@@ -3,6 +3,7 @@ import { offsetPositionByDirection } from "../../utils/RoomPositionHelpers";
 import { RunEvery, RunNow } from "../../utils/RunEvery";
 import { GenLayoutData } from "layout/layout";
 import { AddWork, GetCurrentWorkQueue } from "managers/layoutManager";
+import { RoomData } from "data/room/room";
 
 declare global {
     interface RoomMemory {
@@ -42,8 +43,9 @@ export interface BuildingData {
 // The LayoutHandler should ensure a base layout is availible for every controlled room
 // It should also generate and update building data and place construction sites based upon it
 
-export function LayoutHandler(room: Room): void {
-    if (room.memory.roomLevel === 2 && room.memory.basicRoomData !== undefined) {
+export function LayoutHandler(room: OwnedRoom): void {
+    let basicRoomData = RoomData(room.name).basicRoomData.get();
+    if (basicRoomData !== null) {
         if (Memory.rooms[room.name].genLayout === undefined) {
             // This room has no layout
             // Check if a layout has already been requested
@@ -60,10 +62,10 @@ export function LayoutHandler(room: Room): void {
             if (!found) {
                 AddWork({
                     room: room.name,
-                    basicRoomData: room.memory.basicRoomData,
+                    basicRoomData,
                     callback: (layout: GenLayoutData) => {
                         room.memory.genLayout = layout;
-                        room.memory.genBuildings = GenerateBuildingsData(Game.rooms[room.name]);
+                        room.memory.genBuildings = GenerateBuildingsData(Game.rooms[room.name] as OwnedRoom);
                         UpdateBuildingsData(Game.rooms[room.name]);
                         BuildBuildings(Game.rooms[room.name]);
                     }
@@ -108,8 +110,9 @@ export function LayoutHandler(room: Room): void {
     }
 }
 
-function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
-    if (room.memory.genLayout === undefined || room.memory.remoteData === undefined) {
+function GenerateBuildingsData(room: OwnedRoom): GenBuildingsData | undefined {
+    const basicRoomData = RoomData(room.name).basicRoomData.get();
+    if (basicRoomData === null || room.memory.genLayout === undefined || room.memory.remoteData === undefined) {
         return undefined;
     }
 
@@ -225,12 +228,14 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
     const roadCostMatrix = (roomName: string): boolean | CostMatrix => {
         const room = Game.rooms[roomName];
 
+        const basicRoomData = RoomData(roomName).basicRoomData.get();
+
         let isRemote = false;
         if (roomName !== basePos.roomName) {
-            if (Memory.rooms[basePos.roomName].remotes === undefined) {
+            if (baseRoom.memory.remotes === undefined) {
                 return false;
             }
-            for (const r of Memory.rooms[basePos.roomName].remotes) {
+            for (const r of baseRoom.memory.remotes) {
                 if (r === roomName) {
                     isRemote = true;
                     break;
@@ -251,7 +256,7 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
             }
         }
 
-        if (!isRemote && room.memory.genLayout !== undefined) {
+        if (!isRemote && room.memory.genLayout !== undefined && basicRoomData !== null) {
             for (const prefab of room.memory.genLayout.prefabs) {
                 for (const building of prefab.prefab.buildings) {
                     if (building.type !== STRUCTURE_ROAD) {
@@ -268,7 +273,7 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
                 costs.set(pos.x, pos.y, 255);
             }
             const mpos = offsetPositionByDirection(
-                unpackPosition(room.memory.basicRoomData.mineral!.pos),
+                unpackPosition(basicRoomData.mineral!.pos),
                 room.memory.genLayout.mineral.container
             );
             costs.set(mpos.x, mpos.y, 255);
@@ -277,7 +282,7 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
 
             for (const [i, source] of room.memory.genLayout.sources.entries()) {
                 const containerPos = offsetPositionByDirection(
-                    unpackPosition(room.memory.basicRoomData.sources[i].pos),
+                    unpackPosition(basicRoomData.sources[i].pos),
                     source.container
                 );
                 costs.set(containerPos.x, containerPos.y, 255);
@@ -380,7 +385,7 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
             pos: packPosition(
                 offsetPositionByDirection(
                     offsetPositionByDirection(
-                        unpackPosition(room.memory.basicRoomData.sources[i].pos),
+                        unpackPosition(basicRoomData.sources[i].pos),
                         room.memory.genLayout.sources[i].container
                     ),
                     room.memory.genLayout.sources[i].link
@@ -406,7 +411,7 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
         containers.push({
             pos: packPosition(
                 offsetPositionByDirection(
-                    unpackPosition(room.memory.basicRoomData.sources[i].pos),
+                    unpackPosition(basicRoomData.sources[i].pos),
                     room.memory.genLayout.sources[i].container
                 )
             ),
@@ -417,7 +422,7 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
     containers.push({
         pos: packPosition(
             offsetPositionByDirection(
-                unpackPosition(room.memory.basicRoomData.mineral!.pos),
+                unpackPosition(basicRoomData.mineral!.pos),
                 room.memory.genLayout.mineral.container
             )
         ),
@@ -441,7 +446,7 @@ function GenerateBuildingsData(room: Room): GenBuildingsData | undefined {
 
     //// EXTRACTOR ////
     extractor = {
-        pos: room.memory.basicRoomData.mineral!.pos,
+        pos: basicRoomData.mineral!.pos,
         active: false
     };
 

@@ -1,3 +1,6 @@
+import { RoomData } from "data/room/room";
+import { isOwnedRoom } from "../utils/ownedRoom";
+
 declare global {
     interface Memory {
         stats?: Stats;
@@ -126,8 +129,7 @@ export function saveRooms(): void {
     for (const roomName in Game.rooms) {
         const room = Game.rooms[roomName];
         if (
-            room.controller &&
-            room.controller.my &&
+            isOwnedRoom(room) &&
             room.memory.genBuildings !== undefined &&
             room.memory.resources !== undefined &&
             room.memory.genLayout !== undefined
@@ -156,13 +158,17 @@ export function saveRooms(): void {
 
             const sources: { energy: number; capacity: number }[] = [];
 
-            for (const source of room.memory.basicRoomData.sources) {
-                const object = Game.getObjectById(source.id);
-                if (object !== null) {
-                    sources.push({
-                        energy: object.energy,
-                        capacity: object.energyCapacity
-                    });
+            const basicRoomData = RoomData(room.name).basicRoomData.get();
+
+            if (basicRoomData !== null) {
+                for (const source of basicRoomData.sources) {
+                    const object = Game.getObjectById(source.id);
+                    if (object !== null) {
+                        sources.push({
+                            energy: object.energy,
+                            capacity: object.energyCapacity
+                        });
+                    }
                 }
             }
 

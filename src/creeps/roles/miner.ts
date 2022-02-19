@@ -1,10 +1,13 @@
 import { setMovementData } from "creeps/creep";
+import { RoomData } from "data/room/room";
 import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
 import { unpackPosition } from "utils/RoomPositionPacker";
 
 export interface MinerMemory extends CreepMemory {
     source: number;
     atPos?: boolean;
+    sourcePos?: number;
+    sourceId?: Id<Source>;
 }
 
 export function miner(creep: Creep) {
@@ -14,13 +17,21 @@ export function miner(creep: Creep) {
         return;
     }
     const sourceData = home.memory.genLayout!.sources[memory.source];
-    const basicSourceData = home.memory.basicRoomData.sources[memory.source];
-    if (sourceData === undefined || basicSourceData === undefined) {
-        return;
+    if (memory.sourcePos === undefined || memory.sourceId === undefined) {
+        const basicRoomData = RoomData(home.name).basicRoomData.get();
+        if (basicRoomData === null) {
+            RoomData(home.name).basicRoomData.prepare();
+            return;
+        }
+        if (basicRoomData.sources[memory.source] === undefined) {
+            return;
+        }
+        memory.sourcePos = basicRoomData.sources[memory.source].pos;
+        memory.sourceId = basicRoomData.sources[memory.source].id;
     }
 
     if (memory.atPos === undefined) {
-        const minerPos = offsetPositionByDirection(unpackPosition(basicSourceData.pos), sourceData.container);
+        const minerPos = offsetPositionByDirection(unpackPosition(memory.sourcePos), sourceData.container);
         setMovementData(creep, { pos: minerPos, range: 0, heavy: true });
         if (creep.pos.isEqualTo(minerPos)) {
             memory.atPos = true;
@@ -28,7 +39,7 @@ export function miner(creep: Creep) {
     }
 
     if (memory.atPos) {
-        const source = Game.getObjectById(basicSourceData.id);
+        const source = Game.getObjectById(memory.sourceId);
         if (source === null) {
             return;
         }

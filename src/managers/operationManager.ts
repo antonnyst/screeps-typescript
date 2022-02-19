@@ -2,6 +2,7 @@ import { bodySortingValues, GenerateBodyFromPattern } from "utils/CreepBodyGener
 import { generateName } from "utils/CreepNames";
 import { RunEvery } from "utils/RunEvery";
 import { Manager } from "./manager";
+import { isOwnedRoom } from "../utils/ownedRoom";
 
 declare global {
     interface Memory {
@@ -44,7 +45,7 @@ export class OperationManager implements Manager {
                     }
 
                     const sourceBase = Game.rooms[operation.source];
-                    if (sourceBase === undefined) {
+                    if (sourceBase === undefined || !isOwnedRoom(sourceBase)) {
                         continue;
                     }
 

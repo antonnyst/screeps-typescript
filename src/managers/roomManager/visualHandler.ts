@@ -2,9 +2,10 @@ import * as C from "../../config/constants";
 import * as Config from "../../config/config";
 import { getFromCache, saveToCache } from "../../utils/Cache";
 import { unpackPosition } from "utils/RoomPositionPacker";
+import { isOwnedRoom } from "../../utils/ownedRoom";
 
 export function VisualHandler(room: Room, speed: number): void {
-    if (Config.roomVisuals && room.controller !== undefined && room.controller.my && room.memory.roomLevel === 2) {
+    if (Config.roomVisuals && isOwnedRoom(room)) {
         let data: string | null = getFromCache("visualhandlerdata" + room.name, 10 / speed);
         if (data === null) {
             if (room.memory.repair !== undefined) {

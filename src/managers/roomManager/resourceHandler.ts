@@ -1,7 +1,7 @@
 import * as C from "../../config/constants";
 
 declare global {
-    interface RoomMemory {
+    interface OwnedRoomMemory {
         resources?: ResourcesData;
     }
 }
@@ -11,11 +11,11 @@ interface ResourcesData {
     delta: { [resourceType in ResourceConstant]: number };
 }
 
-export function ResourceHandler(room: Room): void {
+export function ResourceHandler(room: OwnedRoom): void {
     ResourceData(room);
 }
 
-function ResourceData(room: Room): void {
+function ResourceData(room: OwnedRoom): void {
     if (room.controller === undefined || !room.controller.my) {
         room.memory.resources = undefined;
         return;

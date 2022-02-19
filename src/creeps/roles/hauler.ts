@@ -1,10 +1,12 @@
 import { setMovementData } from "creeps/creep";
+import { RoomData } from "data/room/room";
 import { offsetPositionByDirection } from "utils/RoomPositionHelpers";
 import { unpackPosition } from "utils/RoomPositionPacker";
 
 export interface HaulerMemory extends CreepMemory {
     source: number;
     gathering?: boolean;
+    sourcePos?: number;
 }
 
 export function hauler(creep: Creep) {
@@ -14,9 +16,16 @@ export function hauler(creep: Creep) {
         return;
     }
     const sourceData = home.memory.genLayout!.sources[memory.source];
-    const basicSourceData = home.memory.basicRoomData.sources[memory.source];
-    if (sourceData === undefined || basicSourceData === undefined) {
-        return;
+    if (memory.sourcePos === undefined) {
+        const basicRoomData = RoomData(home.name).basicRoomData.get();
+        if (basicRoomData === null) {
+            RoomData(home.name).basicRoomData.prepare();
+            return;
+        }
+        if (basicRoomData.sources[memory.source] === undefined) {
+            return;
+        }
+        memory.sourcePos = basicRoomData.sources[memory.source].pos;
     }
 
     memory.gathering = memory.gathering ?? true;
@@ -30,7 +39,7 @@ export function hauler(creep: Creep) {
 
     if (memory.gathering) {
         const minerPos: RoomPosition = offsetPositionByDirection(
-            unpackPosition(basicSourceData.pos),
+            unpackPosition(memory.sourcePos),
             sourceData.container
         );
         setMovementData(creep, { pos: minerPos, range: 1 });

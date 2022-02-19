@@ -1,18 +1,28 @@
-import { Spawns } from "buildings";
+import { RoomData } from "data/room/room";
 import { unpackPosition } from "utils/RoomPositionPacker";
-import { getEnergy, setMovementData } from "../creep";
+import { setMovementData } from "../creep";
 
 export interface ClaimerMemory extends CreepMemory {
     room: string;
+    c?: number;
 }
 
 export function claimer(creep: Creep): void {
     const memory = creep.memory as ClaimerMemory;
-    const c = Memory.rooms[memory.room].basicRoomData.controller;
-    if (c === null) {
-        return;
+
+    if (memory.c === undefined) {
+        const basicRoomData = RoomData(memory.room).basicRoomData.get();
+        if (basicRoomData === null) {
+            RoomData(memory.room).basicRoomData.prepare();
+            return;
+        }
+        if (basicRoomData.controller === null) {
+            return;
+        }
+        memory.c = basicRoomData.controller;
     }
-    const cPos = unpackPosition(c);
+
+    const cPos = unpackPosition(memory.c);
 
     setMovementData(creep, {
         pos: cPos,
