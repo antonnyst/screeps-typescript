@@ -7,6 +7,9 @@ export class MapManager implements Manager {
     minSpeed = 0.1;
     maxSpeed = 1;
     public run(speed: number) {
+        if (Game.shard.name !== "shard3") {
+            return;
+        }
         if (Config.mapVisuals && Memory.mapRooms !== undefined) {
             const visualString: string | undefined = getFromCache("mapCache", 100 / speed);
             if (visualString === undefined || visualString === null) {
