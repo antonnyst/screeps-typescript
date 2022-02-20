@@ -7,7 +7,7 @@ import { LabHandler } from "./roomManager/labHandler";
 import { ResourceHandler } from "./roomManager/resourceHandler";
 import { RunEvery, RunNow } from "utils/RunEvery";
 import { VisualHandler } from "./roomManager/visualHandler";
-import { BasicRoomData, generateBasicRoomData } from "layout/layout";
+import { generateBasicRoomData } from "layout/layout";
 import { RemoteHandler } from "./roomManager/remoteHandler";
 import { fromRoomCoordinate, toRoomCoordinate } from "utils/RoomCoordinate";
 import { describeRoom } from "utils/RoomCalc";
@@ -16,17 +16,6 @@ import { HostileData, RoomData } from "data/room/room";
 import { isOwnedRoom } from "../utils/RoomCalc";
 
 declare global {
-    interface RoomMemory {
-        //roomLevel: number;
-        //reservation: ReservationDefinition | undefined;
-        //basicRoomData: BasicRoomData;
-        //hostiles: { [key: string]: HostileData };
-        //remotes: string[];
-        //remoteSupportRooms: string[];
-        //targetRemoteCount?: number;
-        //lastUpdate: number;
-        //unclaim?: number;
-    }
     interface OwnedRoom extends Room {
         controller: OwnedController;
         memory: OwnedRoomMemory;
@@ -66,7 +55,7 @@ function generalRoomLogic(room: Room, speed: number): void {
     // Update control level
     RunEvery(
         () => {
-            RoomData(room.name).control.set(getRoomLevel(room));
+            RoomData(room.name).control.set(GetControlLevel(room));
             RoomData(room.name).lastUpdate.set(Game.time);
         },
         room.name + "updateControl",
@@ -91,7 +80,7 @@ function generalRoomLogic(room: Room, speed: number): void {
     // Update room reservation status
     RunEvery(
         () => {
-            let control = RoomData(room.name).control.get();
+            const control = RoomData(room.name).control.get();
             if (control !== null && (control === -1 || control === 1)) {
                 UpdateRoomReservation(room);
             }
@@ -162,115 +151,7 @@ function ownedRoomLogic(room: OwnedRoom, speed: number): void {
     VisualHandler(room, speed);
 }
 
-/*
-function roomLogic(roomName: string, speed: number): void {
-    const room: Room = Game.rooms[roomName];
-
-    //Update room level
-    if (room.memory.roomLevel === undefined) {
-        RunNow(() => {
-            room.memory.roomLevel = getRoomLevel(room);
-            room.memory.lastUpdate = Game.time;
-        }, "roomlogicupdateroomlevel" + roomName);
-    }
-
-    RunEvery(
-        () => {
-            room.memory.roomLevel = getRoomLevel(room);
-            room.memory.lastUpdate = Game.time;
-        },
-        "roomlogicupdateroomlevel" + roomName,
-        10 / speed
-    );
-
-    if (room.memory.roomLevel === 2 && room.memory.remoteSupportRooms === undefined) {
-        room.memory.remoteSupportRooms = [];
-    }
-
-    //Update room hostiles
-    RunEvery(updateRoomHostiles, "roomlogicupdateroomhostiles" + roomName, 3 / speed, room);
-
-    //Get basic room data
-    RunEvery(
-        () => {
-            if (room.memory.basicRoomData === undefined) {
-                room.memory.basicRoomData = generateBasicRoomData(room);
-            }
-        },
-        "roomlogicgeneratebasicroomdata" + roomName,
-        100 / speed
-    );
-
-
-    if (room.memory.unclaim === 2) {
-        for (const creep of _.filter(Game.creeps, (c) => c.memory.home === room.name)) {
-            creep.suicide();
-        }
-        for (const structure of room.find(FIND_MY_STRUCTURES)) {
-            structure.destroy();
-        }
-        room.memory.roomLevel = 0;
-        room.controller!.unclaim();
-        return;
-    }
-
-    // Observer logic
-    if (room.memory.roomLevel === 2 && Observer(room) !== null) {
-        if (room.memory.scoutTargets !== undefined && room.memory.scoutTargets.length > 0) {
-            const obt = room.memory.scoutTargets.shift()!;
-            Observer(room)!.observeRoom(obt);
-            console.log(room + " observing " + obt);
-        }
-    }
-
-    //Update room reservation
-    RunEvery(
-        () => {
-            if (room.memory.reservation !== undefined || room.memory.roomLevel === -1 || room.memory.roomLevel === 1) {
-                updateRoomReservation(room);
-            }
-        },
-        "roomlogicupdateroomreservation" + roomName,
-        5 / speed
-    );
-
-    //ResourceHandler
-    RunEvery(ResourceHandler, "roomlogicresourcehandler" + roomName, 5 / speed, room);
-
-    //LayoutHandler
-    RunEvery(LayoutHandler, "roomlogiclayouthandler" + roomName, 10 / speed, room, speed);
-
-    //LabHandler
-    RunEvery(LabHandler, "roomlogiclabhandler" + roomName, 5 / speed, room);
-
-    //ConstructionHandler
-    RunEvery(ConstructionHandler, "roomlogicconstructionhandler" + roomName, 5 / speed, room);
-
-    //RepairHandler
-    RunEvery(RepairHandler, "roomlogicrepairhandler" + roomName, 5 / speed, room);
-
-    //LinkHandler
-    RunEvery(LinkHandler, "roomlogiclinkhandler" + roomName, 4 / speed, room);
-
-    //VisualHandler
-    VisualHandler(room, speed);
-
-    //RemoteHandler
-    RunEvery(RemoteHandler, "roomlogicremotehandler" + roomName, 250 / speed, room);
-
-    //RemoteDecisions
-    RunEvery(
-        () => {
-            remoteDecisions(room);
-        },
-        "roomlogicremotedecisions" + roomName,
-        250 / speed,
-        room
-    );
-}
-*/
-
-function getRoomLevel(room: Room): number {
+function GetControlLevel(room: Room): number {
     if (room.controller === undefined) {
         return 0;
     }
@@ -334,44 +215,7 @@ function UpdateRoomHostiles(room: Room): void {
 function UpdateRoomReservation(room: Room): void {
     RoomData(room.name).reservation.set(room.controller?.reservation ?? null);
 }
-/*
-function updateRoomHostiles(room: Room): void {
-    const hostiles: Creep[] = room.find(FIND_HOSTILE_CREEPS);
-    if (hostiles.length === 0) {
-        room.memory.hostiles = {};
-        return;
-    }
-    if (room.memory.hostiles === undefined) {
-        room.memory.hostiles = {};
-    }
-    const newHostiles: { [key: string]: HostileData } = {};
-    for (const creep of hostiles) {
-        if (room.memory.hostiles[creep.id] !== undefined) {
-            newHostiles[creep.id] = room.memory.hostiles[creep.id];
-        } else {
-            if (
-                room.memory.roomLevel === 2 ||
-                creep.getActiveBodyparts(ATTACK) > 0 ||
-                creep.getActiveBodyparts(RANGED_ATTACK) > 0 ||
-                creep.getActiveBodyparts(CLAIM) > 0 ||
-                creep.getActiveBodyparts(CARRY) > 0 ||
-                creep.getActiveBodyparts(WORK) > 0 ||
-                creep.getActiveBodyparts(HEAL) > 0
-            ) {
-                newHostiles[creep.id] = {
-                    id: creep.id,
-                    pos: creep.pos,
-                    body: creep.body,
-                    firstSeen: Game.time
-                };
-            }
-        }
-    }
-    room.memory.hostiles = newHostiles;
-}
-function updateRoomReservation(room: Room): void {
-    room.memory.reservation = room.controller?.reservation;
-}*/
+
 const REMOTE_SEARCH_RANGE = 2;
 
 function remoteDecisions(room: OwnedRoom): void {
