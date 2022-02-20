@@ -53,6 +53,9 @@ let heap: Partial<Record<DataName, string>>;
 let activeSegments: number[] = [];
 let requestedSegmets: number[] = [];
 
+let prepareLocations: DataName[] = [];
+let _prepareLocations: DataName[] = [];
+
 let amountMoveNeeded = 0;
 
 export function Has(name: DataName): boolean {
@@ -71,6 +74,7 @@ export function Prepare(name: DataName): void {
     }
     const location = locations[name];
     if (location && isSegmentLocation(location)) {
+        prepareLocations.push(name);
         if (!requestedSegmets.includes(location.segment)) {
             requestedSegmets.push(location.segment);
         }
@@ -224,14 +228,18 @@ export function tickData() {
         cleanCache();
     }
 
+    for (const name of _prepareLocations) {
+        Get(name);
+    }
+    _prepareLocations = prepareLocations;
+    prepareLocations = [];
+
     activeSegments = [];
     for (let i = 0; i < Math.min(10, requestedSegmets.length); i++) {
         activeSegments.push(requestedSegmets[i]);
     }
     RawMemory.setActiveSegments(activeSegments);
     requestedSegmets = [];
-    //Memory.backupLocations = packLocations(locations);
-    //Memory.backupSegments = packSegments(segments);
 }
 
 function cleanCache() {
