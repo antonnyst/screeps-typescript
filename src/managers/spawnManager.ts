@@ -746,7 +746,7 @@ const needChecks: CreepNeedCheckFunction[] = [
         const energyDemand = room.memory.buildEnergy + room.memory.repairEnergy - energySupply;
 
         const workerLimit = Math.min(
-            Storage(room) === null ? Infinity : Math.ceil(room.memory.resources.total.energy / 10000),
+            Storage(room) === null ? Infinity : 1 + Math.ceil(room.memory.resources.total.energy / 10000),
             Math.ceil(2 / (Math.min(room.energyCapacityAvailable, 3000) * 0.0002))
         );
 
@@ -810,6 +810,33 @@ const needChecks: CreepNeedCheckFunction[] = [
                     }
                 }
             }
+        }
+        return null;
+    },
+    //Check upgraders
+    (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
+        if (room.controller === undefined || room.memory.unclaim || room.memory.resources === undefined) {
+            return null;
+        }
+
+        let limit = Math.max(
+            Math.ceil(1 + (room.memory.resources.total[RESOURCE_ENERGY] - C.PUSH_GCL_ENERGY_NEEDED) / 100000),
+            1
+        );
+
+        if (
+            counts["upgrader"] < limit &&
+            (room.controller.level < 8 ||
+                (pushGCL &&
+                    room.memory.resources !== undefined &&
+                    room.memory.resources.total[RESOURCE_ENERGY] > C.PUSH_GCL_ENERGY_NEEDED) ||
+                room.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[room.controller.level] * 0.2)
+        ) {
+            return {
+                role: "upgrader",
+                pattern: room.controller.level < 8 ? rolePatterns["upgrader"] : "[mwcwmw]5",
+                energy: Math.min(GetEnergyCapacity(room), 3000)
+            };
         }
         return null;
     }
@@ -878,7 +905,7 @@ function spawnDirectionInside(index: number, rx: number, ry: number): DirectionC
                 return undefined;
         }
     }
-    console.log("spawnDirectionInside(): invalid index");
+    console.log("spawnDirectionInside(): invalid index " + index);
     return undefined;
 }
 
@@ -929,7 +956,7 @@ function spawnDirectionOutside(index: number, rx: number, ry: number): Direction
                 return undefined;
         }
     }
-    console.log("spawnDirectionOutside(): invalid index");
+    console.log("spawnDirectionOutside(): invalid index " + index);
     return undefined;
 }
 
