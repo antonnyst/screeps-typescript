@@ -20,7 +20,7 @@ export function isOwnedRoom(room: Room): room is OwnedRoom {
  *
  */
 
-type RoomDescription = "highway_portal" | "highway" | "center" | "source_keeper" | "room";
+export type RoomDescription = "highway_portal" | "highway" | "center" | "source_keeper" | "room";
 
 export function describeRoom(roomName: string): RoomDescription | null {
     const array = roomName.match(/\d+/g);
