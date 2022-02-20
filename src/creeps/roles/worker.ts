@@ -1,5 +1,5 @@
 import { PUSH_GCL_ENERGY_NEEDED } from "config/constants";
-import { isOwnedRoom } from "../../utils/ownedRoom";
+import { isOwnedRoom } from "../../utils/RoomCalc";
 import { getEnergy, setMovementData } from "../creep";
 
 export interface WorkerMemory extends CreepMemory {

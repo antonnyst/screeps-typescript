@@ -1,6 +1,6 @@
 import { setMovementData } from "creeps/creep";
 import { RoomData } from "data/room/room";
-import { isOwnedRoom } from "../../utils/ownedRoom";
+import { isOwnedRoom } from "../../utils/RoomCalc";
 import { baseCenter } from "utils/baseCenter";
 
 export interface ProtectorMemory extends CreepMemory {

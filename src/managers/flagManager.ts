@@ -2,7 +2,7 @@ import { ClaimerMemory } from "creeps/roles";
 import { Manager } from "./manager";
 import { displayBase } from "../layout/layout";
 import { packPosition } from "utils/RoomPositionPacker";
-import { isOwnedRoom } from "../utils/ownedRoom";
+import { isOwnedRoom } from "../utils/RoomCalc";
 import { RoomData } from "data/room/room";
 
 declare global {

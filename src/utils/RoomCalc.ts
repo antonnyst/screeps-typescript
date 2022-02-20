@@ -8,6 +8,10 @@ export function roomTotalStoredEnergy(room: Room): number {
     return containers + storage;
 }
 
+export function isOwnedRoom(room: Room): room is OwnedRoom {
+    return room.controller?.my === true;
+}
+
 /*
  * Get type of room from name
  *

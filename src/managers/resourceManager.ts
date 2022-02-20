@@ -2,7 +2,7 @@ import { Terminal } from "buildings";
 import { RunEvery } from "utils/RunEvery";
 import * as C from "../config/constants";
 import { Manager } from "./manager";
-import { isOwnedRoom } from "../utils/ownedRoom";
+import { isOwnedRoom } from "../utils/RoomCalc";
 
 declare global {
     interface Memory {
