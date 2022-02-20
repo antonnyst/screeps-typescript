@@ -39,16 +39,22 @@ export function RemoteHandler(room: OwnedRoom): void {
 
     if (room.memory.remoteData === undefined || room.memory.remoteData.check !== GetRemoteChecksum(room)) {
         RunNow(() => {
-            room.memory.remoteData = GenerateRemoteData(room);
+            let data = GenerateRemoteData(room);
+            if (data !== null) {
+                room.memory.remoteData = data;
+            }
         }, "remotehandlergenerateremotedata" + room.name);
     }
 
     RunEvery(
         () => {
-            room.memory.remoteData = GenerateRemoteData(room);
+            let data = GenerateRemoteData(room);
+            if (data !== null) {
+                room.memory.remoteData = data;
+            }
         },
         "remotehandlergenerateremotedata" + room.name,
-        1500
+        100
     );
 }
 
@@ -60,13 +66,14 @@ function GetRemoteChecksum(room: OwnedRoom): string {
     return res;
 }
 
-function GenerateRemoteData(room: OwnedRoom): RemoteData {
+function GenerateRemoteData(room: OwnedRoom): RemoteData | null {
     const data: { [roomName in string]: RemoteRoomData } = {};
     for (const remote of room.memory.remotes) {
         const res = GenerateRemoteRoomData(room.name, remote);
-        if (res !== undefined) {
-            data[remote] = res;
+        if (res === undefined) {
+            return null;
         }
+        data[remote] = res;
     }
 
     return {
@@ -77,7 +84,11 @@ function GenerateRemoteData(room: OwnedRoom): RemoteData {
 
 function GenerateRemoteRoomData(baseRoom: string, remoteRoom: string): RemoteRoomData | undefined {
     const basicRoomData = RoomData(remoteRoom).basicRoomData.get();
-    if (basicRoomData === null || Memory.rooms[baseRoom]?.genLayout === undefined) {
+    if (basicRoomData === null) {
+        RoomData(remoteRoom).basicRoomData.prepare();
+        return undefined;
+    }
+    if (Memory.rooms[baseRoom]?.genLayout === undefined) {
         return undefined;
     }
 
