@@ -3,7 +3,7 @@ import { RoomData } from "data/room/room";
 import { fromRoomCoordinate, toRoomCoordinate } from "utils/RoomCoordinate";
 import { RunEvery } from "utils/RunEvery";
 import { Manager } from "./manager";
-import { isOwnedRoom } from "../utils/RoomCalc";
+import { describeRoom, isOwnedRoom, RoomDescription } from "../utils/RoomCalc";
 
 declare global {
     interface OwnedRoomMemory {
@@ -15,6 +15,11 @@ declare global {
 }
 
 const SCOUT_RANGE: number = 10;
+const DEFAULT_SCOUT_UPDATE_TIME = 10000;
+const SCOUT_UPDATE_TIMES: Partial<Record<RoomDescription, number>> = {
+    highway: 500,
+    highway_portal: 500
+};
 
 export class ScoutManager implements Manager {
     minSpeed = 1;
@@ -77,9 +82,8 @@ export class ScoutManager implements Manager {
                 for (const roomPair of rooms) {
                     mapRooms.push(roomPair[0]);
                     if (
-                        // TODO: constant or more dynamic system
                         Game.time - (RoomData(roomPair[0]).lastUpdate.get() ?? 0) >
-                        10000
+                        (SCOUT_UPDATE_TIMES[describeRoom(roomPair[0]) ?? "room"] ?? DEFAULT_SCOUT_UPDATE_TIME)
                     ) {
                         (Memory.rooms[roomPair[1]] as OwnedRoomMemory).scoutTargets?.push(roomPair[0]);
                     } else {
