@@ -397,7 +397,6 @@ function remoteDecisions(room: OwnedRoom): void {
                 continue;
             }
             if (
-                Memory.rooms[remote] === undefined ||
                 (RoomData(remote).control.get() ?? 0) < 0 ||
                 describeRoom(remote) !== "room" ||
                 room.memory.remotes.includes(remote)
@@ -410,7 +409,7 @@ function remoteDecisions(room: OwnedRoom): void {
             }
             let validRoute = true;
             for (const routeRoom of route) {
-                if (Memory.rooms[routeRoom.room] === undefined || (RoomData(routeRoom.room).control.get() ?? 0) < 0) {
+                if ((RoomData(routeRoom.room).control.get() ?? 0) < 0) {
                     validRoute = false;
                     break;
                 }
