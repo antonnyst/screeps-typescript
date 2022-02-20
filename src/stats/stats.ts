@@ -66,6 +66,9 @@ interface RoomStats {
 }
 
 export function saveInit(): void {
+    if (Game.shard.name !== "shard3") {
+        return;
+    }
     if (Memory.stats === undefined) {
         Memory.stats = {
             globalReset: Game.time
@@ -76,6 +79,9 @@ export function saveInit(): void {
 }
 
 export function saveTick(): void {
+    if (Game.shard.name !== "shard3") {
+        return;
+    }
     if (Memory.stats === undefined) {
         Memory.stats = {};
     }
@@ -122,6 +128,9 @@ export function saveTick(): void {
 }
 
 export function saveRooms(): void {
+    if (Game.shard.name !== "shard3") {
+        return;
+    }
     if (Memory.stats === undefined) {
         Memory.stats = {};
     }
