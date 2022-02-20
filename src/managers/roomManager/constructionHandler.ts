@@ -73,7 +73,7 @@ export function ConstructionHandler(room: OwnedRoom): void {
     }
 
     if (room.memory.placedCS.length < PLACED_SITES_AMOUNT && room.memory.plannedCS.length > 0) {
-        let plcs: PlannedConstructionData | undefined = room.memory.plannedCS.shift();
+        const plcs: PlannedConstructionData | undefined = room.memory.plannedCS.shift();
         if (plcs !== undefined) {
             let res = -1;
             if (plcs.type === STRUCTURE_SPAWN && plcs.name !== undefined) {

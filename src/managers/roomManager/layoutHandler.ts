@@ -44,14 +44,14 @@ export interface BuildingData {
 // It should also generate and update building data and place construction sites based upon it
 
 export function LayoutHandler(room: OwnedRoom): void {
-    let basicRoomData = RoomData(room.name).basicRoomData.get();
+    const basicRoomData = RoomData(room.name).basicRoomData.get();
     if (basicRoomData !== null) {
         if (Memory.rooms[room.name].genLayout === undefined) {
             // This room has no layout
             // Check if a layout has already been requested
             // If not, request an layout for this room
 
-            let workQueue = GetCurrentWorkQueue();
+            const workQueue = GetCurrentWorkQueue();
             let found = false;
             for (const work of workQueue) {
                 if (work.room === room.name) {
@@ -124,10 +124,10 @@ function GenerateBuildingsData(room: OwnedRoom): GenBuildingsData | undefined {
     let links: BuildingData[] = [];
     let spawns: BuildingData[] = [];
     let containers: BuildingData[] = [];
-    let storage: BuildingData | undefined = undefined;
-    let terminal: BuildingData | undefined = undefined;
-    let factory: BuildingData | undefined = undefined;
-    let powerspawn: BuildingData | undefined = undefined;
+    let storage: BuildingData | undefined;
+    let terminal: BuildingData | undefined;
+    let factory: BuildingData | undefined;
+    let powerspawn: BuildingData | undefined;
     let nuker: BuildingData;
     let observer: BuildingData;
     let extractor: BuildingData;
@@ -226,9 +226,9 @@ function GenerateBuildingsData(room: OwnedRoom): GenBuildingsData | undefined {
     const baseRoom = room;
     const basePos = new RoomPosition(room.memory.genLayout.prefabs[0].x, room.memory.genLayout.prefabs[0].y, room.name);
     const roadCostMatrix = (roomName: string): boolean | CostMatrix => {
-        const room = Game.rooms[roomName];
+        const matrixRoom = Game.rooms[roomName];
 
-        const basicRoomData = RoomData(roomName).basicRoomData.get();
+        const matrixBasicRoomData = RoomData(roomName).basicRoomData.get();
 
         let isRemote = false;
         if (roomName !== basePos.roomName) {
@@ -256,33 +256,33 @@ function GenerateBuildingsData(room: OwnedRoom): GenBuildingsData | undefined {
             }
         }
 
-        if (!isRemote && room.memory.genLayout !== undefined && basicRoomData !== null) {
-            for (const prefab of room.memory.genLayout.prefabs) {
+        if (!isRemote && matrixRoom.memory.genLayout !== undefined && matrixBasicRoomData !== null) {
+            for (const prefab of matrixRoom.memory.genLayout.prefabs) {
                 for (const building of prefab.prefab.buildings) {
                     if (building.type !== STRUCTURE_ROAD) {
                         costs.set(prefab.x + building.dx * prefab.rotx, prefab.y + building.dy * prefab.roty, 255);
                     }
                 }
             }
-            for (const extension of room.memory.genLayout.extensions) {
+            for (const extension of matrixRoom.memory.genLayout.extensions) {
                 const pos = unpackPosition(extension);
                 costs.set(pos.x, pos.y, 255);
             }
-            for (const tower of room.memory.genLayout.towers) {
+            for (const tower of matrixRoom.memory.genLayout.towers) {
                 const pos = unpackPosition(tower);
                 costs.set(pos.x, pos.y, 255);
             }
             const mpos = offsetPositionByDirection(
-                unpackPosition(basicRoomData.mineral!.pos),
-                room.memory.genLayout.mineral.container
+                unpackPosition(matrixBasicRoomData.mineral!.pos),
+                matrixRoom.memory.genLayout.mineral.container
             );
             costs.set(mpos.x, mpos.y, 255);
-            const cpos = unpackPosition(room.memory.genLayout.controller);
+            const cpos = unpackPosition(matrixRoom.memory.genLayout.controller);
             costs.set(cpos.x, cpos.y, 255);
 
-            for (const [i, source] of room.memory.genLayout.sources.entries()) {
+            for (const [i, source] of matrixRoom.memory.genLayout.sources.entries()) {
                 const containerPos = offsetPositionByDirection(
-                    unpackPosition(basicRoomData.sources[i].pos),
+                    unpackPosition(matrixBasicRoomData.sources[i].pos),
                     source.container
                 );
                 costs.set(containerPos.x, containerPos.y, 255);
@@ -639,8 +639,8 @@ function BuildBuilding<T extends BuildableStructureConstant>(
         }
         if (building.rampart.id === undefined) {
             let hasRampart: boolean = false;
-            const structures: Structure<StructureConstant>[] = pos.lookFor(LOOK_STRUCTURES);
-            for (const structure of structures) {
+            const lookStructures: Structure<StructureConstant>[] = pos.lookFor(LOOK_STRUCTURES);
+            for (const structure of lookStructures) {
                 if (structure.structureType === STRUCTURE_RAMPART) {
                     building.rampart.id = structure.id as Id<Structure<STRUCTURE_RAMPART>>;
                     hasRampart = true;
@@ -649,17 +649,14 @@ function BuildBuilding<T extends BuildableStructureConstant>(
             }
 
             if (!hasRampart) {
-                const placedCS = baseRoom.memory.placedCS;
-                const plannedCS = baseRoom.memory.plannedCS;
-
-                for (const site of placedCS) {
+                for (const site of baseRoom.memory.placedCS) {
                     if (site.pos === building.pos && site.type === STRUCTURE_RAMPART) {
                         building.rampart.id = site.id as Id<ConstructionSite<STRUCTURE_RAMPART>>;
                         hasRampart = true;
                         break;
                     }
                 }
-                for (const site of plannedCS) {
+                for (const site of baseRoom.memory.plannedCS) {
                     if (site.pos === building.pos && site.type === STRUCTURE_RAMPART) {
                         hasRampart = true;
                         break;
@@ -685,8 +682,8 @@ function BuildBuilding<T extends BuildableStructureConstant>(
 
         if (obj !== null) {
             if (obj instanceof ConstructionSite) {
-                const structures: Structure<StructureConstant>[] = pos.lookFor(LOOK_STRUCTURES);
-                for (const structure of structures) {
+                const lookStructures: Structure<StructureConstant>[] = pos.lookFor(LOOK_STRUCTURES);
+                for (const structure of lookStructures) {
                     if (structure.structureType === type) {
                         building.id = structure.id as Id<Structure<T>>;
                         return;
@@ -723,13 +720,13 @@ function BuildBuilding<T extends BuildableStructureConstant>(
 
     baseRoom.memory.plannedCS.push({
         pos: building.pos,
-        type: type,
+        type,
         name: building.name
     });
 }
 
 function removeDuplicates(array: BuildingData[]): BuildingData[] {
-    let seen: { [key in string]: boolean } = {};
+    const seen: { [key in string]: boolean } = {};
     return array.filter((value) => {
         return seen.hasOwnProperty(value.pos) ? false : (seen[value.pos] = true);
     });

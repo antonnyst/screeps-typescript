@@ -39,7 +39,7 @@ export function RemoteHandler(room: OwnedRoom): void {
 
     if (room.memory.remoteData === undefined || room.memory.remoteData.check !== GetRemoteChecksum(room)) {
         RunNow(() => {
-            let data = GenerateRemoteData(room);
+            const data = GenerateRemoteData(room);
             if (data !== null) {
                 room.memory.remoteData = data;
             }
@@ -48,7 +48,7 @@ export function RemoteHandler(room: OwnedRoom): void {
 
     RunEvery(
         () => {
-            let data = GenerateRemoteData(room);
+            const data = GenerateRemoteData(room);
             if (data !== null) {
                 room.memory.remoteData = data;
             }

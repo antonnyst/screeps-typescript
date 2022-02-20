@@ -44,7 +44,7 @@ export function LinkHandler(room: OwnedRoom): void {
         if (link.store.getFreeCapacity(RESOURCE_ENERGY) > 50) {
             fillNeeds = true;
             let supplyLink: StructureLink | null = null;
-            let need: number = link.store.getFreeCapacity(RESOURCE_ENERGY);
+            const need: number = link.store.getFreeCapacity(RESOURCE_ENERGY);
 
             for (const mlink of minerLinks) {
                 if (mlink.store.getUsedCapacity(RESOURCE_ENERGY) >= need) {
@@ -68,7 +68,7 @@ export function LinkHandler(room: OwnedRoom): void {
 
     if (!fillNeeds) {
         if (centerLink !== null) {
-            let capacity = centerLink.store.getFreeCapacity(RESOURCE_ENERGY);
+            const capacity = centerLink.store.getFreeCapacity(RESOURCE_ENERGY);
             for (const mlink of minerLinks) {
                 if (mlink.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
                     if (capacity > centerLink.store.getCapacity(RESOURCE_ENERGY) / 2) {
