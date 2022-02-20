@@ -119,7 +119,7 @@ export function saveTick(): void {
 
     Memory.stats.segments = Memory.stats.segments ?? {};
     for (const segment of Object.keys(RawMemory.segments)) {
-        Memory.stats.segments[segment] = RawMemory.segments[parseInt(segment)].length;
+        Memory.stats.segments[segment] = RawMemory.segments[parseInt(segment, 10)].length;
     }
 
     Memory.stats.memory = RawMemory.get().length;
@@ -163,7 +163,7 @@ export function saveRooms(): void {
                 }
             }
 
-            let rampartavg = ramparthits / rampartamt;
+            const rampartavg = ramparthits / rampartamt;
 
             const sources: { energy: number; capacity: number }[] = [];
 
