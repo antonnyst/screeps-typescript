@@ -1,4 +1,4 @@
-import { tickData, fullSegmentReset } from "data/data";
+import { tickData } from "data/data";
 import { Manager } from "./manager";
 
 export class DataManager implements Manager {
@@ -6,6 +6,5 @@ export class DataManager implements Manager {
     maxSpeed = 1;
     public run(speed: number) {
         tickData();
-        //fullSegmentReset();
     }
 }

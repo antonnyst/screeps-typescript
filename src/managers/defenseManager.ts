@@ -87,7 +87,7 @@ export class DefenseManager implements Manager {
 
                     const selected: number = Math.floor(Math.random() * (cdf[cdf.length - 1] + 1));
 
-                    let strategy: number | undefined = undefined;
+                    let strategy: number | undefined;
                     for (let i = cdf.length - 1; i >= 0; i--) {
                         if (selected <= cdf[i]) {
                             strategy = i;
@@ -268,7 +268,7 @@ function RunTowers(room: OwnedRoom): TowerDirective {
             let lowestIndex: number = 0;
 
             for (let i = 0; i < towerDirective.targets.length; i++) {
-                let count = towerDirective.targets[i].towers?.length ?? 0;
+                const count = towerDirective.targets[i].towers?.length ?? 0;
                 if (count < lowestCount) {
                     lowestCount = count;
                     lowestIndex = i;
@@ -294,6 +294,7 @@ function RunTowers(room: OwnedRoom): TowerDirective {
     return towerDirective;
 }
 
+// tslint:disable-next-line: no-empty
 function RunCreeps(room: string, towers: TowerDirective): void {}
 
 const STRATEGIES: Strategy[] = [
@@ -301,7 +302,6 @@ const STRATEGIES: Strategy[] = [
         // conservative (only confirm kills)
         weight: 70,
         run: (room: string, data: DefenseData, towers: StructureTower[]) => {
-            //confirm kills
             let highestDiff: number = 0;
             let highestId: Id<Creep> | null = null;
             for (const hostile of data.hostiles) {

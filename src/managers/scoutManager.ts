@@ -76,7 +76,7 @@ export class ScoutManager implements Manager {
                     }
                 }
 
-                let mapRooms = ([] as string[]).concat(ownedRooms);
+                const mapRooms = ([] as string[]).concat(ownedRooms);
 
                 // Apply the pairs
                 for (const roomPair of rooms) {
@@ -86,7 +86,6 @@ export class ScoutManager implements Manager {
                         (SCOUT_UPDATE_TIMES[describeRoom(roomPair[0]) ?? "room"] ?? DEFAULT_SCOUT_UPDATE_TIME)
                     ) {
                         (Memory.rooms[roomPair[1]] as OwnedRoomMemory).scoutTargets?.push(roomPair[0]);
-                    } else {
                     }
                 }
 

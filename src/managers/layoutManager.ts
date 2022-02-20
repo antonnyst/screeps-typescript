@@ -22,13 +22,11 @@ export class LayoutManager implements Manager {
         if (Game.cpu.bucket < bucketTarget) {
             return;
         }
-        if (currentWork === undefined && workQueue.length > 0) {
-        }
 
         if (currentWork === undefined) {
             if (workQueue.length > 0) {
                 // Start new work if we have no current work
-                let request = workQueue.shift();
+                const request = workQueue.shift();
 
                 if (request !== undefined) {
                     console.log(`LayoutManager: Starting new work for room ${request.room}`);
@@ -48,8 +46,8 @@ export class LayoutManager implements Manager {
     }
 }
 
-let currentWork: OngoingWork | undefined = undefined;
-let workQueue: LayoutRequest[] = [];
+let currentWork: OngoingWork | undefined;
+const workQueue: LayoutRequest[] = [];
 
 export function AddWork(work: LayoutRequest): void {
     workQueue.push(work);
@@ -72,8 +70,8 @@ const doWork = () => {
         try {
             const res = currentWork.generator.next();
             if (res.done) {
-                const used = Game.cpu.getUsed() - cpu;
-                currentWork.usedCpu += used;
+                const finalUsedCpu = Game.cpu.getUsed() - cpu;
+                currentWork.usedCpu += finalUsedCpu;
                 console.log(
                     `LayoutManager: Done with work on room ${currentWork.request.room} using ${currentWork.usedCpu} cpu`
                 );

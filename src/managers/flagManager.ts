@@ -34,7 +34,7 @@ function HandleFlag(flag: Flag): void {
     if (flag.memory.processed === true) {
         flag.remove();
     } else {
-        //claim controller
+        // Claim controller
         if (primaryColor === COLOR_RED && secondaryColor === COLOR_RED) {
             const room = Game.rooms[flag.name];
             if (room !== undefined && isOwnedRoom(room)) {
@@ -51,7 +51,7 @@ function HandleFlag(flag: Flag): void {
             }
             flag.memory.processed = true;
         }
-        //add remote
+        // Add remote
         if (primaryColor === COLOR_RED && secondaryColor === COLOR_PURPLE) {
             const room = Game.rooms[flag.name];
             if (room !== undefined && isOwnedRoom(room) && room.memory.remotes !== undefined) {
@@ -59,11 +59,11 @@ function HandleFlag(flag: Flag): void {
             }
             flag.memory.processed = true;
         }
-        //show base layout
+        // Show base layout
         if (primaryColor === COLOR_WHITE && secondaryColor === COLOR_WHITE) {
             const room = Game.rooms[flag.pos.roomName];
 
-            let basicRoomData = RoomData(room.name).basicRoomData.get();
+            const basicRoomData = RoomData(room.name).basicRoomData.get();
 
             if (basicRoomData === null) {
                 RoomData(room.name).basicRoomData.prepare();
@@ -71,7 +71,7 @@ function HandleFlag(flag: Flag): void {
                 displayBase(flag.pos.roomName, basicRoomData, Memory.rooms[flag.pos.roomName].genLayout!);
             }
         }
-        // add road to layout
+        // Add road to layout
         if (primaryColor === COLOR_GREY && secondaryColor === COLOR_RED) {
             const room = Game.rooms[flag.pos.roomName];
             if (room !== undefined && isOwnedRoom(room) && room.memory.genLayout !== undefined) {
@@ -79,7 +79,7 @@ function HandleFlag(flag: Flag): void {
             }
             flag.memory.processed = true;
         }
-        // unclaim room
+        // Unclaim room
         if (primaryColor === COLOR_BLUE && secondaryColor === COLOR_WHITE) {
             const room = Game.rooms[flag.pos.roomName];
             if (room !== undefined && isOwnedRoom(room)) {
