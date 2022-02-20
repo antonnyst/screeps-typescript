@@ -1,5 +1,5 @@
 import { RoomData } from "data/room/room";
-import { isOwnedRoom } from "../utils/ownedRoom";
+import { isOwnedRoom } from "../utils/RoomCalc";
 
 declare global {
     interface Memory {

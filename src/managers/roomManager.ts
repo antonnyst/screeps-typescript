@@ -13,7 +13,7 @@ import { fromRoomCoordinate, toRoomCoordinate } from "utils/RoomCoordinate";
 import { describeRoom } from "utils/RoomCalc";
 import { Observer } from "buildings";
 import { HostileData, RoomData } from "data/room/room";
-import { isOwnedRoom } from "../utils/ownedRoom";
+import { isOwnedRoom } from "../utils/RoomCalc";
 
 declare global {
     interface RoomMemory {

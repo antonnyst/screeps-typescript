@@ -3,7 +3,7 @@ import { RoomData } from "data/room/room";
 import { fromRoomCoordinate, toRoomCoordinate } from "utils/RoomCoordinate";
 import { RunEvery } from "utils/RunEvery";
 import { Manager } from "./manager";
-import { isOwnedRoom } from "../utils/ownedRoom";
+import { isOwnedRoom } from "../utils/RoomCalc";
 
 declare global {
     interface OwnedRoomMemory {

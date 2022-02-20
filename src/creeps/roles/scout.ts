@@ -1,5 +1,5 @@
 import { setMovementData } from "creeps/creep";
-import { isOwnedRoom } from "../../utils/ownedRoom";
+import { isOwnedRoom } from "../../utils/RoomCalc";
 import { PLAYER_USERNAME } from "utils/username";
 
 export interface ScoutMemory extends CreepMemory {

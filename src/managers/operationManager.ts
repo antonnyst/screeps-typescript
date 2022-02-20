@@ -2,7 +2,7 @@ import { bodySortingValues, GenerateBodyFromPattern } from "utils/CreepBodyGener
 import { generateName } from "utils/CreepNames";
 import { RunEvery } from "utils/RunEvery";
 import { Manager } from "./manager";
-import { isOwnedRoom } from "../utils/ownedRoom";
+import { isOwnedRoom } from "../utils/RoomCalc";
 
 declare global {
     interface Memory {

@@ -1,7 +1,7 @@
 import { packPosition } from "utils/RoomPositionPacker";
 import { CalculateTowerDamage, CalculateTowerHeal } from "utils/towers";
 import { Manager } from "./manager";
-import { isOwnedRoom } from "../utils/ownedRoom";
+import { isOwnedRoom } from "../utils/RoomCalc";
 
 declare global {
     interface OwnedRoomMemory {

@@ -17,7 +17,7 @@ import {
 } from "creeps/roles";
 import { CreepRole } from "creeps/runner";
 import { Building, Storage } from "buildings";
-import { isOwnedRoom } from "../utils/ownedRoom";
+import { isOwnedRoom } from "../utils/RoomCalc";
 import { RoomData } from "data/room/room";
 
 declare global {
