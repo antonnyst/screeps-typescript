@@ -32,7 +32,7 @@
     "path": "/",
     "branch": "main"
   },
-  "sp": {
+  "sp1": {
     "email": "X",
     "password": "X",
     "protocol": "http",
@@ -41,12 +41,21 @@
     "path": "/",
     "branch": "main"
   },
-  "sps": {
+  "sps2": {
     "email": "X",
     "password": "X",
     "protocol": "http",
     "hostname": "server2.screepspl.us",
     "port": 21025,
+    "path": "/",
+    "branch": "main"
+  },
+  "xxword": {
+    "email": "X",
+    "password": "X",
+    "protocol": "http",
+    "hostname": "xxworld.net",
+    "port": 80,
     "path": "/",
     "branch": "main"
   }
