@@ -13,7 +13,7 @@ export interface RemoteHaulerMemory extends CreepMemory {
 export function remoteHauler(creep: Creep) {
     const memory = creep.memory as RemoteHaulerMemory;
     const home = Game.rooms[creep.memory.home];
-    if (home.memory.remoteData?.data[memory.room] == undefined) {
+    if (home.memory.remoteData?.data[memory.room] === undefined) {
         return;
     }
     const sourceData = home.memory.remoteData?.data[memory.room].sources[memory.source];
@@ -33,8 +33,8 @@ export function remoteHauler(creep: Creep) {
     if (memory.working === true && creep.store.getUsedCapacity() === 0) {
         memory.working = false;
         if (creep.ticksToLive !== undefined && creep.ticksToLive < sourceData.dist * 2) {
-            //we do not have enough time to live
-            //so we should recycle ourself!
+            // we do not have enough time to live
+            // so we should recycle ourself!
             creep.memory.role = "garbage";
             return;
         }

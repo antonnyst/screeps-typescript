@@ -125,7 +125,6 @@ export function filler(creep: Creep): void {
             const qfContainers = [Building(home.memory.genBuildings.containers[0])].concat(
                 Building(home.memory.genBuildings.containers[1])
             );
-            let target = null;
             for (const container of qfContainers) {
                 if (
                     container !== null &&
@@ -163,7 +162,6 @@ export function filler(creep: Creep): void {
 
         if (creep.ticksToLive && creep.ticksToLive < 50) {
             if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-                const storage = Storage(home);
                 if (storage !== null) {
                     setMovementData(creep, {
                         pos: storage.pos,
@@ -414,7 +412,7 @@ const taskGetters: GetTaskData[] = [
                     }
                 }
             }
-            let capacity: number = creep.store.getCapacity();
+            const capacity: number = creep.store.getCapacity();
             let fill: number = 0;
             const fillTargets: StructureTower[] = [];
             while (targets.length > 0) {
@@ -438,7 +436,7 @@ const taskGetters: GetTaskData[] = [
             let tasks: Task[] = [];
             fill -= creep.store.getUsedCapacity(RESOURCE_ENERGY);
             if (fill > 0) {
-                let energyTasks: Task[] | null = getEnergy(creep, fill);
+                const energyTasks: Task[] | null = getEnergy(creep, fill);
                 if (energyTasks !== null) {
                     tasks = tasks.concat(energyTasks);
                 }
@@ -455,7 +453,7 @@ const taskGetters: GetTaskData[] = [
             return tasks;
         }
     }
-    //TODO: fill labs, nuker and powerspawn
+    // TODO: fill labs, nuker and powerspawn
 ];
 
 const _energyNeedBuildings: Partial<

@@ -89,7 +89,7 @@ function getTarget(creep: Creep): ConstructionSite | Structure | null {
         const targets = getTargets(home);
         if (targets.length > 0) {
             target = _.min(targets, (t) => {
-                let range = getRange(creep.pos, t.pos);
+                const range = getRange(creep.pos, t.pos);
                 let priorityMultiplier = 0;
                 if (t instanceof ConstructionSite) {
                     if (builderPriority.includes(t.structureType)) {
