@@ -1586,6 +1586,8 @@ export function displayBase(roomName: string, basicData: BasicRoomData, layout: 
                 Game.rooms[roomName].visual.circle(x, y, { opacity: 0.5, radius: 0.4, fill: "#ffaaaa" });
             } else if (building.type === STRUCTURE_EXTENSION) {
                 Game.rooms[roomName].visual.circle(x, y, { opacity: 0.5, radius: 0.4, fill: "#ffffaa" });
+            } else if (building.type === STRUCTURE_SPAWN) {
+                Game.rooms[roomName].visual.circle(x, y, { opacity: 0.5, radius: 0.4, fill: "#aaffaa" });
             } else {
                 Game.rooms[roomName].visual.circle(x, y, { opacity: 0.5, radius: 0.4, fill: "#aaaaaa" });
             }
