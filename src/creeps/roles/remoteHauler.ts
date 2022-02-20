@@ -56,7 +56,8 @@ export function remoteHauler(creep: Creep) {
             }
 
             if (
-                container != null &&
+                container !== null &&
+                container !== undefined &&
                 container.store.getUsedCapacity() > container.store.getUsedCapacity(RESOURCE_ENERGY)
             ) {
                 creep.withdraw(
@@ -64,10 +65,19 @@ export function remoteHauler(creep: Creep) {
                     _.filter(Object.keys(container.store), (s) => s !== "energy")[0] as ResourceConstant
                 );
             } else if (
+                container !== null &&
                 container !== undefined &&
                 container.store.getUsedCapacity(RESOURCE_ENERGY) >= creep.store.getFreeCapacity()
             ) {
                 creep.withdraw(container, RESOURCE_ENERGY);
+            } else {
+                const dropped = containerPos.findInRange(FIND_DROPPED_RESOURCES, 0);
+                if (
+                    dropped.length > 0 &&
+                    (dropped[0].resourceType !== RESOURCE_ENERGY || dropped[0].amount >= creep.store.getFreeCapacity())
+                ) {
+                    creep.pickup(dropped[0]);
+                }
             }
         }
     } else {
