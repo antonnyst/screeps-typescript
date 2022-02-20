@@ -20,6 +20,7 @@ interface Operation {
 }
 
 // Contains information about a squad
+// tslint:disable-next-line: no-empty-interface
 interface Squad {}
 
 // Creep descriptor
@@ -93,5 +94,3 @@ export class OperationManager implements Manager {
         );
     }
 }
-
-//Memory.operations = [{target: "E15S33",source: "E13S33",squads: [],creeps: [{body: [RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,HEAL],memory: {role: "blinker",roleData: {target: "E15S33"},home: "E13S33"}}]}];

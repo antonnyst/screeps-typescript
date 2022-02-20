@@ -48,16 +48,16 @@ export class MovementManager implements Manager {
         for (const room of Object.keys(rooms)) {
             const terrain = Game.rooms[room].getTerrain();
 
-            let data: {
+            const data: {
                 [key in string]: {
                     needsToMove: boolean;
                     nextLocation?: RoomPosition;
                 };
             } = {};
-            let currentSpaces: Creep[][] = Array.from(Array(50), () => new Array(50));
-            let occupiedSpaces: Creep[][] = Array.from(Array(50), () => new Array(50));
+            const currentSpaces: Creep[][] = Array.from(Array(50), () => new Array(50));
+            const occupiedSpaces: Creep[][] = Array.from(Array(50), () => new Array(50));
 
-            let creepQueue: Creep[] = [];
+            const creepQueue: Creep[] = [];
 
             for (const creep of rooms[room]) {
                 currentSpaces[creep.pos.x][creep.pos.y] = creep;
@@ -87,7 +87,7 @@ export class MovementManager implements Manager {
                         if (creep.memory.movementData._path) {
                             if (
                                 creep.pos.isEqualTo(
-                                    unpackPosition(parseInt(creep.memory.movementData._path.split("_")[0]))
+                                    unpackPosition(parseInt(creep.memory.movementData._path.split("_")[0], 10))
                                 )
                             ) {
                                 creep.memory.movementData._path = serializePath(
@@ -97,12 +97,14 @@ export class MovementManager implements Manager {
 
                             data[creep.name] = {
                                 needsToMove: true,
-                                nextLocation: unpackPosition(parseInt(creep.memory.movementData._path.split("_")[0]))
+                                nextLocation: unpackPosition(
+                                    parseInt(creep.memory.movementData._path.split("_")[0], 10)
+                                )
                             };
                             creepQueue.push(creep);
                         } else {
-                            let partialTarget: RoomPosition | undefined = undefined;
-                            let pathing = undefined;
+                            let partialTarget: RoomPosition | undefined;
+                            let pathing;
                             if (creep.pos.roomName !== unpackPosition(creep.memory.movementData.targetPos).roomName) {
                                 const route = Game.map.findRoute(
                                     creep.pos.roomName,
@@ -153,12 +155,12 @@ export class MovementManager implements Manager {
                             if (serializedPath === null) {
                                 totalQueries++;
 
-                                let goals = [];
+                                const goals = [];
                                 if (targetRange <= 5 && !creep.memory.movementData.flee) {
                                     for (let dx = -targetRange; dx <= targetRange; dx++) {
                                         for (let dy = -targetRange; dy <= targetRange; dy++) {
-                                            let x = targetPos.x + dx;
-                                            let y = targetPos.y + dy;
+                                            const x = targetPos.x + dx;
+                                            const y = targetPos.y + dy;
 
                                             if (
                                                 x <= 0 ||
@@ -306,7 +308,7 @@ export class MovementManager implements Manager {
                             }
                         }
                     } else {
-                        let potentialPositions: RoomPosition[] = [];
+                        const potentialPositions: RoomPosition[] = [];
                         const costMatrix = roomCallback(undefined)(room) as CostMatrix;
                         for (let dir = 1; dir <= 8; dir++) {
                             const pos = offsetPositionByDirection(creep.pos, dir as DirectionConstant);
@@ -325,15 +327,15 @@ export class MovementManager implements Manager {
                             continue;
                         }
 
-                        let candidate: RoomPosition | undefined = undefined;
+                        let candidate: RoomPosition | undefined;
                         for (const pos of potentialPositions) {
                             if (
                                 pos.getRangeTo(unpackPosition(creep.memory.movementData.targetPos)) <=
                                     creep.memory.movementData.range ||
                                 (creep.memory.movementData._path &&
-                                    unpackPosition(parseInt(creep.memory.movementData._path.split("_")[0])).isEqualTo(
-                                        pos
-                                    ))
+                                    unpackPosition(
+                                        parseInt(creep.memory.movementData._path.split("_")[0], 10)
+                                    ).isEqualTo(pos))
                             ) {
                                 candidate = pos;
                                 break;
@@ -356,7 +358,7 @@ export class MovementManager implements Manager {
 
                         if (
                             creep.memory.movementData._path &&
-                            !unpackPosition(parseInt(creep.memory.movementData._path.split("_")[0])).isEqualTo(
+                            !unpackPosition(parseInt(creep.memory.movementData._path.split("_")[0], 10)).isEqualTo(
                                 candidate
                             )
                         ) {
@@ -416,9 +418,9 @@ function roomCallback(path: string[] | undefined) {
 
         const room = Game.rooms[roomName];
         if (room === undefined) {
-            const lazyMatrix: CostMatrix | null = getFromCache("rccostmatrixlazy" + roomName, 10000);
-            if (lazyMatrix !== null) {
-                return lazyMatrix;
+            const cachedLazyMatrix: CostMatrix | null = getFromCache("rccostmatrixlazy" + roomName, 10000);
+            if (cachedLazyMatrix !== null) {
+                return cachedLazyMatrix;
             }
             return true;
         }
@@ -466,7 +468,7 @@ function roomCallback(path: string[] | undefined) {
                 lazyMatrix.set(cpos.x, cpos.y + 1, 255);
             }
             if (describeRoom(roomName) === "source_keeper") {
-                let hostiles = RoomData(roomName).hostiles.get() ?? [];
+                const hostiles = RoomData(roomName).hostiles.get() ?? [];
                 if (hostiles.length > 0) {
                     for (const hostileData of hostiles) {
                         const pos = new RoomPosition(hostileData.pos.x, hostileData.pos.y, hostileData.pos.roomName);
@@ -491,7 +493,7 @@ function roomCallback(path: string[] | undefined) {
             }
             saveToCache("rccostmatrixlazy" + roomName, lazyMatrix);
         }
-        let finalMatrix = lazyMatrix.clone();
+        const finalMatrix = lazyMatrix.clone();
         const creeps = room.find(FIND_CREEPS);
         for (const creep of creeps) {
             if (
@@ -556,16 +558,16 @@ function serializePath(path: RoomPosition[]): string {
 }
 
 function deserializePath(path: string): RoomPosition[] {
-    let result: RoomPosition[] = [];
+    const result: RoomPosition[] = [];
     if (path.length === 0) {
         return result;
     }
-    let split: string[] = path.split("_");
+    const split: string[] = path.split("_");
     for (let i = 0; i < split.length; i++) {
         if (split[i].length > 1) {
-            result[i] = unpackPosition(parseInt(split[i]));
+            result[i] = unpackPosition(parseInt(split[i], 10));
         } else {
-            result[i] = offsetPositionByDirection(result[i - 1], parseInt(split[i]) as DirectionConstant);
+            result[i] = offsetPositionByDirection(result[i - 1], parseInt(split[i], 10) as DirectionConstant);
         }
     }
     return result;
