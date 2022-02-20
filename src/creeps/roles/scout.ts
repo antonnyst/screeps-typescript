@@ -42,10 +42,10 @@ export function scout(creep: Creep) {
 
     if (memory.room === undefined) {
         if (home.memory.scoutTargets !== undefined && home.memory.scoutTargets.length > 0) {
-            let closestRoom = undefined;
+            let closestRoom;
             let closestDistance = Infinity;
             for (const room of home.memory.scoutTargets!) {
-                let distance = Game.map.getRoomLinearDistance(creep.room.name, room);
+                const distance = Game.map.getRoomLinearDistance(creep.room.name, room);
                 if (distance < closestDistance) {
                     closestRoom = room;
                     closestDistance = distance;
