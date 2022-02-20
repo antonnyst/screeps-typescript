@@ -33,8 +33,15 @@ export function scout(creep: Creep) {
     }
 
     // Find rooms to scout
-    if (memory.room === undefined || memory.room === creep.room.name) {
-        if (home.memory.scoutTargets !== undefined && home.memory.scoutTargets!.length > 0) {
+    if (creep.room.name === memory.room) {
+        if (home.memory.scoutTargets !== undefined && home.memory.scoutTargets.length > 0) {
+            home.memory.scoutTargets = home.memory.scoutTargets.filter((r) => r !== memory.room);
+        }
+        memory.room = undefined;
+    }
+
+    if (memory.room === undefined) {
+        if (home.memory.scoutTargets !== undefined && home.memory.scoutTargets.length > 0) {
             let closestRoom = undefined;
             let closestDistance = Infinity;
             for (const room of home.memory.scoutTargets!) {
