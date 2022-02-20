@@ -25,7 +25,7 @@ export function protector(creep: Creep) {
         if (isOwnedRoom(home) && home.memory.remotes !== undefined) {
             for (const remote of home.memory.remotes) {
                 if (
-                    (Memory.rooms[remote] !== undefined && (RoomData(remote).hostiles.get() ?? []).length > 0) ||
+                    (RoomData(remote).hostiles.get() ?? []).length > 0 ||
                     (Game.rooms[remote] !== undefined && Game.rooms[remote].find(FIND_HOSTILE_STRUCTURES).length > 0)
                 ) {
                     memory.room = remote;
