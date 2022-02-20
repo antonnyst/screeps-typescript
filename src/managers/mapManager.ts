@@ -13,7 +13,7 @@ export class MapManager implements Manager {
         if (Config.mapVisuals && Memory.mapRooms !== undefined) {
             const visualString: string | undefined = getFromCache("mapCache", 100 / speed);
             if (visualString === undefined || visualString === null) {
-                let rooms = Memory.mapRooms.split(",");
+                const rooms = Memory.mapRooms.split(",");
                 for (const room of rooms) {
                     perRoom(room);
                 }
@@ -25,15 +25,20 @@ export class MapManager implements Manager {
     }
 }
 
-const colors = ["#ff1111", "#aa1111", "#555511", "#11aa11", "#11ff11"];
+const colors = ["#ff0000", "#ff0000", "#ffffff", "#00ff00", "#00ff00"];
+const opacity = [0.5, 0.25, 0, 0.25, 0.5];
+const size = 30;
 
 function perRoom(room: string) {
-    const tl: RoomPosition = new RoomPosition(1, 1, room);
+    const control = RoomData(room).control.get();
+    const x = (50 - size) / 2;
+    const y = (50 - size) / 2;
+    if (control !== null) {
+        const tl: RoomPosition = new RoomPosition(x, y, room);
 
-    const roomNumber = RoomData(room).control.get();
-    if (roomNumber !== null) {
-        Game.map.visual.rect(tl, 48, 48, {
-            fill: colors[roomNumber + 2]
+        Game.map.visual.rect(tl, size, size, {
+            fill: colors[control + 2],
+            opacity: opacity[control + 2]
         });
         const text: string = "A: " + (Game.time - (RoomData(room).lastUpdate.get() ?? 0));
         Game.map.visual.text(text, new RoomPosition(2, 4, room), {
