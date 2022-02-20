@@ -6,7 +6,7 @@ import { isOwnedRoom } from "../../utils/RoomCalc";
 
 export function VisualHandler(room: Room, speed: number): void {
     if (Config.roomVisuals && isOwnedRoom(room)) {
-        let data: string | null = getFromCache("visualhandlerdata" + room.name, 10 / speed);
+        const data: string | null = getFromCache("visualhandlerdata" + room.name, 10 / speed);
         if (data === null) {
             if (room.memory.repair !== undefined) {
                 room.visual.text("Repair Targets: " + Object.values(room.memory.repair).length, 1, 1.275, {

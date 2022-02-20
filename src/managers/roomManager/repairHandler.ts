@@ -24,7 +24,7 @@ export function RepairHandler(room: OwnedRoom): void {
         }
 
         // Check for low ramparts
-        let lowRamparts = [];
+        const lowRamparts = [];
         for (const rampart of room.memory.genBuildings.ramparts) {
             if (rampart.id !== undefined) {
                 // The building exists
