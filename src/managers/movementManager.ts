@@ -62,13 +62,16 @@ export class MovementManager implements Manager {
             for (const creep of rooms[room]) {
                 currentSpaces[creep.pos.x][creep.pos.y] = creep;
                 if (creep.memory.movementData) {
-                    if (
+                    let inRange =
                         creep.pos.inRangeTo(
                             unpackPosition(creep.memory.movementData.targetPos),
                             creep.memory.movementData.range
-                        ) === !creep.memory.movementData.flee ||
-                        creep.fatigue > 0
-                    ) {
+                        ) === !creep.memory.movementData.flee;
+                    if (isPositionEdge(creep.pos) && !creep.memory.movementData.flee) {
+                        inRange = false;
+                    }
+
+                    if (inRange || creep.fatigue > 0) {
                         data[creep.name] = {
                             needsToMove: false
                         };
@@ -99,6 +102,7 @@ export class MovementManager implements Manager {
                             creepQueue.push(creep);
                         } else {
                             let partialTarget: RoomPosition | undefined = undefined;
+                            let pathing = undefined;
                             if (creep.pos.roomName !== unpackPosition(creep.memory.movementData.targetPos).roomName) {
                                 const route = Game.map.findRoute(
                                     creep.pos.roomName,
@@ -120,8 +124,9 @@ export class MovementManager implements Manager {
                                         }
                                     }
                                 );
-                                if (route !== -2 && route.length > 1) {
-                                    partialTarget = new RoomPosition(25, 25, route[0].room);
+                                if (route !== -2 && route.length >= 2) {
+                                    partialTarget = new RoomPosition(25, 25, route[1].room);
+                                    pathing = [creep.pos.roomName, route[0].room, route[1].room];
                                 }
                             }
 
@@ -182,7 +187,7 @@ export class MovementManager implements Manager {
                                         : goals,
                                     {
                                         flee: creep.memory.movementData.flee,
-                                        roomCallback,
+                                        roomCallback: roomCallback(pathing),
                                         swampCost: 10,
                                         plainCost: 2,
                                         maxOps: 20000,
@@ -302,7 +307,7 @@ export class MovementManager implements Manager {
                         }
                     } else {
                         let potentialPositions: RoomPosition[] = [];
-                        const costMatrix = roomCallback(room) as CostMatrix;
+                        const costMatrix = roomCallback(undefined)(room) as CostMatrix;
                         for (let dir = 1; dir <= 8; dir++) {
                             const pos = offsetPositionByDirection(creep.pos, dir as DirectionConstant);
                             if (
@@ -398,116 +403,109 @@ export class MovementManager implements Manager {
     }
 }
 
-const roomCallback = (roomName: string): boolean | CostMatrix => {
-    const cache: CostMatrix | null = getFromCache("rccostmatrixfinal" + roomName, 0);
-    if (cache !== null) {
-        return cache;
-    }
+function roomCallback(path: string[] | undefined) {
+    return (roomName: string): boolean | CostMatrix => {
+        if (path !== undefined && !path.includes(roomName)) {
+            return false;
+        }
 
-    const room = Game.rooms[roomName];
-    if (room === undefined) {
-        const lazyMatrix: CostMatrix | null = getFromCache("rccostmatrixlazy" + roomName, 10000);
-        if (lazyMatrix !== null) {
-            return lazyMatrix;
+        const cache: CostMatrix | null = getFromCache("rccostmatrixfinal" + roomName, 0);
+        if (cache !== null) {
+            return cache;
         }
-        return true;
-    }
-    let lazyMatrix: CostMatrix | null = getFromCache("rccostmatrixlazy" + roomName, 100);
-    if (lazyMatrix === null) {
-        lazyMatrix = new PathFinder.CostMatrix();
-        const roads = room.find(FIND_STRUCTURES, {
-            filter: (s) => s.structureType === STRUCTURE_ROAD
-        });
-        for (const road of roads) {
-            lazyMatrix.set(road.pos.x, road.pos.y, 1);
+
+        const room = Game.rooms[roomName];
+        if (room === undefined) {
+            const lazyMatrix: CostMatrix | null = getFromCache("rccostmatrixlazy" + roomName, 10000);
+            if (lazyMatrix !== null) {
+                return lazyMatrix;
+            }
+            return true;
         }
-        const structures = room.find(FIND_STRUCTURES, {
-            filter: (s) =>
-                s.structureType !== STRUCTURE_CONTAINER &&
-                s.structureType !== STRUCTURE_ROAD &&
-                (!(room.controller?.my && s.structureType === STRUCTURE_RAMPART) ||
-                    s.structureType !== STRUCTURE_RAMPART)
-        });
-        for (const structure of structures) {
-            lazyMatrix.set(structure.pos.x, structure.pos.y, 255);
+        let lazyMatrix: CostMatrix | null = getFromCache("rccostmatrixlazy" + roomName, 100);
+        if (lazyMatrix === null) {
+            lazyMatrix = new PathFinder.CostMatrix();
+            const roads = room.find(FIND_STRUCTURES, {
+                filter: (s) => s.structureType === STRUCTURE_ROAD
+            });
+            for (const road of roads) {
+                lazyMatrix.set(road.pos.x, road.pos.y, 1);
+            }
+            const structures = room.find(FIND_STRUCTURES, {
+                filter: (s) =>
+                    s.structureType !== STRUCTURE_CONTAINER &&
+                    s.structureType !== STRUCTURE_ROAD &&
+                    (!(room.controller?.my && s.structureType === STRUCTURE_RAMPART) ||
+                        s.structureType !== STRUCTURE_RAMPART)
+            });
+            for (const structure of structures) {
+                lazyMatrix.set(structure.pos.x, structure.pos.y, 255);
+            }
+            const constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES, {
+                filter: (cs) =>
+                    cs.structureType !== STRUCTURE_CONTAINER &&
+                    cs.structureType !== STRUCTURE_ROAD &&
+                    cs.structureType !== STRUCTURE_RAMPART
+            });
+            for (const constructionSite of constructionSites) {
+                if (
+                    constructionSite.structureType !== STRUCTURE_CONTAINER &&
+                    constructionSite.structureType !== STRUCTURE_ROAD &&
+                    (!(room.controller?.my && constructionSite.structureType === STRUCTURE_RAMPART) ||
+                        constructionSite.structureType !== STRUCTURE_RAMPART)
+                ) {
+                    lazyMatrix.set(constructionSite.pos.x, constructionSite.pos.y, 255);
+                }
+            }
+            if (room.controller?.my && room.controller.level >= 5 && room.memory.genLayout !== undefined) {
+                const cpos = new RoomPosition(
+                    room.memory.genLayout.prefabs[0].x,
+                    room.memory.genLayout.prefabs[0].y,
+                    room.name
+                );
+                lazyMatrix.set(cpos.x, cpos.y + 1, 255);
+            }
+            if (describeRoom(roomName) === "source_keeper") {
+                let hostiles = RoomData(roomName).hostiles.get() ?? [];
+                if (hostiles.length > 0) {
+                    for (const hostileData of hostiles) {
+                        const pos = new RoomPosition(hostileData.pos.x, hostileData.pos.y, hostileData.pos.roomName);
+                        for (let dx = -3; dx <= 3; dx++) {
+                            for (let dy = 0; dy <= 3; dy++) {
+                                if (pos.x + dx < 0 || pos.x + dx > 49 || pos.y + dy < 0 || pos.y + dy > 49) {
+                                    continue;
+                                }
+                                if (lazyMatrix.get(pos.x + dx, pos.y + dy) < 128) {
+                                    lazyMatrix.set(pos.x + dx, pos.y + dy, 128);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (describeRoom(roomName) === "highway_portal") {
+                const portals = room.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_PORTAL } });
+                for (const portal of portals) {
+                    lazyMatrix.set(portal.pos.x, portal.pos.y, 255);
+                }
+            }
+            saveToCache("rccostmatrixlazy" + roomName, lazyMatrix);
         }
-        const constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES, {
-            filter: (cs) =>
-                cs.structureType !== STRUCTURE_CONTAINER &&
-                cs.structureType !== STRUCTURE_ROAD &&
-                cs.structureType !== STRUCTURE_RAMPART
-        });
-        for (const constructionSite of constructionSites) {
+        let finalMatrix = lazyMatrix.clone();
+        const creeps = room.find(FIND_CREEPS);
+        for (const creep of creeps) {
             if (
-                constructionSite.structureType !== STRUCTURE_CONTAINER &&
-                constructionSite.structureType !== STRUCTURE_ROAD &&
-                (!(room.controller?.my && constructionSite.structureType === STRUCTURE_RAMPART) ||
-                    constructionSite.structureType !== STRUCTURE_RAMPART)
+                !creep.my ||
+                creep.memory.movementData === undefined ||
+                (creep.memory.movementData.heavy && creep.memory.checkIdle && creep.memory.checkIdle.idleCount > 10)
             ) {
-                lazyMatrix.set(constructionSite.pos.x, constructionSite.pos.y, 255);
+                finalMatrix.set(creep.pos.x, creep.pos.y, 255);
             }
         }
-        if (room.controller?.my && room.controller.level >= 5 && room.memory.genLayout !== undefined) {
-            const cpos = new RoomPosition(
-                room.memory.genLayout.prefabs[0].x,
-                room.memory.genLayout.prefabs[0].y,
-                room.name
-            );
-            lazyMatrix.set(cpos.x, cpos.y + 1, 255);
-        }
-        if (describeRoom(roomName) === "source_keeper") {
-            /*if (Memory.rooms[roomName].ba.lairs !== undefined) {
-                for (const lair of Memory.rooms[roomName].basicLayout.lairs!) {
-                    const pos = unpackPosition(lair);
-                    for (let dx = -3; dx <= 3; dx++) {
-                        for (let dy = 0; dy <= 3; dy++) {
-                            if (pos.x + dx < 0 || pos.x + dx > 49 || pos.y + dy < 0 || pos.y + dy > 49) {
-                                continue;
-                            }
-                            lazyMatrix.set(pos.x + dx, pos.y + dy, 128);
-                        }
-                    }
-                }
-            }*/
-            let hostiles = RoomData(roomName).hostiles.get() ?? [];
-            if (hostiles.length > 0) {
-                for (const hostileData of hostiles) {
-                    const pos = new RoomPosition(hostileData.pos.x, hostileData.pos.y, hostileData.pos.roomName);
-                    for (let dx = -3; dx <= 3; dx++) {
-                        for (let dy = 0; dy <= 3; dy++) {
-                            if (pos.x + dx < 0 || pos.x + dx > 49 || pos.y + dy < 0 || pos.y + dy > 49) {
-                                continue;
-                            }
-                            if (lazyMatrix.get(pos.x + dx, pos.y + dy) < 128) {
-                                lazyMatrix.set(pos.x + dx, pos.y + dy, 128);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (describeRoom(roomName) === "highway_portal") {
-            const portals = room.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_PORTAL } });
-            for (const portal of portals) {
-                lazyMatrix.set(portal.pos.x, portal.pos.y, 255);
-            }
-        }
-        saveToCache("rccostmatrixlazy" + roomName, lazyMatrix);
-    }
-    let finalMatrix = lazyMatrix.clone();
-    const creeps = room.find(FIND_CREEPS);
-    for (const creep of creeps) {
-        if (
-            !creep.my ||
-            creep.memory.movementData === undefined ||
-            (creep.memory.movementData.heavy && creep.memory.checkIdle && creep.memory.checkIdle.idleCount > 10)
-        ) {
-            finalMatrix.set(creep.pos.x, creep.pos.y, 255);
-        }
-    }
-    saveToCache("rccostmatrixfinal" + roomName, finalMatrix);
-    return finalMatrix;
-};
+        saveToCache("rccostmatrixfinal" + roomName, finalMatrix);
+        return finalMatrix;
+    };
+}
 
 const cacheTime = 500;
 
