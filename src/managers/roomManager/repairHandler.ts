@@ -34,7 +34,7 @@ export function RepairHandler(room: OwnedRoom): void {
                     buildingObject !== null &&
                     buildingObject !== undefined
                 ) {
-                    if (buildingObject.hits < 2000) {
+                    if (buildingObject.hits < 5000) {
                         lowRamparts.push(rampart);
                     }
                 }

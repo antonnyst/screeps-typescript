@@ -74,7 +74,7 @@ function generalRoomLogic(room: Room, speed: number): void {
             }
         },
         room.name + "updateBasicRoomData",
-        500 / speed
+        100 / speed
     );
 
     // Update room reservation status
@@ -308,6 +308,6 @@ function GetRemoteLimit(room: OwnedRoom): number {
         }
     }
 
-    return 0; // spawnCount;
+    return spawnCount;
     // TODO: fix this
 }
