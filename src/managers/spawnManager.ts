@@ -529,7 +529,11 @@ const needChecks: CreepNeedCheckFunction[] = [
     },
     //Check peacekeeper
     (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-        if (room.memory.remotes.length === 0 || room.memory.unclaim) {
+        if (
+            room.memory.remoteData === undefined ||
+            Object.keys(room.memory.remoteData.data).length === 0 ||
+            room.memory.unclaim
+        ) {
             return null;
         }
         if (counts["protector"] < 1) {
