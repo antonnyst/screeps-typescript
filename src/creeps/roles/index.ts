@@ -18,3 +18,4 @@ export * from "./scout";
 export * from "./swarmling";
 export * from "./upgrader";
 export * from "./worker";
+export * from "./depositHarvester";
