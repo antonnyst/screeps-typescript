@@ -4,6 +4,7 @@ import { fromRoomCoordinate, toRoomCoordinate } from "utils/RoomCoordinate";
 import { RunEvery } from "utils/RunEvery";
 import { Manager } from "./manager";
 import { describeRoom, isOwnedRoom, RoomDescription } from "../utils/RoomCalc";
+import { packPosition } from "utils/RoomPositionPacker";
 
 declare global {
     interface OwnedRoomMemory {
@@ -11,7 +12,14 @@ declare global {
     }
     interface Memory {
         mapRooms?: string;
+        deposits?: Record<string, DepositData>;
     }
+}
+interface DepositData {
+    pos: number;
+    decayTime: number;
+    lastCooldown: number;
+    type: DepositConstant;
 }
 
 const SCOUT_RANGE: number = 10;
@@ -97,5 +105,30 @@ export class ScoutManager implements Manager {
             "scoutmanagerrun",
             500 / speed
         );
+
+        // Update deposits
+        if (Memory.deposits === undefined) {
+            Memory.deposits = {};
+        }
+
+        for (const id in Memory.deposits) {
+            if (Memory.deposits[id]!.decayTime < Game.time) {
+                delete Memory.deposits[id];
+            }
+        }
+
+        for (const room of Object.values(Game.rooms)) {
+            const deposits = room.find(FIND_DEPOSITS);
+            if (deposits.length > 0) {
+                for (const deposit of deposits) {
+                    Memory.deposits[deposit.id] = {
+                        type: deposit.depositType,
+                        pos: packPosition(deposit.pos),
+                        decayTime: Game.time + deposit.ticksToDecay,
+                        lastCooldown: deposit.lastCooldown
+                    };
+                }
+            }
+        }
     }
 }
