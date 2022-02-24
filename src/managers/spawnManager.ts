@@ -747,7 +747,9 @@ const needChecks: CreepNeedCheckFunction[] = [
 
         room.memory.energySupply = energySupply;
 
-        const energyDemand = room.memory.buildEnergy + room.memory.repairEnergy - energySupply;
+        const workerBoost = room.controller.level <= 3 && room.memory.resources.total.energy >= 5000 ? 6000 : 0;
+
+        const energyDemand = room.memory.buildEnergy + room.memory.repairEnergy + workerBoost - energySupply;
 
         const workerLimit = Math.min(
             Storage(room) === null ? Infinity : 1 + Math.ceil(room.memory.resources.total.energy / 10000),

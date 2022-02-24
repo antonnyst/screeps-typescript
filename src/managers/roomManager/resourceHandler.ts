@@ -54,7 +54,14 @@ function ResourceData(room: OwnedRoom): void {
             creep.store.getUsedCapacity(resource) === null ? 0 : creep.store.getUsedCapacity(resource)
         );
 
-        total[resource] = storage + terminal + factory + labs + creeps;
+        const containers = _.sum(
+            room.find(FIND_STRUCTURES, {
+                filter: (s) => s.structureType === STRUCTURE_CONTAINER
+            }),
+            (container) => (container as StructureContainer).store.getUsedCapacity(resource)
+        );
+
+        total[resource] = storage + terminal + factory + labs + creeps + containers;
 
         let importLimit: number | null = null;
         let exportLimit: number | null = null;
