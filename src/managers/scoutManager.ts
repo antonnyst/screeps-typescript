@@ -46,6 +46,9 @@ export class ScoutManager implements Manager {
                 // Gather all rooms and their closest owned room
                 const rooms: string[][] = [];
                 for (const room of ownedRooms) {
+                    if ((Memory.rooms[room] as OwnedRoomMemory).scoutTargets === undefined) {
+                        (Memory.rooms[room] as OwnedRoomMemory).scoutTargets = [];
+                    }
                     const roomCoord = toRoomCoordinate(room);
                     if (roomCoord === null) {
                         continue;
@@ -93,7 +96,7 @@ export class ScoutManager implements Manager {
                         Game.time - (RoomData(roomPair[0]).lastUpdate.get() ?? 0) >
                         (SCOUT_UPDATE_TIMES[describeRoom(roomPair[0]) ?? "room"] ?? DEFAULT_SCOUT_UPDATE_TIME)
                     ) {
-                        (Memory.rooms[roomPair[1]] as OwnedRoomMemory).scoutTargets?.push(roomPair[0]);
+                        (Memory.rooms[roomPair[1]] as OwnedRoomMemory).scoutTargets!.push(roomPair[0]);
                     }
                 }
 
