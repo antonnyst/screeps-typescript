@@ -106,7 +106,7 @@ export const rolePatterns: { [roleName: string]: string } = {
     upgrader: "[mwcwmw]8",
     manager: "c16",
     quickFiller: "c4",
-    depositHarvester: "m17c8w25"
+    depositHarvester: "m17c10w23"
 };
 
 export const bodySortingValues: { [bodyPartName: string]: number } = {

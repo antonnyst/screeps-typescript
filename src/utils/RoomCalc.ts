@@ -12,6 +12,16 @@ export function isOwnedRoom(room: Room): room is OwnedRoom {
     return room.controller?.my === true;
 }
 
+export function OwnedRooms(): OwnedRoom[] {
+    const rooms: OwnedRoom[] = [];
+    for (const room of Object.values(Game.rooms)) {
+        if (isOwnedRoom(room)) {
+            rooms.push(room);
+        }
+    }
+    return rooms;
+}
+
 /*
  * Get type of room from name
  *

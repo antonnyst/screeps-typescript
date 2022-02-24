@@ -11,12 +11,18 @@ export const TERMINAL_MINERAL_MIN = 6000;
 export const TERMINAL_MINERAL_MAX = 12000;
 export const TERMINAL_BOOST_MIN = 1000;
 export const TERMINAL_BOOST_MAX = 5000;
+export const TERMINAL_RAW_COMMODITY_MIN = 1000;
+export const TERMINAL_RAW_COMMODITY_MAX = 5000;
 export const TERMINAL_COMMODITY_MIN = 1000;
 export const TERMINAL_COMMODITY_MAX = 5000;
 
 // How much energy should be stored in the factory
 export const FACTORY_ENERGY_MIN = 5000;
 export const FACTORY_ENERGY_MAX = 10000;
+
+// How much of each raw commodity should be stored in each room
+export const ROOM_RAW_COMMODITY_IMPORT_LIMIT = 2000;
+export const ROOM_RAW_COMMODITY_EXPORT_LIMIT = 6000;
 
 // How much of each mineral should be stored in each room
 export const ROOM_MINERAL_IMPORT_LIMIT = 12000;
@@ -43,8 +49,19 @@ export const TERMINAL_MINERALS: ResourceConstant[] = [
 
 export const TERMINAL_BOOSTS: ResourceConstant[] = Object.keys(REACTION_TIME) as ResourceConstant[];
 
+export const TERMINAL_RAW_COMMODITIES: ResourceConstant[] = [
+    RESOURCE_MIST,
+    RESOURCE_BIOMASS,
+    RESOURCE_METAL,
+    RESOURCE_SILICON
+];
+
 export const TERMINAL_COMMODITIES: ResourceConstant[] = Object.keys(COMMODITIES).filter(
-    (c) => !TERMINAL_MINERALS.includes(c as ResourceConstant)
+    (c) =>
+        !TERMINAL_MINERALS.includes(c as ResourceConstant) &&
+        !TERMINAL_BOOSTS.includes(c as ResourceConstant) &&
+        !TERMINAL_RAW_COMMODITIES.includes(c as ResourceConstant) &&
+        !([RESOURCE_ENERGY, RESOURCE_POWER] as ResourceConstant[]).includes(c as ResourceConstant)
 ) as ResourceConstant[];
 
 export const MARKET_RESOURCES: MarketResourceConstant[] = (RESOURCES_ALL as MarketResourceConstant[]).concat(
