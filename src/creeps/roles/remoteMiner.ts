@@ -5,6 +5,7 @@ import { unpackPosition } from "utils/RoomPositionPacker";
 export interface RemoteMinerMemory extends CreepMemory {
     room: string;
     source: number;
+    container: boolean;
 }
 
 export function remoteMiner(creep: Creep) {
@@ -32,36 +33,41 @@ export function remoteMiner(creep: Creep) {
             return;
         }
 
-        const container: StructureContainer = _.filter(
-            containerPos.lookFor(LOOK_STRUCTURES),
-            (s: Structure) => s.structureType === STRUCTURE_CONTAINER
-        )[0] as StructureContainer;
+        if (memory.container) {
+            // Normal mining logic with container
+            const container: StructureContainer = _.filter(
+                containerPos.lookFor(LOOK_STRUCTURES),
+                (s: Structure) => s.structureType === STRUCTURE_CONTAINER
+            )[0] as StructureContainer;
+            if (
+                container === undefined ||
+                creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0 ||
+                container.store.getFreeCapacity(RESOURCE_ENERGY) >= creep.getActiveBodyparts(WORK) * 5
+            ) {
+                creep.harvest(source);
+            }
+            if (creep.getActiveBodyparts(CARRY) > 0 && creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+                if (container !== undefined && container.hits < container.hitsMax) {
+                    creep.repair(container);
+                    if (creep.store.getUsedCapacity(RESOURCE_ENERGY) < 20) {
+                        creep.withdraw(container, RESOURCE_ENERGY);
+                    }
+                }
+                if (container === undefined) {
+                    containerPos.createConstructionSite(STRUCTURE_CONTAINER);
 
-        if (
-            container === undefined ||
-            creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0 ||
-            container.store.getFreeCapacity(RESOURCE_ENERGY) >= creep.getActiveBodyparts(WORK) * 5
-        ) {
+                    const site = _.filter(
+                        containerPos.lookFor(LOOK_CONSTRUCTION_SITES),
+                        (s: Structure) => s.structureType === STRUCTURE_CONTAINER
+                    )[0];
+                    if (site !== undefined) {
+                        creep.build(site);
+                    }
+                }
+            }
+        } else {
+            // Ignore container and just mine
             creep.harvest(source);
-        }
-        if (creep.getActiveBodyparts(CARRY) > 0 && creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-            if (container !== undefined && container.hits < container.hitsMax) {
-                creep.repair(container);
-                if (creep.store.getUsedCapacity(RESOURCE_ENERGY) < 20) {
-                    creep.withdraw(container, RESOURCE_ENERGY);
-                }
-            }
-            if (container === undefined) {
-                containerPos.createConstructionSite(STRUCTURE_CONTAINER);
-
-                const site = _.filter(
-                    containerPos.lookFor(LOOK_CONSTRUCTION_SITES),
-                    (s: Structure) => s.structureType === STRUCTURE_CONTAINER
-                )[0];
-                if (site !== undefined) {
-                    creep.build(site);
-                }
-            }
         }
     }
 }

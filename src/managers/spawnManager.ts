@@ -611,7 +611,8 @@ const needChecks: CreepNeedCheckFunction[] = [
                                     role: "remoteMiner",
                                     home: room.name,
                                     room: remote,
-                                    source: i
+                                    source: i,
+                                    container: room.energyCapacityAvailable >= 700 ? true : false
                                 }
                             };
                         }
