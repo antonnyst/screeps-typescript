@@ -68,6 +68,9 @@ function ResourceData(room: OwnedRoom): void {
         } else if (C.TERMINAL_MINERALS.includes(resource)) {
             importLimit = C.ROOM_MINERAL_IMPORT_LIMIT;
             exportLimit = C.ROOM_MINERAL_EXPORT_LIMIT;
+        } else if (C.TERMINAL_RAW_COMMODITIES.includes(resource)) {
+            importLimit = C.ROOM_MINERAL_IMPORT_LIMIT;
+            exportLimit = C.ROOM_MINERAL_EXPORT_LIMIT;
         }
 
         let d: number = 0;

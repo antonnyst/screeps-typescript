@@ -3,8 +3,10 @@ import { RoomData } from "data/room/room";
 import { fromRoomCoordinate, toRoomCoordinate } from "utils/RoomCoordinate";
 import { RunEvery } from "utils/RunEvery";
 import { Manager } from "./manager";
-import { describeRoom, isOwnedRoom, RoomDescription } from "../utils/RoomCalc";
-import { packPosition } from "utils/RoomPositionPacker";
+import { describeRoom, OwnedRooms, RoomDescription } from "../utils/RoomCalc";
+import { packPosition, unpackPosition } from "utils/RoomPositionPacker";
+import { DepositHarvesterMemory } from "creeps/roles";
+import { bodySortingValues, GenerateBodyFromPattern, rolePatterns } from "utils/CreepBodyGenerator";
 
 declare global {
     interface OwnedRoomMemory {
@@ -22,12 +24,15 @@ interface DepositData {
     type: DepositConstant;
 }
 
-const SCOUT_RANGE: number = 10;
+const SCOUT_RANGE: number = 8;
 const DEFAULT_SCOUT_UPDATE_TIME = 10000;
 const SCOUT_UPDATE_TIMES: Partial<Record<RoomDescription, number>> = {
     highway: 500,
     highway_portal: 500
 };
+
+const DEPOSIT_MAX_COOLDOWN = 100;
+const DEPOSIT_MAX_RANGE = 3;
 
 export class ScoutManager implements Manager {
     minSpeed = 1;
@@ -36,13 +41,8 @@ export class ScoutManager implements Manager {
         RunEvery(
             () => {
                 // Gather all owned rooms
-                const ownedRooms: string[] = [];
-                for (const room of Object.values(Game.rooms)) {
-                    if (isOwnedRoom(room)) {
-                        room.memory.scoutTargets = [];
-                        ownedRooms.push(room.name);
-                    }
-                }
+                const ownedRooms: string[] = OwnedRooms().map((r) => r.name);
+
                 // Gather all rooms and their closest owned room
                 const rooms: string[][] = [];
                 for (const room of ownedRooms) {
@@ -106,16 +106,55 @@ export class ScoutManager implements Manager {
             500 / speed
         );
 
-        // Update deposits
+        // Deposit logic
         if (Memory.deposits === undefined) {
             Memory.deposits = {};
         }
 
-        for (const id in Memory.deposits) {
-            if (Memory.deposits[id]!.decayTime < Game.time) {
-                delete Memory.deposits[id];
-            }
-        }
+        RunEvery(
+            () => {
+                for (const id in Memory.deposits) {
+                    if (Memory.deposits[id]!.decayTime < Game.time && !hasHarvesters(id)) {
+                        delete Memory.deposits[id];
+                    } else if (Memory.deposits[id]!.lastCooldown <= DEPOSIT_MAX_COOLDOWN) {
+                        // Lets check if we should spawn an harvester for this deposit
+                        const pos = unpackPosition(Memory.deposits[id].pos);
+                        const hostiles = RoomData(pos.roomName).hostiles.get();
+                        if (!hasHarvesters(id) && (hostiles === null || hostiles.length === 0)) {
+                            // Check range
+                            const rooms = OwnedRooms().filter((r) => r.energyCapacityAvailable >= 3650);
+
+                            const distances: [OwnedRoom, number][] = rooms.map((r) => {
+                                const route = Game.map.findRoute(r.name, pos.roomName);
+                                if (route === ERR_NO_PATH) {
+                                    return [r, Infinity];
+                                }
+                                return [r, Object.keys(route).length];
+                            });
+
+                            if (_.some(distances, (d) => d[1] <= DEPOSIT_MAX_RANGE)) {
+                                const closestRoom = distances.sort((a, b) => a[1] - b[1])[0];
+
+                                if (closestRoom[0].memory.spawnQueue !== undefined) {
+                                    closestRoom[0].memory.spawnQueue.push({
+                                        body: GenerateBodyFromPattern(rolePatterns.depositHarvester, 3650).sort(
+                                            (a, b) => bodySortingValues[a] - bodySortingValues[b]
+                                        ),
+                                        memory: {
+                                            role: "depositHarvester",
+                                            home: closestRoom[0].name,
+                                            id
+                                        } as DepositHarvesterMemory
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "scoutmanagerdepositcheck",
+            10 / speed
+        );
 
         for (const room of Object.values(Game.rooms)) {
             const deposits = room.find(FIND_DEPOSITS);
@@ -131,4 +170,24 @@ export class ScoutManager implements Manager {
             }
         }
     }
+}
+
+function hasHarvesters(id: string) {
+    const spawned = _.some(
+        Game.creeps,
+        (c) => c.memory.role === "depositHarvester" && (c.memory as DepositHarvesterMemory).id === id
+    );
+    if (spawned) return true;
+
+    const queued = _.some(OwnedRooms(), (r) =>
+        _.some(
+            r.memory.spawnQueue,
+            (s) =>
+                s.memory !== undefined &&
+                s.memory.role === "depositHarvester" &&
+                (s.memory as DepositHarvesterMemory).id === id
+        )
+    );
+
+    return queued;
 }

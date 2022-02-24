@@ -10,7 +10,10 @@ import {
     TERMINAL_ENERGY_MIN,
     TERMINAL_MINERALS,
     TERMINAL_MINERAL_MAX,
-    TERMINAL_MINERAL_MIN
+    TERMINAL_MINERAL_MIN,
+    TERMINAL_RAW_COMMODITIES,
+    TERMINAL_RAW_COMMODITY_MAX,
+    TERMINAL_RAW_COMMODITY_MIN
 } from "config/constants";
 
 export interface ManagerMemory extends CreepMemory {
@@ -85,6 +88,9 @@ export function manager(creep: Creep): void {
                 } else if (TERMINAL_BOOSTS.includes(resource)) {
                     minAmount = TERMINAL_BOOST_MIN;
                     maxAmount = TERMINAL_BOOST_MAX;
+                } else if (TERMINAL_RAW_COMMODITIES.includes(resource)) {
+                    minAmount = TERMINAL_RAW_COMMODITY_MIN;
+                    maxAmount = TERMINAL_RAW_COMMODITY_MAX;
                 } else if (TERMINAL_COMMODITIES.includes(resource)) {
                     minAmount = TERMINAL_COMMODITY_MIN;
                     maxAmount = TERMINAL_COMMODITY_MAX;

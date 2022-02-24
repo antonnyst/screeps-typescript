@@ -8,7 +8,7 @@ export interface DepositHarvesterMemory extends CreepMemory {
     distance?: number;
 }
 
-const RETURN_MARGIN = 50;
+const RETURN_MARGIN = 25;
 
 export function depositHarvester(creep: Creep): void {
     const memory = creep.memory as DepositHarvesterMemory;
@@ -50,6 +50,16 @@ export function depositHarvester(creep: Creep): void {
             setMovementData(creep, { pos: storage.pos, range: 1 });
             if (creep.pos.isNearTo(storage.pos) && creep.store.getUsedCapacity() > 0) {
                 creep.transfer(storage, Object.keys(creep.store)[0] as ResourceConstant);
+            }
+        }
+        if (creep.store.getUsedCapacity() === 0 && memory.distance !== undefined) {
+            if (
+                memory.distance * 4 + RETURN_MARGIN + Memory.deposits[memory.id].lastCooldown * 5 >
+                creep.ticksToLive!
+            ) {
+                memory.gathering = true;
+            } else {
+                memory.role = "garbage";
             }
         }
     }
