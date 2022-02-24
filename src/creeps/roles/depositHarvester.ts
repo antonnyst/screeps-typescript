@@ -54,7 +54,7 @@ export function depositHarvester(creep: Creep): void {
         }
         if (creep.store.getUsedCapacity() === 0 && memory.distance !== undefined) {
             if (
-                memory.distance * 4 + RETURN_MARGIN + Memory.deposits[memory.id].lastCooldown * 5 >
+                memory.distance * 4 + RETURN_MARGIN + Memory.deposits[memory.id].lastCooldown * 5 <
                 creep.ticksToLive!
             ) {
                 memory.gathering = true;
