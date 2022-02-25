@@ -1,25 +1,25 @@
 export function roomTotalStoredEnergy(room: Room): number {
-    const containers = _.sum(
-        room.find(FIND_STRUCTURES, { filter: (s) => s.structureType === STRUCTURE_CONTAINER }),
-        (s: Structure) => (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY)
-    );
-    const storage = room.storage !== undefined ? room.storage.store.getUsedCapacity(RESOURCE_ENERGY) : 0;
+  const containers = _.sum(
+    room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_CONTAINER }),
+    (s: Structure) => (s as StructureContainer).store.getUsedCapacity(RESOURCE_ENERGY)
+  );
+  const storage = room.storage !== undefined ? room.storage.store.getUsedCapacity(RESOURCE_ENERGY) : 0;
 
-    return containers + storage;
+  return containers + storage;
 }
 
 export function isOwnedRoom(room: Room): room is OwnedRoom {
-    return room.controller?.my === true;
+  return room.controller?.my === true;
 }
 
 export function OwnedRooms(): OwnedRoom[] {
-    const rooms: OwnedRoom[] = [];
-    for (const room of Object.values(Game.rooms)) {
-        if (isOwnedRoom(room)) {
-            rooms.push(room);
-        }
+  const rooms: OwnedRoom[] = [];
+  for (const room of Object.values(Game.rooms)) {
+    if (isOwnedRoom(room)) {
+      rooms.push(room);
     }
-    return rooms;
+  }
+  return rooms;
 }
 
 /*
@@ -33,22 +33,22 @@ export function OwnedRooms(): OwnedRoom[] {
 export type RoomDescription = "highway_portal" | "highway" | "center" | "source_keeper" | "room";
 
 export function describeRoom(roomName: string): RoomDescription | null {
-    const array = roomName.match(/\d+/g);
+  const array = roomName.match(/\d+/g);
 
-    if (array) {
-        const EW = parseInt(array[0], 10);
-        const NS = parseInt(array[1], 10);
-        if (EW % 10 === 0 && NS % 10 === 0) {
-            return "highway_portal";
-        } else if (EW % 10 === 0 || NS % 10 === 0) {
-            return "highway";
-        } else if (EW % 5 === 0 && NS % 5 === 0) {
-            return "center";
-        } else if (Math.abs(5 - (EW % 10)) <= 1 && Math.abs(5 - (NS % 10)) <= 1) {
-            return "source_keeper";
-        } else {
-            return "room";
-        }
+  if (array) {
+    const EW = parseInt(array[0], 10);
+    const NS = parseInt(array[1], 10);
+    if (EW % 10 === 0 && NS % 10 === 0) {
+      return "highway_portal";
+    } else if (EW % 10 === 0 || NS % 10 === 0) {
+      return "highway";
+    } else if (EW % 5 === 0 && NS % 5 === 0) {
+      return "center";
+    } else if (Math.abs(5 - (EW % 10)) <= 1 && Math.abs(5 - (NS % 10)) <= 1) {
+      return "source_keeper";
+    } else {
+      return "room";
     }
-    return null;
+  }
+  return null;
 }

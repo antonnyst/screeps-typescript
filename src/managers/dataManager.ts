@@ -1,10 +1,11 @@
-import { tickData } from "data/data";
 import { Manager } from "./manager";
+import { tickData } from "data/data";
 
 export class DataManager implements Manager {
-    minSpeed = 1;
-    maxSpeed = 1;
-    public run(speed: number) {
-        tickData();
-    }
+  public minSpeed = 1;
+  public maxSpeed = 1;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public run(_speed: number): void {
+    tickData();
+  }
 }

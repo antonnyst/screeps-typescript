@@ -1,2 +1,2 @@
-// tslint:disable-next-line: no-empty
+/* eslint-disable */
 export function defender(creep: Creep): void {}
