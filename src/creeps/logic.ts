@@ -1,10 +1,10 @@
 declare global {
-    interface CreepMemory {
-        checkIdle?: {
-            idleCount: number;
-            lastPos: RoomPosition;
-        };
-    }
+  interface CreepMemory {
+    checkIdle?: {
+      idleCount: number;
+      lastPos: RoomPosition;
+    };
+  }
 }
 
 /**
@@ -13,34 +13,34 @@ declare global {
  * @param creep The creep to not move
  */
 export function logic(role: (creep: Creep) => void, creep: Creep): void {
-    if (creep.spawning) {
-        return;
-    }
+  if (creep.spawning) {
+    return;
+  }
 
-    checkIdle(creep);
+  checkIdle(creep);
 
-    role(creep);
+  role(creep);
 }
 
 function checkIdle(creep: Creep) {
-    if (creep.memory.checkIdle === undefined) {
-        creep.memory.checkIdle = {
-            idleCount: 0,
-            lastPos: creep.pos
-        };
-    }
-    if (
-        creep.pos.isEqualTo(
-            new RoomPosition(
-                creep.memory.checkIdle.lastPos.x,
-                creep.memory.checkIdle.lastPos.y,
-                creep.memory.checkIdle.lastPos.roomName
-            )
-        )
-    ) {
-        creep.memory.checkIdle.idleCount += 1;
-    } else {
-        creep.memory.checkIdle.idleCount = 0;
-    }
-    creep.memory.checkIdle.lastPos = creep.pos;
+  if (creep.memory.checkIdle === undefined) {
+    creep.memory.checkIdle = {
+      idleCount: 0,
+      lastPos: creep.pos
+    };
+  }
+  if (
+    creep.pos.isEqualTo(
+      new RoomPosition(
+        creep.memory.checkIdle.lastPos.x,
+        creep.memory.checkIdle.lastPos.y,
+        creep.memory.checkIdle.lastPos.roomName
+      )
+    )
+  ) {
+    creep.memory.checkIdle.idleCount += 1;
+  } else {
+    creep.memory.checkIdle.idleCount = 0;
+  }
+  creep.memory.checkIdle.lastPos = creep.pos;
 }

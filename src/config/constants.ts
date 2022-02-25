@@ -38,32 +38,32 @@ export const RAMPART_PERCENTAGE_MAX = 0.04;
 
 // Resource categorisation
 export const TERMINAL_MINERALS: ResourceConstant[] = [
-    RESOURCE_HYDROGEN,
-    RESOURCE_OXYGEN,
-    RESOURCE_UTRIUM,
-    RESOURCE_KEANIUM,
-    RESOURCE_LEMERGIUM,
-    RESOURCE_ZYNTHIUM,
-    RESOURCE_CATALYST
+  RESOURCE_HYDROGEN,
+  RESOURCE_OXYGEN,
+  RESOURCE_UTRIUM,
+  RESOURCE_KEANIUM,
+  RESOURCE_LEMERGIUM,
+  RESOURCE_ZYNTHIUM,
+  RESOURCE_CATALYST
 ];
 
 export const TERMINAL_BOOSTS: ResourceConstant[] = Object.keys(REACTION_TIME) as ResourceConstant[];
 
 export const TERMINAL_RAW_COMMODITIES: ResourceConstant[] = [
-    RESOURCE_MIST,
-    RESOURCE_BIOMASS,
-    RESOURCE_METAL,
-    RESOURCE_SILICON
+  RESOURCE_MIST,
+  RESOURCE_BIOMASS,
+  RESOURCE_METAL,
+  RESOURCE_SILICON
 ];
 
 export const TERMINAL_COMMODITIES: ResourceConstant[] = Object.keys(COMMODITIES).filter(
-    (c) =>
-        !TERMINAL_MINERALS.includes(c as ResourceConstant) &&
-        !TERMINAL_BOOSTS.includes(c as ResourceConstant) &&
-        !TERMINAL_RAW_COMMODITIES.includes(c as ResourceConstant) &&
-        !([RESOURCE_ENERGY, RESOURCE_POWER] as ResourceConstant[]).includes(c as ResourceConstant)
+  c =>
+    !TERMINAL_MINERALS.includes(c as ResourceConstant) &&
+    !TERMINAL_BOOSTS.includes(c as ResourceConstant) &&
+    !TERMINAL_RAW_COMMODITIES.includes(c as ResourceConstant) &&
+    !([RESOURCE_ENERGY, RESOURCE_POWER] as ResourceConstant[]).includes(c as ResourceConstant)
 ) as ResourceConstant[];
 
 export const MARKET_RESOURCES: MarketResourceConstant[] = (RESOURCES_ALL as MarketResourceConstant[]).concat(
-    Object.values(INTERSHARD_RESOURCES) as MarketResourceConstant[]
+  Object.values(INTERSHARD_RESOURCES) as MarketResourceConstant[]
 );

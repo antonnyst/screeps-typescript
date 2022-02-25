@@ -4,11 +4,12 @@ import { logic } from "./logic";
 export type CreepRole = keyof typeof roles;
 
 declare global {
-    interface CreepMemory {
-        role: CreepRole;
-    }
+  interface CreepMemory {
+    role: CreepRole;
+  }
 }
 
 export function runCreep(creep: Creep): void {
-    logic(roles[creep.memory.role], creep);
+  // eslint-disable-next-line import/namespace
+  logic(roles[creep.memory.role], creep);
 }
