@@ -29,4 +29,4 @@ export default {
     typescript({ tsconfig: "./tsconfig.json", include: ["**/*.ts"], exclude: [] }),
     screeps({config: cfg, dryRun: cfg == null})
   ]
-}
+};
