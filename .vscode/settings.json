@@ -1,7 +1,21 @@
 {
+  "[javascript]": {
+    "editor.formatOnSave": false
+  },
+  "[json]": {
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.formatOnSave": false
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "editor.formatOnSave": true,
+  "editor.renderWhitespace": "none",
   "files.encoding": "utf8",
-  "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
   "search.exclude": {
     "_book/**": true,
     ".rpt2_cache/**": true,
@@ -10,13 +24,5 @@
     "typings/**": true
   },
   "typescript.tsdk": "./node_modules/typescript/lib",
-  "[json]": {
-    "editor.formatOnSave": true
-  },
-  "[javascript]": {
-    "editor.formatOnSave": true
-  },
-  "[typescript]": {
-    "editor.formatOnSave": true
-  }
+  "eslint.enable": true
 }

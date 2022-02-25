@@ -1,5 +1,5 @@
 #!/bin/bash
 for var in "$@"
-do 
+do
     rollup -c --environment "DEST:$var"
 done
