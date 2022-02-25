@@ -2,6 +2,7 @@ import * as Config from "./config/config";
 import { CreepManager } from "./managers/creepManager";
 import { DataManager } from "managers/dataManager";
 import { DefenseManager } from "./managers/defenseManager";
+import { DepositManager } from "managers/depositManager";
 import { ErrorMapper } from "utils/ErrorMapper";
 import { FlagManager } from "./managers/flagManager";
 import { LayoutManager } from "managers/layoutManager";
@@ -31,6 +32,7 @@ const managers: Manager[] = [
   new MapManager(),
   new OperationManager(),
   new ScoutManager(),
+  new DepositManager(),
   new LayoutManager(),
   new DataManager()
 ];
