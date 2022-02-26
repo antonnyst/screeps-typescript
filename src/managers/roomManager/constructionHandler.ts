@@ -33,10 +33,11 @@ export function ConstructionHandler(room: OwnedRoom): void {
     room.memory.placedCS = [];
   }
   let remoteSites: ConstructionSite[] = [];
-
-  for (const remote of room.memory.remotes) {
-    if (Game.rooms[remote] !== undefined) {
-      remoteSites = remoteSites.concat(Game.rooms[remote].find(FIND_MY_CONSTRUCTION_SITES));
+  if (room.memory.remotes !== undefined) {
+    for (const remote of room.memory.remotes) {
+      if (Game.rooms[remote] !== undefined) {
+        remoteSites = remoteSites.concat(Game.rooms[remote].find(FIND_MY_CONSTRUCTION_SITES));
+      }
     }
   }
 
