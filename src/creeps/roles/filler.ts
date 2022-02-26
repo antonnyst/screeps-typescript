@@ -1,5 +1,6 @@
-import { Building, Storage } from "buildings";
+import { Building, Storage, Terminal } from "buildings";
 import { baseCenter } from "utils/baseCenter";
+import { isOwnedRoom } from "utils/RoomCalc";
 import { setMovementData } from "creeps/creep";
 
 export interface FillerMemory extends CreepMemory {
@@ -79,8 +80,125 @@ const taskGetters: GetTaskData[] = [
 
       return tasks;
     }
+  },
+  {
+    // Fill labs
+    resources: [],
+    fn: (creep: Creep): Task[] | null => {
+      const home = Game.rooms[creep.memory.home];
+      const terminal = Terminal(home);
+      if (
+        !isOwnedRoom(home) ||
+        home.memory.genLayout === undefined ||
+        home.memory.genBuildings === undefined ||
+        home.memory.labs === undefined ||
+        home.memory.labs.status === "react" ||
+        terminal === null
+      ) {
+        return null;
+      }
+      const tasks: Task[] = [];
+      const capacity = creep.store.getCapacity();
+      for (const labData of home.memory.labs.labs) {
+        const labObject = Game.getObjectById(labData.id);
+        if (labObject !== null) {
+          if (labData.targetResource !== labObject.mineralType) {
+            if (labObject.mineralType != null) {
+              // Empty lab
+              const amount = Math.min(capacity, labObject.store.getUsedCapacity(labObject.mineralType));
+              console.log("Empty");
+              tasks.push({
+                type: "withdraw",
+                id: labData.id,
+                resourceType: labObject.mineralType,
+                amount
+              });
+              tasks.push({
+                type: "transfer",
+                id: terminal.id,
+                resourceType: labObject.mineralType,
+                amount
+              });
+              return tasks;
+            } else if (labObject.mineralType == null && labData.targetResource !== null) {
+              // Fill lab
+              const freeCapacity = labObject.store.getFreeCapacity(labData.targetResource);
+              if (freeCapacity !== null) {
+                const amount = Math.min(capacity, terminal.store.getUsedCapacity(labData.targetResource), freeCapacity);
+                if (amount > 0) {
+                  console.log("Fill1");
+                  tasks.push({
+                    type: "withdraw",
+                    id: terminal.id,
+                    resourceType: labData.targetResource,
+                    amount
+                  });
+                  tasks.push({
+                    type: "transfer",
+                    id: labData.id,
+                    resourceType: labData.targetResource,
+                    amount
+                  });
+                  return tasks;
+                }
+              }
+            }
+          } else if (labObject.mineralType != null && labObject.store.getFreeCapacity(labObject.mineralType) > 0) {
+            // Fill more in lab
+            const freeCapacity = labObject.store.getFreeCapacity(labObject.mineralType);
+            if (freeCapacity !== null) {
+              const amount = Math.min(capacity, terminal.store.getUsedCapacity(labObject.mineralType), freeCapacity);
+              if (amount > 0) {
+                console.log("Fill2");
+                tasks.push({
+                  type: "withdraw",
+                  id: terminal.id,
+                  resourceType: labObject.mineralType,
+                  amount
+                });
+                tasks.push({
+                  type: "transfer",
+                  id: labData.id,
+                  resourceType: labObject.mineralType,
+                  amount
+                });
+                return tasks;
+              }
+            }
+          }
+        }
+      }
+      return null;
+    }
+  },
+  {
+    // Pickup tombstones
+    resources: [],
+    fn: (creep: Creep): Task[] | null => {
+      const home = Game.rooms[creep.memory.home];
+      const storage = Storage(home);
+      if (!isOwnedRoom(home) || storage === null) {
+        return null;
+      }
+      const tombstones = home.find(FIND_TOMBSTONES);
+      for (const tombstone of tombstones) {
+        if (tombstone.store.getUsedCapacity() > 0) {
+          const tasks: Task[] = [];
+          for (const resource of Object.keys(tombstone.store)) {
+            tasks.push({
+              type: "withdraw",
+              id: tombstone.id,
+              resourceType: resource as ResourceConstant,
+              amount: tombstone.store.getUsedCapacity(resource as ResourceConstant)
+            });
+          }
+          return tasks;
+        }
+      }
+      return null;
+    }
   }
-  // TODO: fill labs, nuker and powerspawn
+  // TODO: fill nuker and powerspawn
 ];
 
 const FillerIgnoreExtensions: Partial<Record<number, number[]>> = {
@@ -275,14 +393,9 @@ function getTasks(creep: Creep): Task[] {
   if (home.memory.genLayout === undefined || home.memory.genBuildings === undefined) {
     return [];
   }
-
+  /*
   if (creep.store.getUsedCapacity() === 0) {
-    for (const getter of taskGetters) {
-      const res = getter.fn(creep);
-      if (res !== null) {
-        return res;
-      }
-    }
+
   } else {
     const carriedResources = Object.keys(creep.store) as ResourceConstant[];
     for (const getter of taskGetters) {
@@ -300,27 +413,54 @@ function getTasks(creep: Creep): Task[] {
         }
       }
     }
-  }
 
-  if (home.memory.genBuildings.storage.id !== undefined) {
-    const storage = Game.getObjectById(home.memory.genBuildings.storage.id);
-    if (storage instanceof StructureStorage) {
-      const tasks: Task[] = [];
-      for (const key of Object.keys(creep.store)) {
-        if (key === RESOURCE_ENERGY) {
-          continue;
+  }*/
+  const storage = Storage(home);
+  const carriedResources = Object.keys(creep.store) as ResourceConstant[];
+  for (const getter of taskGetters) {
+    const res = getter.fn(creep);
+    if (res !== null) {
+      let compatible = true;
+      for (const resource of carriedResources) {
+        if (!getter.resources.includes(resource)) {
+          compatible = false;
+          break;
         }
-        const amt = creep.store.getUsedCapacity(key as ResourceConstant);
-        tasks.push({
-          type: "transfer",
-          id: storage.id,
-          resourceType: key as ResourceConstant,
-          amount: amt
-        });
       }
-      return tasks;
+      if (compatible) {
+        return res;
+      } else if (storage !== null) {
+        for (const key of Object.keys(creep.store)) {
+          const amt = creep.store.getUsedCapacity(key as ResourceConstant);
+          res.unshift({
+            type: "transfer",
+            id: storage.id,
+            resourceType: key as ResourceConstant,
+            amount: amt
+          });
+        }
+        return res;
+      }
     }
   }
+
+  if (storage !== null) {
+    const tasks: Task[] = [];
+    for (const key of Object.keys(creep.store)) {
+      if (key === RESOURCE_ENERGY) {
+        continue;
+      }
+      const amt = creep.store.getUsedCapacity(key as ResourceConstant);
+      tasks.push({
+        type: "transfer",
+        id: storage.id,
+        resourceType: key as ResourceConstant,
+        amount: amt
+      });
+    }
+    return tasks;
+  }
+
   return [];
 }
 
@@ -358,7 +498,11 @@ function doTasks(creep: Creep): void {
       memory.tasks.shift();
     } else if (
       task.type === "withdraw" &&
-      (object instanceof StructureStorage || object instanceof StructureContainer) &&
+      (object instanceof StructureStorage ||
+        object instanceof StructureContainer ||
+        object instanceof StructureLab ||
+        object instanceof StructureTerminal ||
+        object instanceof Tombstone) &&
       task.resourceType !== undefined
     ) {
       creep.withdraw(object, task.resourceType, task.amount);
@@ -366,10 +510,12 @@ function doTasks(creep: Creep): void {
     } else if (
       task.type === "transfer" &&
       (object instanceof StructureStorage ||
+        object instanceof StructureTerminal ||
         object instanceof StructureContainer ||
         object instanceof StructureSpawn ||
         object instanceof StructureExtension ||
-        object instanceof StructureTower) &&
+        object instanceof StructureTower ||
+        object instanceof StructureLab) &&
       task.resourceType !== undefined
     ) {
       creep.transfer(object, task.resourceType, task.amount);
@@ -377,6 +523,7 @@ function doTasks(creep: Creep): void {
     } else {
       console.log("task error");
       console.log(JSON.stringify(task));
+      console.log(object);
       memory.tasks.shift();
     }
   }
