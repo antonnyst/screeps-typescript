@@ -40,10 +40,9 @@ export function VisualHandler(room: Room, speed: number): void {
         );
 
         room.visual.text(
-          `Rampart Hits:
-          ${Math.round(rampartavg / 1000)}k/
-          ${Math.round(rampartmin / 1000)}k/
-          ${Math.round(rampartmax / 1000)}k (avg/min/max)`,
+          `Rampart Hits: ${Math.round(rampartavg / 1000)}k/${Math.round(rampartmin / 1000)}k/${Math.round(
+            rampartmax / 1000
+          )}k (avg/min/max)`,
           1,
           3.275,
           {
