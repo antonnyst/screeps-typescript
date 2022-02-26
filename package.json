@@ -7,10 +7,7 @@
   "scripts": {
     "lint": "eslint \"src/**/*.ts\"",
     "build": "rollup -c",
-    "push": "./rollupRunner",
-    "test": "npm run test-unit && npm run test-integration",
-    "test-unit": "rollup -c rollup.test-unit-config.js && mocha dist/test-unit.bundle.js",
-    "test-integration": "npm run build && rollup -c rollup.test-integration-config.js && mocha dist/test-integration.bundle.js"
+    "push": "./rollupRunner"
   },
   "repository": {
     "type": "git",
