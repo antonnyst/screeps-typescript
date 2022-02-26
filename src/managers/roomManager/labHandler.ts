@@ -1,14 +1,17 @@
+import { BOOST_COMPONENTS } from "config/constants";
 import { RunEvery } from "utils/RunEvery";
+import { Terminal } from "buildings";
 
 declare global {
   interface OwnedRoomMemory {
     labs?: LabsData;
   }
 }
-export type LabStatus = "idle" | "prepare-react" | "react";
+export type LabStatus = "idle" | "prepare-react" | "react" | "boost";
 
 export interface LabsData {
   status: LabStatus;
+  target: ResourceConstant | null;
   labs: LabData[];
   inLabs: number[];
   outLabs: number[];
@@ -41,7 +44,7 @@ function runLabData(room: OwnedRoom): void {
 
         for (const lab of room.memory.labs.labs) {
           const labObj = Game.getObjectById(lab.id);
-          if (lab.targetResource === null && labObj != null && labObj.mineralType == null) {
+          if (lab.targetResource === null && labObj !== null && labObj.mineralType == null) {
             // lab is ready
             continue;
           }
@@ -62,6 +65,27 @@ function runLabData(room: OwnedRoom): void {
 
         if (ready) {
           room.memory.labs.status = "react";
+          room.memory.labs.target = null;
+        }
+      }
+      if (room.memory.labs.status === "idle" && room.memory.labs.target !== null) {
+        const components = BOOST_COMPONENTS[room.memory.labs.target];
+        const terminal = Terminal(room);
+        if (components !== undefined && terminal !== null) {
+          let hasResources = true;
+          for (const component of components) {
+            if (terminal.store.getUsedCapacity(component) <= LAB_MINERAL_CAPACITY * 2) {
+              hasResources = false;
+            }
+          }
+          if (hasResources) {
+            room.memory.labs.labs[room.memory.labs.inLabs[0]].targetResource = components[0];
+            room.memory.labs.labs[room.memory.labs.inLabs[1]].targetResource = components[1];
+            for (const labIndex of room.memory.labs.outLabs) {
+              room.memory.labs.labs[labIndex].targetResource = null;
+            }
+            room.memory.labs.status = "prepare-react";
+          }
         }
       }
     }
@@ -142,6 +166,7 @@ function GenerateLabsData(room: OwnedRoom): LabsData | undefined {
 
   return {
     status: "idle",
+    target: null,
     labs,
     inLabs,
     outLabs
@@ -197,6 +222,7 @@ function UpdateLabData(room: OwnedRoom) {
 
   room.memory.labs = {
     status: room.memory.labs.status,
+    target: room.memory.labs.target || null,
     labs,
     inLabs,
     outLabs
