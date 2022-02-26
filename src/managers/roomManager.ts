@@ -107,12 +107,11 @@ function ownedRoomLogic(room: OwnedRoom, speed: number): void {
   }
 
   // Observer logic
-  if (Observer(room) !== null) {
-    if (room.memory.scoutTargets !== undefined && room.memory.scoutTargets.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const obt = room.memory.scoutTargets.shift()!;
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      Observer(room)!.observeRoom(obt);
+  const obsever = Observer(room);
+  if (obsever !== null && room.memory.scoutTargets !== undefined) {
+    const obt = room.memory.scoutTargets.shift();
+    if (obt !== undefined) {
+      obsever.observeRoom(obt);
       console.log(`${room.name} observing ${obt}`);
     }
   }
