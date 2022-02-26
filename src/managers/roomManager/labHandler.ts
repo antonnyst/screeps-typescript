@@ -1,11 +1,14 @@
+import { RunEvery } from "utils/RunEvery";
+
 declare global {
   interface OwnedRoomMemory {
     labs?: LabsData;
   }
 }
+export type LabStatus = "idle" | "prepare-react" | "react";
 
 export interface LabsData {
-  status: string;
+  status: LabStatus;
   labs: LabData[];
   inLabs: number[];
   outLabs: number[];
@@ -23,16 +26,13 @@ export function LabHandler(room: OwnedRoom): void {
 }
 
 function runLabData(room: OwnedRoom): void {
-  if (room.controller === undefined || !room.controller.my) {
-    return;
-  }
   if (room.controller.level < 6) {
     room.memory.labs = undefined;
   } else {
     if (room.memory.labs === undefined) {
       room.memory.labs = GenerateLabsData(room);
     } else {
-      UpdateLabData(room);
+      RunEvery(UpdateLabData, room.name + "updatelabsdata", 100, room);
 
       RunLabs(room);
 
@@ -91,6 +91,12 @@ function RunLabs(room: OwnedRoom): void {
 
     for (const lab of outLabs) {
       lab.runReaction(inLabs[0], inLabs[1]);
+    }
+    if (inLabs[0].store.getUsedCapacity() === 0 || inLabs[1].store.getUsedCapacity() === 0) {
+      room.memory.labs.status = "idle";
+      for (const lab of room.memory.labs.labs) {
+        lab.targetResource = null;
+      }
     }
   }
 }
