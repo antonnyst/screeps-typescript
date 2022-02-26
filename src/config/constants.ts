@@ -1,5 +1,5 @@
 export const MINERAL_MINING_ENERGY_NEEDED = 50000;
-export const PUSH_GCL_ENERGY_NEEDED = 100000;
+export const PUSH_GCL_ENERGY_NEEDED = 400000;
 
 // How much of each resource type should be stored in the terminal
 export const TERMINAL_ENERGY_MIN = 30000;
