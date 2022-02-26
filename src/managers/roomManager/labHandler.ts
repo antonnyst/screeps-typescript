@@ -116,7 +116,7 @@ function RunLabs(room: OwnedRoom): void {
     for (const lab of outLabs) {
       lab.runReaction(inLabs[0], inLabs[1]);
     }
-    if (inLabs[0].store.getUsedCapacity() === 0 || inLabs[1].store.getUsedCapacity() === 0) {
+    if (inLabs[0].mineralType == null || inLabs[1].mineralType == null) {
       room.memory.labs.status = "idle";
       for (const lab of room.memory.labs.labs) {
         lab.targetResource = null;
