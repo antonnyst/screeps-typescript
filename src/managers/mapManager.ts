@@ -7,9 +7,6 @@ export class MapManager implements Manager {
   public minSpeed = 0.1;
   public maxSpeed = 1;
   public run(speed: number): void {
-    if (Game.shard.name !== "shard3") {
-      return;
-    }
     if (Config.mapVisuals && Memory.mapRooms !== undefined) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const visualString: string | undefined = getFromCache("mapCache", 100 / speed);
