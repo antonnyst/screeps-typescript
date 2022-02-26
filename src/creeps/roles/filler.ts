@@ -231,19 +231,11 @@ export function filler(creep: Creep): void {
       }
       if (
         task.type === "transfer" &&
-        (object instanceof StructureStorage || object instanceof StructureContainer) &&
-        task.resourceType !== undefined &&
-        task.amount !== undefined
-      ) {
-        const freeCapacity = object.store.getFreeCapacity(task.resourceType);
-        if (freeCapacity !== null && freeCapacity < task.amount) {
-          memory.tasks.splice(i, 1);
-          continue;
-        }
-      }
-      if (
-        task.type === "transfer" &&
-        (object instanceof StructureTower ||
+        (object instanceof StructureStorage ||
+          object instanceof StructureContainer ||
+          object instanceof StructureTerminal ||
+          object instanceof StructureLab ||
+          object instanceof StructureTower ||
           object instanceof StructureSpawn ||
           object instanceof StructureExtension) &&
         task.resourceType !== undefined &&
@@ -393,28 +385,7 @@ function getTasks(creep: Creep): Task[] {
   if (home.memory.genLayout === undefined || home.memory.genBuildings === undefined) {
     return [];
   }
-  /*
-  if (creep.store.getUsedCapacity() === 0) {
 
-  } else {
-    const carriedResources = Object.keys(creep.store) as ResourceConstant[];
-    for (const getter of taskGetters) {
-      let compatible = true;
-      for (const resource of carriedResources) {
-        if (!getter.resources.includes(resource)) {
-          compatible = false;
-          break;
-        }
-      }
-      if (compatible) {
-        const res = getter.fn(creep);
-        if (res !== null) {
-          return res;
-        }
-      }
-    }
-
-  }*/
   const storage = Storage(home);
   const carriedResources = Object.keys(creep.store) as ResourceConstant[];
   for (const getter of taskGetters) {
