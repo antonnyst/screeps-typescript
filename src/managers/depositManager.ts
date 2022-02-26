@@ -23,7 +23,7 @@ interface DepositData {
 }
 
 const DEPOSIT_MAX_COOLDOWN = 100;
-const DEPOSIT_MAX_RANGE = 3;
+const DEPOSIT_MAX_RANGE = 4;
 
 export class DepositManager implements Manager {
   public minSpeed = 1;
