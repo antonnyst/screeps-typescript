@@ -1,20 +1,5 @@
 import { Building, PowerSpawn, Storage, Terminal } from "buildings";
-import {
-  TERMINAL_BOOSTS,
-  TERMINAL_BOOST_MAX,
-  TERMINAL_BOOST_MIN,
-  TERMINAL_COMMODITIES,
-  TERMINAL_COMMODITY_MAX,
-  TERMINAL_COMMODITY_MIN,
-  TERMINAL_ENERGY_MAX,
-  TERMINAL_ENERGY_MIN,
-  TERMINAL_MINERALS,
-  TERMINAL_MINERAL_MAX,
-  TERMINAL_MINERAL_MIN,
-  TERMINAL_RAW_COMMODITIES,
-  TERMINAL_RAW_COMMODITY_MAX,
-  TERMINAL_RAW_COMMODITY_MIN
-} from "config/constants";
+import { RESOURCE_LIMITS, RESOURCE_TYPE } from "config/constants";
 
 export interface ManagerMemory extends CreepMemory {
   target?: Id<AnyStoreStructure>;
@@ -79,21 +64,10 @@ export function manager(creep: Creep): void {
         const amount = terminal.store.getUsedCapacity(resource);
         let minAmount = 0;
         let maxAmount = Infinity;
-        if (resource === RESOURCE_ENERGY) {
-          minAmount = TERMINAL_ENERGY_MIN;
-          maxAmount = TERMINAL_ENERGY_MAX;
-        } else if (TERMINAL_MINERALS.includes(resource)) {
-          minAmount = TERMINAL_MINERAL_MIN;
-          maxAmount = TERMINAL_MINERAL_MAX;
-        } else if (TERMINAL_BOOSTS.includes(resource)) {
-          minAmount = TERMINAL_BOOST_MIN;
-          maxAmount = TERMINAL_BOOST_MAX;
-        } else if (TERMINAL_RAW_COMMODITIES.includes(resource)) {
-          minAmount = TERMINAL_RAW_COMMODITY_MIN;
-          maxAmount = TERMINAL_RAW_COMMODITY_MAX;
-        } else if (TERMINAL_COMMODITIES.includes(resource)) {
-          minAmount = TERMINAL_COMMODITY_MIN;
-          maxAmount = TERMINAL_COMMODITY_MAX;
+        const resourceType = RESOURCE_TYPE[resource];
+        if (resourceType !== undefined) {
+          minAmount = RESOURCE_LIMITS[resourceType].terminal.min;
+          maxAmount = RESOURCE_LIMITS[resourceType].terminal.max;
         }
         if (amount < minAmount) {
           // Fill the terminal

@@ -1,65 +1,191 @@
 export const MINERAL_MINING_ENERGY_NEEDED = 50000;
 export const PUSH_GCL_ENERGY_NEEDED = 400000;
 
-// How much of each resource type should be stored in the terminal
-export const TERMINAL_ENERGY_MIN = 30000;
-export const TERMINAL_ENERGY_MAX = 40000;
-export const TERMINAL_MINERAL_MIN = 6000;
-export const TERMINAL_MINERAL_MAX = 12000;
-export const TERMINAL_BOOST_MIN = 1000;
-export const TERMINAL_BOOST_MAX = 5000;
-export const TERMINAL_RAW_COMMODITY_MIN = 1000;
-export const TERMINAL_RAW_COMMODITY_MAX = 5000;
-export const TERMINAL_COMMODITY_MIN = 1000;
-export const TERMINAL_COMMODITY_MAX = 5000;
-
-// How much energy should be stored in the factory
-export const FACTORY_ENERGY_MIN = 5000;
-export const FACTORY_ENERGY_MAX = 10000;
-
-// How much of each raw commodity should be stored in each room
-export const ROOM_RAW_COMMODITY_IMPORT_LIMIT = 2000;
-export const ROOM_RAW_COMMODITY_EXPORT_LIMIT = 6000;
-
-// How much of each mineral should be stored in each room
-export const ROOM_MINERAL_IMPORT_LIMIT = 12000;
-export const ROOM_MINERAL_EXPORT_LIMIT = 24000;
-
-// How much energy should be stored in each room
-export const ROOM_ENERGY_IMPORT_LIMIT = 150000;
-export const ROOM_ENERGY_EXPORT_LIMIT = 400000;
-
 // How many percents of max health should rampart be maintained at
 export const RAMPART_PERCENTAGE_MIN = 0.03;
 export const RAMPART_PERCENTAGE_MAX = 0.04;
 
-// Resource categorisation
-export const TERMINAL_MINERALS: ResourceConstant[] = [
-  RESOURCE_HYDROGEN,
-  RESOURCE_OXYGEN,
-  RESOURCE_UTRIUM,
-  RESOURCE_KEANIUM,
-  RESOURCE_LEMERGIUM,
-  RESOURCE_ZYNTHIUM,
-  RESOURCE_CATALYST
-];
+export type ResourceType = "energy" | "power" | "mineral" | "raw_boost" | "boost" | "raw_commodity" | "commodity";
 
-export const TERMINAL_BOOSTS: ResourceConstant[] = Object.keys(REACTION_TIME) as ResourceConstant[];
+export const RESOURCE_TYPE: Record<ResourceConstant, ResourceType | undefined> = {
+  energy: "energy",
+  power: "power",
+  ops: undefined,
+  U: "mineral",
+  L: "mineral",
+  K: "mineral",
+  Z: "mineral",
+  O: "mineral",
+  H: "mineral",
+  X: "mineral",
+  OH: "raw_boost",
+  ZK: "raw_boost",
+  UL: "raw_boost",
+  G: "raw_boost",
+  UH: "boost",
+  UO: "boost",
+  KH: "boost",
+  KO: "boost",
+  LH: "boost",
+  LO: "boost",
+  ZH: "boost",
+  ZO: "boost",
+  GH: "boost",
+  GO: "boost",
+  UH2O: "boost",
+  UHO2: "boost",
+  KH2O: "boost",
+  KHO2: "boost",
+  LH2O: "boost",
+  LHO2: "boost",
+  ZH2O: "boost",
+  ZHO2: "boost",
+  GH2O: "boost",
+  GHO2: "boost",
+  XUH2O: "boost",
+  XUHO2: "boost",
+  XKH2O: "boost",
+  XKHO2: "boost",
+  XLH2O: "boost",
+  XLHO2: "boost",
+  XZH2O: "boost",
+  XZHO2: "boost",
+  XGH2O: "boost",
+  XGHO2: "boost",
+  mist: "raw_commodity",
+  biomass: "raw_commodity",
+  metal: "raw_commodity",
+  silicon: "raw_commodity",
+  utrium_bar: undefined,
+  lemergium_bar: undefined,
+  zynthium_bar: undefined,
+  keanium_bar: undefined,
+  ghodium_melt: undefined,
+  oxidant: undefined,
+  reductant: undefined,
+  purifier: undefined,
+  battery: undefined,
+  composite: undefined,
+  crystal: undefined,
+  liquid: undefined,
+  wire: "commodity",
+  switch: "commodity",
+  transistor: "commodity",
+  microchip: "commodity",
+  circuit: "commodity",
+  device: "commodity",
+  cell: "commodity",
+  phlegm: "commodity",
+  tissue: "commodity",
+  muscle: "commodity",
+  organoid: "commodity",
+  organism: "commodity",
+  alloy: "commodity",
+  tube: "commodity",
+  fixtures: "commodity",
+  frame: "commodity",
+  hydraulics: "commodity",
+  machine: "commodity",
+  condensate: "commodity",
+  concentrate: "commodity",
+  extract: "commodity",
+  spirit: "commodity",
+  emanation: "commodity",
+  essence: "commodity"
+};
 
-export const TERMINAL_RAW_COMMODITIES: ResourceConstant[] = [
-  RESOURCE_MIST,
-  RESOURCE_BIOMASS,
-  RESOURCE_METAL,
-  RESOURCE_SILICON
-];
-
-export const TERMINAL_COMMODITIES: ResourceConstant[] = Object.keys(COMMODITIES).filter(
-  c =>
-    !TERMINAL_MINERALS.includes(c as ResourceConstant) &&
-    !TERMINAL_BOOSTS.includes(c as ResourceConstant) &&
-    !TERMINAL_RAW_COMMODITIES.includes(c as ResourceConstant) &&
-    !([RESOURCE_ENERGY, RESOURCE_POWER] as ResourceConstant[]).includes(c as ResourceConstant)
-) as ResourceConstant[];
+export const RESOURCE_LIMITS: Record<
+  ResourceType,
+  {
+    terminal: {
+      min: number;
+      max: number;
+    };
+    room: {
+      import: number;
+      export: number;
+      sell: number | null;
+    };
+  }
+> = {
+  energy: {
+    terminal: {
+      min: 30000,
+      max: 40000
+    },
+    room: {
+      import: 250000,
+      export: 400000,
+      sell: 500000
+    }
+  },
+  power: {
+    terminal: {
+      min: 2000,
+      max: 2000
+    },
+    room: {
+      import: 10000,
+      export: 10000,
+      sell: null
+    }
+  },
+  mineral: {
+    terminal: {
+      min: 6000,
+      max: 12000
+    },
+    room: {
+      import: 12000,
+      export: 24000,
+      sell: 24000
+    }
+  },
+  raw_boost: {
+    terminal: {
+      min: 3000,
+      max: 6000
+    },
+    room: {
+      import: 2000,
+      export: 7000,
+      sell: null
+    }
+  },
+  boost: {
+    terminal: {
+      min: 3000,
+      max: 6000
+    },
+    room: {
+      import: 2000,
+      export: 7000,
+      sell: null
+    }
+  },
+  raw_commodity: {
+    terminal: {
+      min: 3000,
+      max: 6000
+    },
+    room: {
+      import: 2000,
+      export: 7000,
+      sell: null
+    }
+  },
+  commodity: {
+    terminal: {
+      min: 1000,
+      max: 1000
+    },
+    room: {
+      import: 0,
+      export: 0,
+      sell: null
+    }
+  }
+};
 
 export const MARKET_RESOURCES: MarketResourceConstant[] = (RESOURCES_ALL as MarketResourceConstant[]).concat(
   Object.values(INTERSHARD_RESOURCES) as MarketResourceConstant[]
