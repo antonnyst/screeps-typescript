@@ -1,4 +1,4 @@
-import * as C from "../../config/constants";
+import { RESOURCE_LIMITS, RESOURCE_TYPE } from "../../config/constants";
 
 declare global {
   interface OwnedRoomMemory {
@@ -69,15 +69,12 @@ function ResourceData(room: OwnedRoom): void {
     if (room.memory.unclaim !== undefined) {
       importLimit = -1;
       exportLimit = 0;
-    } else if (resource === RESOURCE_ENERGY) {
-      importLimit = C.ROOM_ENERGY_IMPORT_LIMIT;
-      exportLimit = C.ROOM_ENERGY_EXPORT_LIMIT;
-    } else if (C.TERMINAL_MINERALS.includes(resource)) {
-      importLimit = C.ROOM_MINERAL_IMPORT_LIMIT;
-      exportLimit = C.ROOM_MINERAL_EXPORT_LIMIT;
-    } else if (C.TERMINAL_RAW_COMMODITIES.includes(resource)) {
-      importLimit = C.ROOM_MINERAL_IMPORT_LIMIT;
-      exportLimit = C.ROOM_MINERAL_EXPORT_LIMIT;
+    } else {
+      const resourceType = RESOURCE_TYPE[resource];
+      if (resourceType !== undefined) {
+        importLimit = RESOURCE_LIMITS[resourceType].room.import;
+        exportLimit = RESOURCE_LIMITS[resourceType].room.export;
+      }
     }
 
     let d = 0;

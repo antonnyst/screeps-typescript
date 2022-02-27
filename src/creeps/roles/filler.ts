@@ -106,7 +106,6 @@ const taskGetters: GetTaskData[] = [
             if (labObject.mineralType != null) {
               // Empty lab
               const amount = Math.min(capacity, labObject.store.getUsedCapacity(labObject.mineralType));
-              console.log("Empty");
               tasks.push({
                 type: "withdraw",
                 id: labData.id,
@@ -126,7 +125,6 @@ const taskGetters: GetTaskData[] = [
               if (freeCapacity !== null) {
                 const amount = Math.min(capacity, terminal.store.getUsedCapacity(labData.targetResource), freeCapacity);
                 if (amount > 0) {
-                  console.log("Fill1");
                   tasks.push({
                     type: "withdraw",
                     id: terminal.id,
@@ -149,7 +147,6 @@ const taskGetters: GetTaskData[] = [
             if (freeCapacity !== null) {
               const amount = Math.min(capacity, terminal.store.getUsedCapacity(labObject.mineralType), freeCapacity);
               if (amount > 0) {
-                console.log("Fill2");
                 tasks.push({
                   type: "withdraw",
                   id: terminal.id,

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import * as C from "../config/constants";
 import * as roles from "../creeps/roles";
 import { Building, Storage } from "buildings";
 import { GenerateBodyFromPattern, bodySortingValues, rolePatterns } from "../utils/CreepBodyGenerator";
@@ -12,6 +11,7 @@ import {
   RemoteMinerMemory,
   ReserverMemory
 } from "creeps/roles";
+import { MINERAL_MINING_ENERGY_NEEDED, PUSH_GCL_ENERGY_NEEDED, RESOURCE_LIMITS } from "config/constants";
 import { isOwnedRoom, roomTotalStoredEnergy } from "utils/RoomCalc";
 import { packPosition, unpackPosition } from "../utils/RoomPositionPacker";
 import { CreepRole } from "creeps/runner";
@@ -499,7 +499,7 @@ const needChecks: CreepNeedCheckFunction[] = [
       (room.controller.level < 8 ||
         (pushGCL &&
           room.memory.resources !== undefined &&
-          room.memory.resources.total[RESOURCE_ENERGY] > C.PUSH_GCL_ENERGY_NEEDED) ||
+          room.memory.resources.total[RESOURCE_ENERGY] > PUSH_GCL_ENERGY_NEEDED) ||
         room.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[room.controller.level] * 0.2)
     ) {
       return {
@@ -773,7 +773,7 @@ const needChecks: CreepNeedCheckFunction[] = [
     if (
       (room.controller && room.controller.level < 6) ||
       (room.memory.resources !== undefined &&
-        room.memory.resources.total[RESOURCE_ENERGY] < C.MINERAL_MINING_ENERGY_NEEDED) ||
+        room.memory.resources.total[RESOURCE_ENERGY] < MINERAL_MINING_ENERGY_NEEDED) ||
       room.memory.genBuildings === undefined ||
       room.memory.unclaim
     ) {
@@ -802,7 +802,8 @@ const needChecks: CreepNeedCheckFunction[] = [
           extractor !== undefined &&
           container instanceof Structure &&
           room.memory.resources !== undefined &&
-          room.memory.resources?.total[mineral.mineralType] < C.ROOM_MINERAL_EXPORT_LIMIT * 1.5
+          (RESOURCE_LIMITS.mineral.room.sell === null ||
+            room.memory.resources?.total[mineral.mineralType] < RESOURCE_LIMITS.mineral.room.sell * 1.5)
         ) {
           if (counts.mineralMiner === 0) {
             return {
@@ -828,18 +829,15 @@ const needChecks: CreepNeedCheckFunction[] = [
     if (room.controller === undefined || room.memory.unclaim || room.memory.resources === undefined) {
       return null;
     }
-
-    const limit = Math.max(
-      Math.ceil(1 + (room.memory.resources.total[RESOURCE_ENERGY] - C.PUSH_GCL_ENERGY_NEEDED) / 100000),
-      1
-    );
+    const energy = room.controller.level < 8 ? 0 : PUSH_GCL_ENERGY_NEEDED;
+    const limit = Math.max(Math.ceil(1 + (room.memory.resources.total[RESOURCE_ENERGY] - energy) / 100000), 1);
 
     if (
       counts.upgrader < limit &&
       (room.controller.level < 8 ||
         (pushGCL &&
           room.memory.resources !== undefined &&
-          room.memory.resources.total[RESOURCE_ENERGY] > C.PUSH_GCL_ENERGY_NEEDED) ||
+          room.memory.resources.total[RESOURCE_ENERGY] > PUSH_GCL_ENERGY_NEEDED) ||
         room.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[room.controller.level] * 0.2)
     ) {
       return {
