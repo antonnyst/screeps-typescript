@@ -74,7 +74,7 @@ function runLabData(room: OwnedRoom): void {
         if (components !== undefined && terminal !== null) {
           let hasResources = true;
           for (const component of components) {
-            if (terminal.store.getUsedCapacity(component) <= LAB_MINERAL_CAPACITY * 2) {
+            if (terminal.store.getUsedCapacity(component) < LAB_MINERAL_CAPACITY) {
               hasResources = false;
             }
           }
