@@ -44,7 +44,8 @@ export class DepositManager implements Manager {
             // Lets check if we should spawn an harvester for this deposit
             const pos = unpackPosition(Memory.deposits[id].pos);
             const hostiles = RoomData(pos.roomName).hostiles.get();
-            if (!hasHarvesters(id) && (hostiles === null || hostiles.length === 0)) {
+            const control = RoomData(pos.roomName).control.get();
+            if (!hasHarvesters(id) && (hostiles === null || hostiles.length === 0) && control !== null) {
               // Check range
               const rooms = OwnedRooms().filter(r => r.energyCapacityAvailable >= 3650);
 
