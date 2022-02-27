@@ -1,11 +1,13 @@
 import { BasicRoomData, GenLayoutData } from "layout/layout";
 import { AddWork } from "managers/layoutManager";
+import { fullSegmentReset } from "data/data";
 import { packPosition } from "utils/RoomPositionPacker";
 
 declare global {
   namespace NodeJS {
     interface Global {
       addWork: (room: string, controller: number[], source1: number[], source2: number[], mineral: number[]) => void;
+      resetData: () => void;
     }
   }
 }
@@ -40,4 +42,8 @@ global.addWork = (room: string, controller: number[], source1: number[], source2
       console.log(new RoomPosition(layout.prefabs[0].x - 1, layout.prefabs[0].y + 1, room));
     }
   });
+};
+
+global.resetData = () => {
+  fullSegmentReset();
 };

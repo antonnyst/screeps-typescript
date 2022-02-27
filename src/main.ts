@@ -1,5 +1,6 @@
 /* eslint-disable sort-imports */
 import MemHack from "./utils/MemHack";
+import "./console";
 import * as Config from "./config/config";
 import { saveInit, saveRooms, saveTick } from "stats/stats";
 import { ErrorMapper } from "./utils/ErrorMapper";
