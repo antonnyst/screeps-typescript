@@ -107,12 +107,18 @@ export function LayoutHandler(room: OwnedRoom): void {
         50
       );
     }
+  } else {
+    RoomData(room.name).basicRoomData.prepare();
   }
 }
 
 function GenerateBuildingsData(room: OwnedRoom): GenBuildingsData | undefined {
+  if (room.memory.genLayout === undefined || room.memory.remoteData === undefined) {
+    return undefined;
+  }
   const basicRoomData = RoomData(room.name).basicRoomData.get();
-  if (basicRoomData === null || room.memory.genLayout === undefined || room.memory.remoteData === undefined) {
+  if (basicRoomData === null) {
+    RoomData(room.name).basicRoomData.prepare();
     return undefined;
   }
 
