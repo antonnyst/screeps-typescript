@@ -125,8 +125,8 @@ export const RESOURCE_LIMITS: Record<
       max: 2000
     },
     room: {
-      import: 10000,
-      export: 10000,
+      import: 0,
+      export: 0,
       sell: null
     }
   },

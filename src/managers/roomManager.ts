@@ -7,6 +7,7 @@ import { LayoutHandler } from "./roomManager/layoutHandler";
 import { LinkHandler } from "./roomManager/linkHandler";
 import { Manager } from "./manager";
 import { Observer } from "buildings";
+import { PowerHandler } from "./roomManager/powerHandler";
 import { RemoteHandler } from "./roomManager/remoteHandler";
 import { RepairHandler } from "./roomManager/repairHandler";
 import { ResourceHandler } from "./roomManager/resourceHandler";
@@ -118,6 +119,9 @@ function ownedRoomLogic(room: OwnedRoom, speed: number): void {
 
   // ResourceHandler
   RunEvery(ResourceHandler, room.name + "resourceHandler", 5 / speed, room);
+
+  // PowerHandler
+  PowerHandler(room);
 
   // LayoutHandler
   RunEvery(LayoutHandler, room.name + "layoutHandler", 10 / speed, room);
