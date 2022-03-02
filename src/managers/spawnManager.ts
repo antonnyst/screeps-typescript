@@ -69,10 +69,10 @@ export class SpawnManager implements Manager {
               if (this.checkWaiting(room, spawns)) {
                 continue;
               }
-              if (this.checkQueue(room, spawns)) {
+              if (this.checkNeeds(room, spawns)) {
                 continue;
               }
-              this.checkNeeds(room, spawns);
+              this.checkQueue(room, spawns);
             }
           }
         }

@@ -99,7 +99,7 @@ export class ResourceManager implements Manager {
                 const terminalAmount = Game.rooms[hr.roomName].terminal?.store.getUsedCapacity(resource);
                 if (excess > 0 && terminalAmount !== undefined) {
                   // This room has this much excess we can sell
-                  const amt: number = Math.min(terminalAmount, excess);
+                  const amt: number = Math.min(terminalAmount, hr.amt);
 
                   let orders: Order[] = Game.market.getAllOrders({
                     type: ORDER_BUY,

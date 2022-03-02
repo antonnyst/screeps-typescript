@@ -171,7 +171,7 @@ export const RESOURCE_LIMITS: Record<
     room: {
       import: 2000,
       export: 7000,
-      sell: null
+      sell: 24000
     }
   },
   commodity: {
