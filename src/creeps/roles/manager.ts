@@ -1,5 +1,6 @@
 import { Building, PowerSpawn, Storage, Terminal } from "buildings";
 import { RESOURCE_LIMITS, RESOURCE_TYPE } from "config/constants";
+import { isOwnedRoom } from "utils/RoomCalc";
 
 export interface ManagerMemory extends CreepMemory {
   target?: Id<AnyStoreStructure>;
@@ -58,7 +59,6 @@ export function manager(creep: Creep): void {
     }
 
     const terminal = Terminal(home);
-
     if (terminal !== null) {
       for (const resource of RESOURCES_ALL) {
         const amount = terminal.store.getUsedCapacity(resource);
@@ -108,17 +108,35 @@ export function manager(creep: Creep): void {
       }
     }
 
-    const powerspawn = PowerSpawn(home);
-
-    if (powerspawn !== null) {
-      if (powerspawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-        const storageAmount = storage.store.getUsedCapacity(RESOURCE_ENERGY);
-        const fillNeeded = powerspawn.store.getFreeCapacity(RESOURCE_ENERGY);
-        const possibleAmount = Math.min(fillNeeded, storageAmount, creep.store.getCapacity());
-        if (possibleAmount > 0) {
-          creep.withdraw(storage, RESOURCE_ENERGY, possibleAmount);
-          memory.target = powerspawn.id;
-          return;
+    if (isOwnedRoom(home) && home.memory.power?.process) {
+      const powerspawn = PowerSpawn(home);
+      if (powerspawn !== null) {
+        const energyNeeded = powerspawn.store.getFreeCapacity(RESOURCE_ENERGY);
+        if (energyNeeded > POWER_SPAWN_ENERGY_CAPACITY * 0.75 || energyNeeded >= creep.store.getCapacity()) {
+          const storageAmount = storage.store.getUsedCapacity(RESOURCE_ENERGY);
+          const possibleAmount = Math.min(energyNeeded, storageAmount, creep.store.getCapacity());
+          if (possibleAmount > 0) {
+            creep.withdraw(storage, RESOURCE_ENERGY, possibleAmount);
+            memory.target = powerspawn.id;
+            return;
+          }
+        }
+        const powerNeeded = powerspawn.store.getFreeCapacity(RESOURCE_POWER);
+        if (powerNeeded >= POWER_SPAWN_POWER_CAPACITY * 0.75 || powerNeeded >= creep.store.getCapacity()) {
+          const storageAmount = storage.store.getUsedCapacity(RESOURCE_POWER);
+          const terminalAmount = terminal?.store.getUsedCapacity(RESOURCE_POWER);
+          const amount = storageAmount > 0 ? storageAmount : terminalAmount ?? 0;
+          const possibleAmount = Math.min(powerNeeded, amount, creep.store.getCapacity());
+          if (possibleAmount > 0) {
+            if (storageAmount > 0) {
+              creep.withdraw(storage, RESOURCE_POWER, possibleAmount);
+            } else {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              creep.withdraw(terminal!, RESOURCE_POWER, possibleAmount);
+            }
+            memory.target = powerspawn.id;
+            return;
+          }
         }
       }
     }
