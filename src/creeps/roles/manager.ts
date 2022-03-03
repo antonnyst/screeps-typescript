@@ -122,11 +122,11 @@ export function manager(creep: Creep): void {
           }
         }
         const powerNeeded = powerspawn.store.getFreeCapacity(RESOURCE_POWER);
-        if (powerNeeded >= POWER_SPAWN_POWER_CAPACITY * 0.75 || powerNeeded >= creep.store.getCapacity()) {
+        if (powerNeeded >= POWER_SPAWN_POWER_CAPACITY - 2 || powerNeeded >= creep.store.getCapacity()) {
           const storageAmount = storage.store.getUsedCapacity(RESOURCE_POWER);
           const terminalAmount = terminal?.store.getUsedCapacity(RESOURCE_POWER);
           const amount = storageAmount > 0 ? storageAmount : terminalAmount ?? 0;
-          const possibleAmount = Math.min(powerNeeded, amount, creep.store.getCapacity());
+          const possibleAmount = Math.min(powerNeeded + 1, amount, creep.store.getCapacity());
           if (possibleAmount > 0) {
             if (storageAmount > 0) {
               creep.withdraw(storage, RESOURCE_POWER, possibleAmount);
