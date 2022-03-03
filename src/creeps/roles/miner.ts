@@ -75,7 +75,7 @@ export function miner(creep: Creep): void {
           if (link !== null && link instanceof StructureLink) {
             if (
               link.store.getFreeCapacity(RESOURCE_ENERGY) > 0 &&
-              creep.store.getUsedCapacity(RESOURCE_ENERGY) >= 50 - creep.getActiveBodyparts(WORK) * HARVEST_POWER
+              creep.store.getFreeCapacity(RESOURCE_ENERGY) < creep.getActiveBodyparts(WORK) * HARVEST_POWER
             ) {
               creep.transfer(link, RESOURCE_ENERGY);
             }
