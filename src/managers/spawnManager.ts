@@ -362,7 +362,8 @@ const needChecks: CreepNeedCheckFunction[] = [
   },
   // Check fillers
   (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
-    if (counts.filler < 2 && !room.memory.unclaim) {
+    const fillerTarget = room.controller.level < 7 ? 2 : 1;
+    if (counts.filler < fillerTarget && !room.memory.unclaim) {
       return {
         role: "filler",
         pattern: rolePatterns.filler,
