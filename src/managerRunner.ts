@@ -2,9 +2,9 @@ import * as Config from "./config/config";
 import { CreepManager } from "./managers/creepManager";
 import { DataManager } from "managers/dataManager";
 import { DefenseManager } from "./managers/defenseManager";
-import { DepositManager } from "managers/depositManager";
 import { ErrorMapper } from "utils/ErrorMapper";
 import { FlagManager } from "./managers/flagManager";
+import { HighwayManager } from "managers/highwayManager";
 import { LayoutManager } from "managers/layoutManager";
 import { Manager } from "./managers/manager";
 import { MapManager } from "./managers/mapManager";
@@ -32,7 +32,7 @@ const managers: Manager[] = [
   new MapManager(),
   new OperationManager(),
   new ScoutManager(),
-  new DepositManager(),
+  new HighwayManager(),
   new LayoutManager(),
   new DataManager()
 ];
