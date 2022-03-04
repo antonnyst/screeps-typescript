@@ -136,9 +136,9 @@ export const RESOURCE_LIMITS: Record<
       max: 12000
     },
     room: {
-      import: 12000,
-      export: 24000,
-      sell: 24000
+      import: 10000,
+      export: 20000,
+      sell: 25000
     }
   },
   raw_boost: {
