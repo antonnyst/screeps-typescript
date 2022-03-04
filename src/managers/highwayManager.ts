@@ -25,7 +25,7 @@ interface DepositData {
 const DEPOSIT_MAX_COOLDOWN = 100;
 const DEPOSIT_MAX_RANGE = 4;
 
-export class DepositManager implements Manager {
+export class HighwayManager implements Manager {
   public minSpeed = 1;
   public maxSpeed = 1;
   public run(speed: number): void {
@@ -33,6 +33,7 @@ export class DepositManager implements Manager {
       Memory.deposits = {};
     }
 
+    // Deposit logic
     RunEvery(
       () => {
         for (const id in Memory.deposits) {
