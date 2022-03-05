@@ -20,6 +20,10 @@ export interface MarketData {
   };
 }
 
+/**
+ * Inter room logistics
+ * Manages transfers between rooms and the market
+ */
 export class ResourceManager implements Manager {
   public minSpeed = 0.2;
   public maxSpeed = 1;

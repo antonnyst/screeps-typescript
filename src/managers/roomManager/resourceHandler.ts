@@ -11,6 +11,10 @@ interface ResourcesData {
   delta: { [resourceType in ResourceConstant]: number };
 }
 
+/**
+ * Handles the room resource balance, needs and excesses
+ * @param room The room to run the handler on
+ */
 export function ResourceHandler(room: OwnedRoom): void {
   ResourceData(room);
 }
