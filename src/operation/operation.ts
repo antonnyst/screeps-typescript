@@ -4,7 +4,7 @@ import { OperationType } from "./runner";
 export interface Operation {
   type: OperationType;
   expire?: number;
-  target: string;
+  target: string[];
   source: string;
   squads: Squad[];
   creeps: CreepDescriptor[];

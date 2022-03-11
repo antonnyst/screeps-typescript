@@ -380,7 +380,8 @@ const needChecks: CreepNeedCheckFunction[] = [
       room.controller.level < 8 &&
       room.memory.scoutTargets !== undefined &&
       room.memory.scoutTargets.length > 0 &&
-      !room.memory.unclaim
+      !room.memory.unclaim &&
+      Game.time === 0
     ) {
       return {
         role: "scout",

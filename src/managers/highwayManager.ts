@@ -12,7 +12,7 @@ declare global {
   }
   interface Memory {
     mapRooms?: string;
-    deposits?: Record<string, DepositData>;
+    deposits?: Partial<Record<string, DepositData>>;
   }
 }
 interface DepositData {
@@ -23,7 +23,7 @@ interface DepositData {
 }
 
 const DEPOSIT_MAX_COOLDOWN = 100;
-const DEPOSIT_MAX_RANGE = 4;
+const DEPOSIT_MAX_RANGE = 3;
 
 export class HighwayManager implements Manager {
   public minSpeed = 1;
@@ -43,7 +43,8 @@ export class HighwayManager implements Manager {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           } else if (Memory.deposits[id]!.lastCooldown <= DEPOSIT_MAX_COOLDOWN) {
             // Lets check if we should spawn an harvester for this deposit
-            const pos = unpackPosition(Memory.deposits[id].pos);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const pos = unpackPosition(Memory.deposits[id]!.pos);
             const hostiles = RoomData(pos.roomName).hostiles.get();
             const control = RoomData(pos.roomName).control.get();
             if (!hasHarvesters(id) && (hostiles === null || hostiles.length === 0) && control !== null) {

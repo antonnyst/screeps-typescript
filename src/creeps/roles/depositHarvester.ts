@@ -17,7 +17,8 @@ export function depositHarvester(creep: Creep): void {
   if (Memory.deposits === undefined) {
     return;
   }
-  const pos = unpackPosition(Memory.deposits[memory.id].pos);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const pos = unpackPosition(Memory.deposits[memory.id]!.pos);
 
   memory.gathering = memory.gathering ?? true;
 
@@ -55,7 +56,7 @@ export function depositHarvester(creep: Creep): void {
     }
     if (creep.store.getUsedCapacity() === 0 && memory.distance !== undefined) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      if (memory.distance * 4 + RETURN_MARGIN + Memory.deposits[memory.id].lastCooldown * 5 < creep.ticksToLive!) {
+      if (memory.distance * 4 + RETURN_MARGIN + Memory.deposits[memory.id]!.lastCooldown * 5 < creep.ticksToLive!) {
         memory.gathering = true;
       } else {
         memory.role = "garbage";
