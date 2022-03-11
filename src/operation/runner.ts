@@ -14,17 +14,21 @@ declare global {
 }
 
 export function runOperations(speed: number): void {
-  for (const operation of Memory.operations) {
+  if (Memory.operations === undefined) {
+    Memory.operations = [];
+  }
+
+  for (let i = Memory.operations.length - 1; i >= 0; i--) {
+    const operation = Memory.operations[i];
     // eslint-disable-next-line import/namespace
-    OperationLogic[operation.type](operation);
+    const result = OperationLogic[operation.type](operation);
+    if (result) {
+      Memory.operations.splice(i, 1);
+    }
   }
 
   RunEvery(
     () => {
-      if (Memory.operations === undefined) {
-        Memory.operations = [];
-      }
-
       for (const operation of Memory.operations) {
         if (operation.expire && operation.expire < Game.time) {
           continue;
