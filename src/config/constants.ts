@@ -1,5 +1,6 @@
 export const MINERAL_MINING_ENERGY_NEEDED = 50000;
 export const PUSH_GCL_ENERGY_NEEDED = 400000;
+export const POWER_PROCESSING_ENERGY_NEEDED = 100000;
 
 // How many percents of max health should rampart be maintained at
 export const RAMPART_PERCENTAGE_MIN = 0.03;

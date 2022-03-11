@@ -1,5 +1,5 @@
 import { Building, PowerSpawn, Storage, Terminal } from "buildings";
-import { RESOURCE_LIMITS, RESOURCE_TYPE } from "config/constants";
+import { POWER_PROCESSING_ENERGY_NEEDED, RESOURCE_LIMITS, RESOURCE_TYPE } from "config/constants";
 import { isOwnedRoom } from "utils/RoomCalc";
 
 export interface ManagerMemory extends CreepMemory {
@@ -108,7 +108,12 @@ export function manager(creep: Creep): void {
       }
     }
 
-    if (isOwnedRoom(home) && home.memory.power?.process) {
+    if (
+      isOwnedRoom(home) &&
+      home.memory.power?.process &&
+      home.memory.resources &&
+      home.memory.resources.total.energy > POWER_PROCESSING_ENERGY_NEEDED
+    ) {
       const powerspawn = PowerSpawn(home);
       if (powerspawn !== null) {
         const energyNeeded = powerspawn.store.getFreeCapacity(RESOURCE_ENERGY);
