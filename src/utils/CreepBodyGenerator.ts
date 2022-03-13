@@ -91,7 +91,7 @@ export function GenerateBodyFromPattern(pattern: string, energy: number): BodyPa
 }
 /* eslint-enable */
 
-export const rolePatterns: { [roleName: string]: string } = {
+export const rolePatterns = {
   worker: "[wmc]11[mww]5mw",
   filler: "[mcc]8",
   foot: "[mcw]*",
@@ -108,7 +108,8 @@ export const rolePatterns: { [roleName: string]: string } = {
   upgrader: "[mwcwmw]8",
   manager: "c16",
   quickFiller: "c4",
-  depositHarvester: "m17c10w23"
+  depositHarvester: "m17c10w23",
+  ranged: "[rmrmhm]7"
 };
 
 export const bodySortingValues: { [bodyPartName: string]: number } = {

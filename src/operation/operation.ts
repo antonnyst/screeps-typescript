@@ -3,7 +3,7 @@ import { OperationType } from "./runner";
 // Contains information about an operation
 export interface Operation {
   type: OperationType;
-  expire?: number;
+  active: boolean;
   target: string[];
   source: string;
   squads: Squad[];
