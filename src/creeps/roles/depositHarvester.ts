@@ -38,7 +38,7 @@ export function depositHarvester(creep: Creep): void {
 
       const deposit = Game.getObjectById(memory.id);
       if (deposit !== null) {
-        if (deposit.cooldown === 0) {
+        if (deposit.cooldown <= 1) {
           creep.harvest(deposit);
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         } else if (creep.ticksToLive! - deposit.cooldown < memory.distance * 2 + RETURN_MARGIN) {

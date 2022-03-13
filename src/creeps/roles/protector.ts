@@ -5,9 +5,101 @@ import { setMovementData } from "creeps/creep";
 
 export interface ProtectorMemory extends CreepMemory {
   room?: string;
+  rooms?: string[];
 }
 
 export function protector(creep: Creep): void {
+  const memory = creep.memory as ProtectorMemory;
+
+  if (memory.rooms === undefined) {
+    general(creep);
+  } else {
+    specific(creep);
+  }
+}
+
+function specific(creep: Creep): void {
+  const memory = creep.memory as ProtectorMemory;
+  if (memory.rooms === undefined) {
+    return;
+  }
+  if (memory.room === undefined) {
+    memory.room = memory.rooms[memory.rooms.length - 1];
+  }
+
+  const hostiles = creep.room.find(FIND_HOSTILE_CREEPS);
+  const needHealing = creep.room.find(FIND_MY_CREEPS, {
+    filter: c => c.name !== creep.name && c.hits < c.hitsMax
+  });
+  if (hostiles.length > 0) {
+    const hostile: Creep | null = creep.pos.findClosestByRange(hostiles);
+    if (hostile != null) {
+      if (creep.getActiveBodyparts(RANGED_ATTACK)) {
+        creep.rangedAttack(hostile);
+      }
+
+      if (creep.getActiveBodyparts(ATTACK) > 0) {
+        setMovementData(creep, {
+          pos: hostile.pos,
+          range: 1
+        });
+        if (creep.pos.isNearTo(hostile.pos)) {
+          creep.attack(hostile);
+        } else {
+          if (creep.getActiveBodyparts(HEAL) > 0) {
+            creep.heal(creep);
+          }
+        }
+      } else {
+        if (creep.pos.getRangeTo(hostile.pos) < 3) {
+          setMovementData(creep, {
+            pos: hostile.pos,
+            range: 3,
+            flee: true
+          });
+        } else {
+          setMovementData(creep, {
+            pos: hostile.pos,
+            range: 3
+          });
+        }
+        if (creep.getActiveBodyparts(HEAL) > 0) {
+          creep.heal(creep);
+        }
+      }
+    }
+  } else if (needHealing.length > 0) {
+    const target: Creep | null = creep.pos.findClosestByRange(needHealing);
+    if (target != null) {
+      setMovementData(creep, {
+        pos: target.pos,
+        range: 1
+      });
+      if (creep.pos.isNearTo(target)) {
+        creep.heal(target);
+      }
+    }
+  } else if (creep.room.name === memory.room) {
+    let foundRoom = false;
+    for (const protectRoom of memory.rooms) {
+      if ((RoomData(protectRoom).hostiles.get() ?? []).length > 0) {
+        memory.room = protectRoom;
+        foundRoom = true;
+        break;
+      }
+    }
+    if (!foundRoom) {
+      memory.room = memory.rooms[memory.rooms.length - 1];
+    }
+  } else {
+    setMovementData(creep, {
+      pos: new RoomPosition(25, 25, memory.room),
+      range: 23
+    });
+  }
+}
+
+function general(creep: Creep): void {
   const memory = creep.memory as ProtectorMemory;
   const home = Game.rooms[creep.memory.home];
 

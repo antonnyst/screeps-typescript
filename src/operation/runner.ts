@@ -13,72 +13,83 @@ declare global {
   }
 }
 
-export function runOperations(speed: number): void {
-  if (Memory.operations === undefined) {
-    Memory.operations = [];
-  }
-
-  for (let i = Memory.operations.length - 1; i >= 0; i--) {
-    const operation = Memory.operations[i];
+function runOperations(operations: Operation[], general: boolean): void {
+  for (let i = operations.length - 1; i >= 0; i--) {
+    const operation = operations[i];
     // eslint-disable-next-line import/namespace
     const result = OperationLogic[operation.type](operation);
     if (result) {
-      Memory.operations.splice(i, 1);
+      operations.splice(i, 1);
+    } else {
+      runOperations(operation.children, general);
+    }
+
+    if (general) {
+      GeneralLogic(operation);
     }
   }
+}
 
+export function runLogic(speed: number): void {
+  if (Memory.operations === undefined) {
+    Memory.operations = [];
+  }
+  let general = false;
   RunEvery(
     () => {
-      for (const operation of Memory.operations) {
-        if (operation.expire && operation.expire < Game.time) {
-          continue;
-        }
-
-        const sourceBase = Game.rooms[operation.source];
-        if (sourceBase === undefined || !isOwnedRoom(sourceBase)) {
-          continue;
-        }
-
-        // Individual creep logic
-        for (const creep of operation.creeps) {
-          // Spawn creeps with no current name
-          if (creep.current === undefined) {
-            const name = generateName();
-            const memory = creep.memory;
-            sourceBase.memory.spawnQueue.push({
-              memory,
-              body: GenerateBodyFromPattern(creep.body, sourceBase.energyCapacityAvailable).sort(
-                (a, b) => bodySortingValues[a] - bodySortingValues[b]
-              ),
-              name
-            });
-
-            creep.current = name;
-            continue;
-          }
-
-          // Handle creeps we cannot find
-          if (Game.creeps[creep.current] === undefined) {
-            // We cant find our current creep
-            // Check for it in spawn queues before removing current name
-
-            let found = false;
-            for (const queuedCreep of sourceBase.memory.spawnQueue) {
-              if (queuedCreep.name === creep.current) {
-                found = true;
-                break;
-              }
-            }
-
-            if (!found) {
-              creep.current = undefined;
-              continue;
-            }
-          }
-        }
-      }
+      general = true;
     },
-    "runoperations",
+    "generaloperationlogic",
     10 / speed
   );
+  runOperations(Memory.operations, general);
+}
+
+function GeneralLogic(operation: Operation): void {
+  if (!operation.active) {
+    return;
+  }
+
+  const sourceBase = Game.rooms[operation.source];
+  if (sourceBase === undefined || !isOwnedRoom(sourceBase)) {
+    return;
+  }
+
+  // Individual creep logic
+  for (const creep of operation.creeps) {
+    // Spawn creeps with no current name
+    if (creep.current === undefined) {
+      const name = generateName();
+      const memory = creep.memory;
+      sourceBase.memory.spawnQueue.push({
+        memory,
+        body: GenerateBodyFromPattern(creep.body, sourceBase.energyCapacityAvailable).sort(
+          (a, b) => bodySortingValues[a] - bodySortingValues[b]
+        ),
+        name
+      });
+
+      creep.current = name;
+      continue;
+    }
+
+    // Handle creeps we cannot find
+    if (Game.creeps[creep.current] === undefined) {
+      // We cant find our current creep
+      // Check for it in spawn queues before removing current name
+
+      let found = false;
+      for (const queuedCreep of sourceBase.memory.spawnQueue) {
+        if (queuedCreep.name === creep.current) {
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        creep.current = undefined;
+        continue;
+      }
+    }
+  }
 }
