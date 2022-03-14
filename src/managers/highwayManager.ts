@@ -1,8 +1,8 @@
 import { DEPOSIT_MAX_COOLDOWN, DEPOSIT_MAX_RANGE } from "config/constants";
+import { OwnedRooms, describeRoom } from "utils/RoomCalc";
 import { packPosition, unpackPosition } from "utils/RoomPositionPacker";
 import { DepositOperation } from "operation/operations";
 import { Manager } from "./manager";
-import { OwnedRooms } from "utils/RoomCalc";
 import { RoomData } from "data/room/room";
 import { RunEvery } from "utils/RunEvery";
 
@@ -45,7 +45,25 @@ export class HighwayManager implements Manager {
             // Check range to closest owned room
             const rooms = OwnedRooms().filter(r => r.energyCapacityAvailable >= 3650);
             const distances: [OwnedRoom, number][] = rooms.map(r => {
-              const route = Game.map.findRoute(r.name, position.roomName);
+              const route = Game.map.findRoute(r.name, position.roomName, {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                routeCallback: (roomName, _fromRoomName) => {
+                  if (RoomData(roomName).control.get() === -2) {
+                    return 25;
+                  }
+                  if (RoomData(roomName).control.get() === -1) {
+                    return 5;
+                  }
+                  if (describeRoom(roomName) === "source_keeper") {
+                    return 5;
+                  }
+                  const h = RoomData(roomName).hostiles.get();
+                  if (h !== null && h.length > 0) {
+                    return 2;
+                  }
+                  return 1;
+                }
+              });
               if (route === ERR_NO_PATH) {
                 return [r, Infinity];
               }

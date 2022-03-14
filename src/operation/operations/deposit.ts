@@ -108,7 +108,7 @@ function setup(operation: DepositOperation, depositData: DepositData): boolean {
     {
       type: "protect",
       active: true,
-      target: operation.route,
+      target: [position.roomName],
       source: operation.source,
       squads: [],
       creeps: [],
