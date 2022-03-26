@@ -13,6 +13,21 @@ declare global {
   }
 }
 
+export function runLogic(speed: number): void {
+  if (Memory.operations === undefined) {
+    Memory.operations = [];
+  }
+  let general = false;
+  RunEvery(
+    () => {
+      general = true;
+    },
+    "generaloperationlogic",
+    10 / speed
+  );
+  runOperations(Memory.operations, general);
+}
+
 function runOperations(operations: Operation[], general: boolean): void {
   for (let i = operations.length - 1; i >= 0; i--) {
     const operation = operations[i];
@@ -28,21 +43,6 @@ function runOperations(operations: Operation[], general: boolean): void {
       GeneralLogic(operation);
     }
   }
-}
-
-export function runLogic(speed: number): void {
-  if (Memory.operations === undefined) {
-    Memory.operations = [];
-  }
-  let general = false;
-  RunEvery(
-    () => {
-      general = true;
-    },
-    "generaloperationlogic",
-    10 / speed
-  );
-  runOperations(Memory.operations, general);
 }
 
 function GeneralLogic(operation: Operation): void {
