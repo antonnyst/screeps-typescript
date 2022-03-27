@@ -1,5 +1,5 @@
 export const MINERAL_MINING_ENERGY_NEEDED = 50000;
-export const PUSH_GCL_ENERGY_NEEDED = 400000;
+export const PUSH_GCL_ENERGY_NEEDED = 500000;
 export const POWER_PROCESSING_ENERGY_NEEDED = 100000;
 
 // Deposit harvesting
@@ -121,7 +121,7 @@ export const RESOURCE_LIMITS: Record<
     room: {
       import: 250000,
       export: 400000,
-      sell: 500000
+      sell: null
     }
   },
   power: {
