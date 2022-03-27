@@ -37,10 +37,10 @@ function runOperations(operations: Operation[], general: boolean): void {
       operations.splice(i, 1);
     } else {
       runOperations(operation.children, general);
-    }
 
-    if (general) {
-      GeneralLogic(operation);
+      if (general) {
+        GeneralLogic(operation);
+      }
     }
   }
 }
