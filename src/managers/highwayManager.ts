@@ -7,12 +7,10 @@ import { RoomData } from "data/room/room";
 import { RunEvery } from "utils/RunEvery";
 
 declare global {
-  interface OwnedRoomMemory {
-    scoutTargets?: string[];
-  }
   interface Memory {
     mapRooms?: string;
     deposits?: Partial<Record<string, DepositData>>;
+    powerBanks?: Partial<Record<string, PowerBankData>>;
   }
 }
 export interface DepositData {
@@ -21,6 +19,12 @@ export interface DepositData {
   lastCooldown: number;
   type: DepositConstant;
 }
+export interface PowerBankData {
+  pos: number;
+  decayTime: number;
+  amount: number;
+  hits: number;
+}
 
 export class HighwayManager implements Manager {
   public minSpeed = 1;
@@ -28,6 +32,9 @@ export class HighwayManager implements Manager {
   public run(speed: number): void {
     if (Memory.deposits === undefined) {
       Memory.deposits = {};
+    }
+    if (Memory.powerBanks === undefined) {
+      Memory.powerBanks = {};
     }
 
     // Deposit logic
@@ -90,7 +97,13 @@ export class HighwayManager implements Manager {
       50 / speed
     );
 
+
+    // Register highway objects
     for (const room of Object.values(Game.rooms)) {
+      const roomType = describeRoom(room.name);
+      if (roomType !== "highway" && roomType !== "highway_portal") {
+        continue;
+      }
       const deposits = room.find(FIND_DEPOSITS);
       if (deposits.length > 0) {
         for (const deposit of deposits) {
@@ -99,6 +112,19 @@ export class HighwayManager implements Manager {
             pos: packPosition(deposit.pos),
             decayTime: Game.time + deposit.ticksToDecay,
             lastCooldown: deposit.lastCooldown
+          };
+        }
+      }
+      const powerBanks: StructurePowerBank[] = room.find(FIND_STRUCTURES, {
+        filter: s => s.structureType === STRUCTURE_POWER_BANK
+      });
+      if (powerBanks.length > 0) {
+        for (const powerBank of powerBanks) {
+          Memory.powerBanks[powerBank.id] = {
+            pos: packPosition(powerBank.pos),
+            decayTime: Game.time + powerBank.ticksToDecay,
+            amount: powerBank.power,
+            hits: powerBank.hits
           };
         }
       }
