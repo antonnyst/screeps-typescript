@@ -41,20 +41,37 @@ export function deposit(operation: Operation): boolean {
   } else {
     return true;
   }
-
+  let surrender = false;
   RunEvery(
     () => {
       if (operation.route && isRouteClear(operation.route)) {
         operation.active = true;
       } else {
         operation.active = false;
+
+        if (operation.route) {
+          const hostiles = RoomData(operation.route[operation.route.length - 1]).hostiles.get();
+          if (hostiles !== null && hostiles.length > 0) {
+            let parts = 0;
+            for (const hostile of hostiles) {
+              for (const part of hostile.body) {
+                if (part.type === "attack" || part.type === "ranged_attack" || part.type === "heal") {
+                  parts++;
+                }
+              }
+            }
+            if (parts > 20) {
+              surrender = true;
+            }
+          }
+        }
       }
     },
     "operationdeposit" + operation.id,
     10
   );
 
-  return false;
+  return surrender;
 }
 
 function isRouteClear(route: string[]): boolean {
