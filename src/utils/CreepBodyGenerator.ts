@@ -109,7 +109,7 @@ export const rolePatterns = {
   manager: "c16",
   quickFiller: "c4",
   depositHarvester: "m17c10w23",
-  ranged: "[rmrmhm]7"
+  ranged: "[rmrmhmrmrm]5"
 };
 
 export const bodySortingValues: { [bodyPartName: string]: number } = {
