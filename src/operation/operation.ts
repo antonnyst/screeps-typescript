@@ -1,4 +1,5 @@
 import { OperationType } from "./runner";
+import { Squad } from "squad/squad";
 
 // Contains information about an operation
 export interface Operation {
@@ -10,10 +11,6 @@ export interface Operation {
   creeps: CreepDescriptor[];
   children: Operation[];
 }
-
-// Contains information about a squad
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Squad {}
 
 // Creep descriptor
 export interface CreepDescriptor {
