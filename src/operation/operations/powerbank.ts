@@ -5,6 +5,13 @@ export interface PowerBankOperation extends Operation {
   id: Id<StructurePowerBank>;
 }
 
-export function powerbank(operation: Operation): void {
-  console.log(operation);
+function checkOperation(operation: Operation): operation is PowerBankOperation {
+  return operation.type === "powerbank" && (operation as PowerBankOperation).id !== undefined;
+}
+
+export function powerbank(operation: Operation): boolean {
+  if (!checkOperation(operation) || Memory.powerBanks === undefined) {
+    return true;
+  }
+  return false;
 }

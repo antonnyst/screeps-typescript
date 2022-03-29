@@ -6,6 +6,10 @@ export const POWER_PROCESSING_ENERGY_NEEDED = 100000;
 export const DEPOSIT_MAX_COOLDOWN = 100;
 export const DEPOSIT_MAX_RANGE = 4;
 
+// PowerBank harvesting
+export const POWER_BANK_MIN_AMOUNT = 2000;
+export const POWER_BANK_MAX_RANGE = 3;
+
 // How many percents of max health should rampart be maintained at
 export const RAMPART_PERCENTAGE_MIN = 0.03;
 export const RAMPART_PERCENTAGE_MAX = 0.04;
