@@ -277,17 +277,88 @@ function isHeapLocation(location: Location): location is HeapLocation {
 
 // eslint-disable-next-line @typescript-eslint/no-shadow
 function packLocations(locations: Partial<Record<DataName, Location>>): string {
-  const savedLocations: Partial<Record<DataName, Location>> = {};
+  const saved: (string | string[])[] = [];
   for (const key in locations) {
-    if (locations[key]?.layer !== "heap") {
-      savedLocations[key] = locations[key];
+    const location = locations[key];
+    if (location !== undefined && location.layer !== "heap") {
+      saved.push(key);
+      saved.push(packLocation(location));
     }
   }
-  return JSON.stringify(savedLocations);
+  return JSON.stringify(saved);
 }
-function unpackLocations(data: string): Record<DataName, Location> {
-  return JSON.parse(data) as Record<DataName, Location>;
+function unpackLocations(data: string): Partial<Record<DataName, Location>> {
+  const array = JSON.parse(data) as (string | string[])[];
+  const result: Partial<Record<DataName, Location>> = {};
+  for (let i = 0; i < array.length; i += 2) {
+    result[array[i] as string] = unpackLocation(array[i + 1] as string[]);
+  }
+  return result;
 }
+
+function packLocation(location: Location): string[] {
+  const result: string[] = [];
+  result.push(location.layer);
+  switch (location.layer) {
+    case "heap":
+      throw Error("Cannot pack heap location");
+    case "memory":
+      if (isMemoryLocation(location)) {
+        switch (location.toSegment) {
+          case false:
+            result.push("0");
+            break;
+          case true:
+            result.push("1");
+            break;
+          case undefined:
+            result.push("2");
+            break;
+        }
+      }
+      break;
+    case "segment":
+      if (isSegmentLocation(location)) {
+        result.push(location.segment.toString(16));
+        result.push(location.index.toString(16));
+        result.push(location.length.toString(16));
+      }
+      break;
+  }
+  return result;
+}
+
+function unpackLocation(data: string[]): Location {
+  switch (data[0]) {
+    case "heap":
+      throw Error("Cannot unpack heap location");
+    case "memory": {
+      let toSegment;
+      switch (data[1]) {
+        case "0":
+          toSegment = false;
+          break;
+        case "1":
+          toSegment = true;
+          break;
+      }
+      return {
+        layer: data[0],
+        toSegment
+      } as MemoryLocation;
+    }
+    case "segment": {
+      return {
+        layer: data[0],
+        segment: parseInt(data[1], 16),
+        index: parseInt(data[2], 16),
+        length: parseInt(data[3], 16)
+      } as SegmentLocation;
+    }
+  }
+  throw Error("Invalid data");
+}
+
 // eslint-disable-next-line @typescript-eslint/no-shadow
 function packSegments(segments: Partial<Record<number, SegmentData>>): string {
   return JSON.stringify(segments);
