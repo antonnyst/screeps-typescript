@@ -6,6 +6,7 @@ import { Manager } from "./manager";
 import { RoomData } from "data/room/room";
 import { RunEvery } from "utils/RunEvery";
 import { describeRoom } from "utils/RoomCalc";
+import { findRoute } from "pathfinding/findRoute";
 
 declare global {
   interface CreepMemory {
@@ -103,26 +104,9 @@ export class MovementManager implements Manager {
               let partialTarget: RoomPosition | undefined;
               let pathing;
               if (creep.pos.roomName !== unpackPosition(creep.memory.movementData.targetPos).roomName) {
-                const route = Game.map.findRoute(
+                const route = findRoute(
                   creep.pos.roomName,
-                  unpackPosition(creep.memory.movementData.targetPos).roomName,
-                  {
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    routeCallback: (roomName, _fromRoomName) => {
-                      if (Memory.rooms[roomName] !== undefined) {
-                        if (RoomData(roomName).control.get() === -2) {
-                          return 25;
-                        }
-                        if (RoomData(roomName).control.get() === -1) {
-                          return 5;
-                        }
-                      }
-                      if (describeRoom(roomName) === "source_keeper") {
-                        return 5;
-                      }
-                      return 1;
-                    }
-                  }
+                  unpackPosition(creep.memory.movementData.targetPos).roomName
                 );
                 if (route !== -2 && route.length >= 2) {
                   partialTarget = new RoomPosition(25, 25, route[1].room);
