@@ -99,7 +99,7 @@ export class HighwayManager implements Manager {
         for (const id in Memory.powerBanks) {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const powerBankData = Memory.powerBanks[id];
-          if (powerBankData !== undefined && powerBankData.decayTime < Game.time && !hasOperation(id)) {
+          if (powerBankData === undefined || (powerBankData.decayTime < Game.time && !hasOperation(id))) {
             deleteIds.push(id);
           } else if (
             powerBankData !== undefined &&
@@ -107,7 +107,7 @@ export class HighwayManager implements Manager {
             !hasOperation(id)
           ) {
             if (Game.time > 0) {
-              return;
+              continue;
             }
             const position = unpackPosition(powerBankData.pos);
             const hostiles = RoomData(position.roomName).hostiles.get();
@@ -186,8 +186,8 @@ export class HighwayManager implements Manager {
 function hasOperation(id: string) {
   return Memory.operations.some(
     o =>
-      (o.type === "deposit" && (o as DepositOperation).id === id) ||
-      (o.type === "powerbank" && (o as PowerBankOperation).id === id)
+      (o.type === "deposit" && (o as DepositOperation).id.toString() === id) ||
+      (o.type === "powerbank" && (o as PowerBankOperation).id.toString() === id)
   );
 }
 
