@@ -1,3 +1,5 @@
+import { boost } from "./boost";
+
 declare global {
   interface CreepMemory {
     checkIdle?: {
@@ -19,7 +21,11 @@ export function logic(role: (creep: Creep) => void, creep: Creep): void {
 
   checkIdle(creep);
 
-  role(creep);
+  if (creep.memory.boost) {
+    boost(creep);
+  } else {
+    role(creep);
+  }
 }
 
 function checkIdle(creep: Creep) {
