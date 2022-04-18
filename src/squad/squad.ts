@@ -1,3 +1,9 @@
+import { CreepDescriptor } from "operation/operation";
+import { SquadType } from "./runner";
+
 // Contains information about a squad
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Squad {}
+export interface Squad {
+  type: SquadType;
+  creeps: CreepDescriptor[];
+  spawned?: boolean;
+}

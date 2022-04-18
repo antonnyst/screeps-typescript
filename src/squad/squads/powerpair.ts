@@ -1,3 +1,5 @@
-export function powerpair(): void {
-  console.log("A");
+import { Squad } from "squad/squad";
+
+export function powerpair(squad: Squad): void {
+  console.log(squad);
 }
