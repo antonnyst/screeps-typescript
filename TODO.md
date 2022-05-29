@@ -5,6 +5,7 @@
 - Miner stop mining when container full
 - Dynamic deposit harvester body
 - Power harvesting
+- Specific lab amounts
 - Automatic lab production
   - Local production
   - High priority empire production
