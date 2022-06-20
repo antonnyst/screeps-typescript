@@ -7,13 +7,14 @@ export interface SwarmlingMemory extends CreepMemory {
 export function swarmling(creep: Creep): void {
   const memory = creep.memory as SwarmlingMemory;
 
+  if (creep.getActiveBodyparts(HEAL) > 0) {
+    creep.heal(creep);
+  }
+
   const hostiles = creep.room.find(FIND_HOSTILE_CREEPS, {
     filter: c => c.getActiveBodyparts(ATTACK) || c.getActiveBodyparts(RANGED_ATTACK) || c.getActiveBodyparts(HEAL)
   });
   if (hostiles.length > 0) {
-    if (creep.getActiveBodyparts(HEAL) > 0) {
-      creep.heal(creep);
-    }
     const closestHostile = creep.pos.findClosestByRange(hostiles);
     if (closestHostile !== null) {
       if (closestHostile.pos.getRangeTo(creep) < 3) {
@@ -42,6 +43,29 @@ export function swarmling(creep: Creep): void {
     return;
   }
 
+  const hostileCloseStructures = creep.pos.findInRange(FIND_HOSTILE_STRUCTURES, 3);
+  const hostileCloseCreeps = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
+  if (hostileCloseCreeps.length + hostileCloseStructures.length >= 4) {
+    creep.rangedMassAttack();
+  }
+
+  const hostileTowers = creep.room.find(FIND_HOSTILE_STRUCTURES, {
+    filter: s => s.structureType === STRUCTURE_TOWER
+  });
+  if (hostileTowers.length > 0) {
+    const closestHostile = creep.pos.findClosestByRange(hostileTowers);
+    if (closestHostile !== null) {
+      setMovementData(creep, {
+        pos: closestHostile.pos,
+        range: 3
+      });
+      if (closestHostile.pos.getRangeTo(creep) <= 3) {
+        creep.rangedAttack(closestHostile);
+      }
+      return;
+    }
+  }
+
   const spawns = creep.room.find(FIND_HOSTILE_SPAWNS);
   if (spawns.length > 0) {
     setMovementData(creep, {
@@ -50,6 +74,13 @@ export function swarmling(creep: Creep): void {
     });
     if (spawns[0].pos.getRangeTo(creep) <= 3) {
       creep.rangedAttack(spawns[0]);
+    } else {
+      const closestHostile = creep.pos.findClosestByRange(creep.room.find(FIND_HOSTILE_CREEPS));
+      if (closestHostile !== null) {
+        if (creep.pos.getRangeTo(closestHostile) <= 3) {
+          creep.rangedAttack(closestHostile);
+        }
+      }
     }
     return;
   }
