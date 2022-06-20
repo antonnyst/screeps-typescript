@@ -9,6 +9,7 @@ export * from "./manager";
 export * from "./miner";
 export * from "./mineralHauler";
 export * from "./mineralMiner";
+export * from "./none";
 export * from "./protector";
 export * from "./quickFiller";
 export * from "./remoteHauler";
