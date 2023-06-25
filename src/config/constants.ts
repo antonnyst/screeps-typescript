@@ -14,7 +14,15 @@ export const POWER_BANK_MAX_RANGE = 3;
 export const RAMPART_PERCENTAGE_MIN = 0.03;
 export const RAMPART_PERCENTAGE_MAX = 0.04;
 
-export type ResourceType = "energy" | "power" | "mineral" | "raw_boost" | "boost" | "raw_commodity" | "commodity";
+export type ResourceType =
+  | "energy"
+  | "power"
+  | "mineral"
+  | "raw_boost"
+  | "boost"
+  | "raw_commodity"
+  | "commodity"
+  | "compressed";
 
 export const RESOURCE_TYPE: Record<ResourceConstant, ResourceType | undefined> = {
   energy: "energy",
@@ -65,18 +73,18 @@ export const RESOURCE_TYPE: Record<ResourceConstant, ResourceType | undefined> =
   biomass: "raw_commodity",
   metal: "raw_commodity",
   silicon: "raw_commodity",
-  utrium_bar: undefined,
-  lemergium_bar: undefined,
-  zynthium_bar: undefined,
-  keanium_bar: undefined,
-  ghodium_melt: undefined,
-  oxidant: undefined,
-  reductant: undefined,
-  purifier: undefined,
-  battery: undefined,
-  composite: undefined,
-  crystal: undefined,
-  liquid: undefined,
+  utrium_bar: "compressed",
+  lemergium_bar: "compressed",
+  zynthium_bar: "compressed",
+  keanium_bar: "compressed",
+  ghodium_melt: "compressed",
+  oxidant: "compressed",
+  reductant: "compressed",
+  purifier: "compressed",
+  battery: "compressed",
+  composite: "compressed",
+  crystal: "compressed",
+  liquid: "compressed",
   wire: "commodity",
   switch: "commodity",
   transistor: "commodity",
@@ -187,6 +195,17 @@ export const RESOURCE_LIMITS: Record<
     terminal: {
       min: 1000,
       max: 1000
+    },
+    room: {
+      import: 0,
+      export: 0,
+      sell: null
+    }
+  },
+  compressed: {
+    terminal: {
+      min: 2000,
+      max: 4000
     },
     room: {
       import: 0,
