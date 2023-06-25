@@ -10,6 +10,7 @@
   - Local production
   - High priority empire production
 - Commodity refining
+- Support single source rooms
 
 ## Combat
 
