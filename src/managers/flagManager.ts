@@ -88,5 +88,26 @@ function HandleFlag(flag: Flag): void {
       }
       flag.memory.processed = true;
     }
+
+    // Scout room
+    if (primaryColor === COLOR_BROWN && secondaryColor === COLOR_WHITE) {
+      const room = Game.rooms[flag.name];
+      if (room !== undefined && isOwnedRoom(room) && room.memory.scoutTargets !== undefined) {
+        room.memory.scoutTargets.push(flag.pos.roomName);
+      }
+      flag.memory.processed = true;
+    }
+
+    // Destroy all walls
+    if (primaryColor === COLOR_GREY && secondaryColor === COLOR_GREY) {
+      const room = Game.rooms[flag.pos.roomName];
+      if (room !== undefined && isOwnedRoom(room)) {
+        const walls = room.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_WALL } });
+        for (const wall of walls) {
+          wall.destroy();
+        }
+      }
+      flag.memory.processed = true;
+    }
   }
 }
