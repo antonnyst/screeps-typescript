@@ -2,7 +2,6 @@
 
 ## Economy
 
-- Miner stop mining when container full
 - Dynamic deposit harvester body
 - Power harvesting
 - Specific lab amounts
@@ -29,3 +28,5 @@
 - Improve data location serialisation
 - Improve position serialisation
 - [Cooperative pathfinding](https://www.davidsilver.uk/wp-content/uploads/2020/03/coop-path-AIWisdom.pdf)
+- Prefer to not push creeps into other creeps
+- Prevent creeps from standing in manager position
