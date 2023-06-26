@@ -313,6 +313,6 @@ function GetRemoteLimit(room: OwnedRoom): number {
     }
   }
 
-  return spawnCount;
+  return spawnCount + 1;
   // TODO: fix this
 }
