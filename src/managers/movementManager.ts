@@ -108,9 +108,15 @@ export class MovementManager implements Manager {
                   creep.pos.roomName,
                   unpackPosition(creep.memory.movementData.targetPos).roomName
                 );
-                if (route !== -2 && route.length >= 2) {
-                  partialTarget = new RoomPosition(25, 25, route[1].room);
-                  pathing = [creep.pos.roomName, route[0].room, route[1].room];
+                if (route !== -2) {
+                  if (route.length >= 2) {
+                    partialTarget = new RoomPosition(25, 25, route[1].room);
+                    pathing = [creep.pos.roomName, route[0].room, route[1].room];
+                  } else if (route.length === 1) {
+                    pathing = [creep.pos.roomName, route[0].room];
+                  } else {
+                    pathing = [creep.pos.roomName];
+                  }
                 }
               }
 

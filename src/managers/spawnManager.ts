@@ -380,8 +380,7 @@ const needChecks: CreepNeedCheckFunction[] = [
       room.controller.level < 8 &&
       room.memory.scoutTargets !== undefined &&
       room.memory.scoutTargets.length > 0 &&
-      !room.memory.unclaim &&
-      Game.time === 0
+      !room.memory.unclaim
     ) {
       return {
         role: "scout",
@@ -516,9 +515,17 @@ const needChecks: CreepNeedCheckFunction[] = [
   (room: OwnedRoom, creeps: Creep[], counts: _.Dictionary<number>, roles: _.Dictionary<Creep[]>) => {
     if (room.memory.remoteSupportRooms.length > 0 && !room.memory.unclaim) {
       for (const r of room.memory.remoteSupportRooms) {
-        const fAmt = _.filter(Game.creeps, (c: Creep) => c.memory.role === "foot" && c.memory.home === r).length;
+        const foots = _.filter(Game.creeps, (c: Creep) => c.memory.role === "foot" && c.memory.home === r);
 
-        if (fAmt < 3 && Game.rooms[r] !== undefined) {
+        let workAmt = 0;
+
+        for (const foot of foots) {
+          if (foot.ticksToLive) {
+            workAmt += foot.getActiveBodyparts(WORK) * foot.ticksToLive;
+          }
+        }
+
+        if (workAmt < 15000 && Game.rooms[r] !== undefined) {
           return {
             role: "foot",
             pattern: rolePatterns.foot,
@@ -582,6 +589,11 @@ const needChecks: CreepNeedCheckFunction[] = [
     let haulerTarget = 0;
     const haulerPerRoom: { [key: string]: number } = {};
     for (const remote in room.memory.remoteData.data) {
+      const control = RoomData(remote).control.get();
+      if (control == null || control < 0) {
+        continue; // Dont send remote miners and haulers to rooms not controlled by us
+      }
+
       minerTarget += room.memory.remoteData.data[remote].sources.length;
       haulerPerRoom[remote] = 0;
       for (const source of room.memory.remoteData.data[remote].sources) {
