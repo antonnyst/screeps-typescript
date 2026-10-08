@@ -80,8 +80,10 @@ export class ScoutManager implements Manager {
         // Apply the pairs
         for (const roomPair of rooms) {
           mapRooms.push(roomPair[0]);
+          const roomData = RoomData(roomPair[0]);
+          const lastUpdate = roomData.lastUpdate.get();
           if (
-            Game.time - (RoomData(roomPair[0]).lastUpdate.get() ?? 0) >
+            Game.time - (lastUpdate ?? 0) >
             (SCOUT_UPDATE_TIMES[describeRoom(roomPair[0]) ?? "room"] ?? DEFAULT_SCOUT_UPDATE_TIME)
           ) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

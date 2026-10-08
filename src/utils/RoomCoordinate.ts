@@ -29,9 +29,12 @@ export function fromRoomCoordinate(coordinate: RoomCoordinate): string | null {
   const roomName = `${coordinate.x < 0 ? `W${~coordinate.x}` : `E${coordinate.x}`}${
     coordinate.y < 0 ? `N${~coordinate.y}` : `S${coordinate.y}`
   }`;
-
-  if (Game.map.getRoomStatus(roomName) == null) {
-    return null;
+  try {
+    if (Game.map.getRoomStatus(roomName) == null) {
+      return null;
+    }
+  } catch (error) {
+    return null
   }
   return roomName;
 }
