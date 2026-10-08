@@ -928,8 +928,8 @@ function spawnDirectionInside(index: number, rx: number, ry: number): DirectionC
         return undefined;
     }
   }
-  console.log(`spawnDirectionOutside(): invalid index ${index}`);
-  return undefined;
+  console.log(`spawnDirectionInside(): invalid index ${index}`);
+  return [TOP_LEFT, LEFT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT, RIGHT, TOP_RIGHT, TOP];
 }
 
 function spawnDirectionOutside(index: number, rx: number, ry: number): DirectionConstant[] | undefined {
@@ -980,7 +980,7 @@ function spawnDirectionOutside(index: number, rx: number, ry: number): Direction
     }
   }
   console.log(`spawnDirectionOutside(): invalid index ${index}`);
-  return undefined;
+  return [TOP_LEFT, LEFT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT, RIGHT, TOP_RIGHT, TOP];
 }
 
 function GetEnergyStructures(room: Room): (StructureSpawn | StructureExtension)[] | undefined {

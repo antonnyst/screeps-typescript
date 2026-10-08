@@ -1,7 +1,7 @@
 import { BasicRoomData } from "layout/layout";
 import { HostileData } from "./room";
 
-type IdPosPair<T> = [Id<T>, number];
+type IdPosPair<T extends _HasId> = [Id<T>, number];
 type MineralPair = IdPosPair<Mineral>;
 type SourcePair = IdPosPair<Source>;
 type CompactBasicRoomData = [number | null, SourcePair[], MineralPair | null];
