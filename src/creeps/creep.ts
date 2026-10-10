@@ -1,3 +1,4 @@
+import { Links, Spawns } from "buildings";
 import { packPosition, unpackPosition } from "utils/RoomPositionPacker";
 
 declare global {
@@ -56,14 +57,14 @@ export function cancelMovementData(creep: Creep): void {
 }
 
 interface GetEnergyMemory extends CreepMemory {
-  getEnergyTarget?: Id<Structure | Resource | Tombstone | Ruin | Source>;
+  getEnergyTarget?: Id<Structure | Resource | Tombstone | Ruin | Source | Creep>;
 }
 
 /**
  * Gets energy from the creeps home room
  * @param creep The creep that should get energy
  */
-export function getEnergy(creep: Creep): void {
+export function getEnergy(creep: Creep, stayLink: boolean = false): void {
   const memory = creep.memory as GetEnergyMemory;
 
   if (creep.room.name !== memory.home) {
@@ -71,14 +72,14 @@ export function getEnergy(creep: Creep): void {
     return;
   }
 
-  let target: Structure | Resource | Tombstone | Ruin | Source | null = null;
+  let target: Structure | Resource | Tombstone | Ruin | Source | Creep | null = null;
 
   if (memory.getEnergyTarget !== undefined) {
     target = Game.getObjectById(memory.getEnergyTarget);
   }
 
   if (target === null) {
-    target = getEnergyTarget(creep);
+    target = getEnergyTarget(creep, stayLink);
   }
 
   if (target !== null) {
@@ -88,17 +89,13 @@ export function getEnergy(creep: Creep): void {
       range: 1
     });
 
-    if (target instanceof Structure) {
-      if (target instanceof StructureLink) {
+    if (target instanceof StructureLink
+        || target instanceof StructureContainer
+        || target instanceof StructureStorage
+        || target instanceof Creep) {
         if (target.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
           memory.getEnergyTarget = undefined;
         }
-      }
-      if (target instanceof StructureContainer || target instanceof StructureStorage) {
-        if (target.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
-          memory.getEnergyTarget = undefined;
-        }
-      }
     }
 
     if (creep.pos.isNearTo(target.pos)) {
@@ -108,6 +105,8 @@ export function getEnergy(creep: Creep): void {
       } else if (target instanceof Source) {
         creep.harvest(target);
         memory.getEnergyTarget = undefined;
+      } else if (target instanceof Creep) {
+        target.transfer(creep,RESOURCE_ENERGY)
       } else if (target instanceof Ruin || target instanceof Tombstone || target instanceof Structure) {
         creep.withdraw(target, RESOURCE_ENERGY);
         memory.getEnergyTarget = undefined;
@@ -116,7 +115,7 @@ export function getEnergy(creep: Creep): void {
   }
 }
 
-function getEnergyTarget(creep: Creep): Structure | Resource | Tombstone | Ruin | Source | null {
+function getEnergyTarget(creep: Creep, stayLink: boolean): Structure | Resource | Tombstone | Ruin | Source | Creep | null {
   const memory = creep.memory;
   const home = Game.rooms[creep.memory.home];
 
@@ -141,23 +140,11 @@ function getEnergyTarget(creep: Creep): Structure | Resource | Tombstone | Ruin 
           } else {
             return false;
           }
-        }
-        if (s.structureType === STRUCTURE_LINK) {
-          if (home.controller && home.controller.level >= 7) {
-            if (
-              Memory.rooms[memory.home].genBuildings !== undefined &&
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              s.pos.isEqualTo(unpackPosition(Memory.rooms[memory.home].genBuildings!.links[2].pos))
-            ) {
-              return false;
-            }
-          }
+        } else if (s.structureType === STRUCTURE_LINK) {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           if (s.pos.isEqualTo(unpackPosition(Memory.rooms[memory.home].genBuildings!.links[0].pos))) {
-            if (s.store.getUsedCapacity(RESOURCE_ENERGY) >= requiredAmount) {
+            if (s.store.getUsedCapacity(RESOURCE_ENERGY) >= requiredAmount || stayLink) {
               return true;
-            } else {
-              return false;
             }
           }
           return false;
@@ -172,6 +159,17 @@ function getEnergyTarget(creep: Creep): Structure | Resource | Tombstone | Ruin 
     targets.sort((a, b) => creep.pos.getRangeTo(a.pos) - creep.pos.getRangeTo(b.pos));
     return targets[0];
   } else {
+    const spawns = Spawns(home);
+    if (spawns !== null && spawns.length > 0) {
+      if (home.find(FIND_STRUCTURES, { filter: s => s instanceof StructureContainer}).length === 0 && spawns[0].store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+        return creep.pos.findClosestByRange(
+          home.find(FIND_MY_CREEPS, {
+            filter: c => c.memory.role === "filler" && c.store.getUsedCapacity(RESOURCE_ENERGY) > 0
+          })
+        );
+      }
+    }
+
     if (creep.getActiveBodyparts(WORK) > 0) {
       return creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
     } else {

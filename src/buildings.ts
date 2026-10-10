@@ -43,6 +43,10 @@ export function Towers(room: Room): StructureTower[] | null {
   return Buildings(room.memory.genBuildings?.towers) as StructureTower[] | null;
 }
 
+export function Links(room: Room): StructureLink[] | null {
+  return Buildings(room.memory.genBuildings?.links) as StructureLink[] | null;
+}
+
 export function Buildings(data: BuildingData[] | undefined): Structure[] | null {
   if (data === undefined) {
     return null;

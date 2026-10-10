@@ -11,7 +11,7 @@ import {
   RemoteMinerMemory,
   ReserverMemory
 } from "creeps/roles";
-import { MINERAL_MINING_ENERGY_NEEDED, PUSH_GCL_ENERGY_NEEDED, RESOURCE_LIMITS } from "config/constants";
+import { MINERAL_MINING_ENERGY_NEEDED, PUSH_GCL_ENERGY_NEEDED, RESOURCE_LIMITS, SPAWN_QUEUE_FORCE } from "config/constants";
 import { isOwnedRoom, roomTotalStoredEnergy } from "utils/RoomCalc";
 import { packPosition, unpackPosition } from "../utils/RoomPositionPacker";
 import { CreepRole } from "creeps/runner";
@@ -25,8 +25,10 @@ declare global {
   interface OwnedRoomMemory {
     spawnAttempts?: number;
     spawnQueue: SpawnData[];
+    spawnQueueWait?: number;
     waitingCreep?: SpawnData;
     energySupply?: number;
+    pauseRemotes?: boolean;
   }
 }
 
@@ -69,9 +71,24 @@ export class SpawnManager implements Manager {
               if (this.checkWaiting(room, spawns)) {
                 continue;
               }
+
+              if (room.memory.spawnQueueWait === undefined) {
+                room.memory.spawnQueueWait = 0;
+              }
+
+              if (room.memory.spawnQueueWait >= SPAWN_QUEUE_FORCE) {
+                room.memory.spawnQueueWait = 0;
+                if (this.checkQueue(room, spawns)) {
+                  continue;
+                }
+              }
+
               if (this.checkNeeds(room, spawns)) {
+                room.memory.spawnQueueWait = room.memory.spawnQueueWait + 1;
                 continue;
               }
+
+              room.memory.spawnQueueWait = 0;
               this.checkQueue(room, spawns);
             }
           }
@@ -584,6 +601,9 @@ const needChecks: CreepNeedCheckFunction[] = [
     if (room.memory.remoteData === undefined || room.memory.unclaim) {
       return null;
     }
+    if (room.memory.pauseRemotes === true) {
+      return null;
+    }
 
     let minerTarget = 0;
     let haulerTarget = 0;
@@ -675,7 +695,8 @@ const needChecks: CreepNeedCheckFunction[] = [
     if (
       room.memory.remoteData === undefined ||
       Object.keys(room.memory.remoteData.data).length === 0 ||
-      room.memory.unclaim
+      room.memory.unclaim ||
+      room.memory.pauseRemotes === true
     ) {
       return null;
     }

@@ -7,6 +7,7 @@ import { RoomData } from "data/room/room";
 import { RunEvery } from "utils/RunEvery";
 import { describeRoom } from "utils/RoomCalc";
 import { findRoute } from "pathfinding/findRoute";
+import { Spawns } from "buildings";
 
 declare global {
   interface CreepMemory {
@@ -212,6 +213,29 @@ export class MovementManager implements Manager {
         }
       }
 
+      // Mark creeps that are blocking spawns that they should move
+      const spawns = Spawns(Game.rooms[room]);
+      if (spawns !== null) {
+        for (const spawn of spawns) {
+          if (spawn.spawning && spawn.spawning.remainingTime <= 1 && spawn.spawning.directions) {
+            let blocked = true;
+            for (const dir of spawn.spawning.directions) {
+              const pos = offsetPositionByDirection(spawn.pos, dir)
+              if (occupiedSpaces[pos.x][pos.y] === undefined) {
+                blocked = false;
+                break;
+              }
+            }
+            if (blocked) {
+              const dir = spawn.spawning.directions[Game.time % spawn.spawning.directions.length];
+              const pos = offsetPositionByDirection(spawn.pos, dir);
+              const creep = occupiedSpaces[pos.x][pos.y];
+              data[creep.name].needsToMove = true;
+            }
+          }
+        }
+      }
+
       while (creepQueue.length > 0) {
         const creep = creepQueue.shift();
         if (creep === undefined) continue;
@@ -332,6 +356,7 @@ export class MovementManager implements Manager {
         }
       }
 
+      // move all creeps we know how to move
       for (const creep of rooms[room]) {
         if (data[creep.name] && data[creep.name].needsToMove && data[creep.name].nextLocation) {
           if (creep.fatigue === 0) {

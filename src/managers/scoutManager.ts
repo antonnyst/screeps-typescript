@@ -14,7 +14,7 @@ declare global {
   }
 }
 
-const SCOUT_RANGE = 3;
+const SCOUT_RANGE = 5;
 const DEFAULT_SCOUT_UPDATE_TIME = 10000;
 const SCOUT_UPDATE_TIMES: Partial<Record<RoomDescription, number>> = {
   highway: 500,

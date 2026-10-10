@@ -10,6 +10,7 @@
   - High priority empire production
 - Commodity refining
 - Support single source rooms
+- Haul energy to controller when we have links and a lot of upgraders
 
 ## Combat
 

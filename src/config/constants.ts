@@ -14,6 +14,9 @@ export const POWER_BANK_MAX_RANGE = 3;
 export const RAMPART_PERCENTAGE_MIN = 0.03;
 export const RAMPART_PERCENTAGE_MAX = 0.04;
 
+// Amount of need spawns to bypass needs for creeps in spawn queue
+export const SPAWN_QUEUE_FORCE = 10;
+
 export type ResourceType =
   | "energy"
   | "power"
@@ -133,7 +136,7 @@ export const RESOURCE_LIMITS: Record<
     room: {
       import: 250000,
       export: 400000,
-      sell: null
+      sell: 700000
     }
   },
   power: {
