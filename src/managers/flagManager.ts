@@ -2,7 +2,7 @@ import { ClaimerMemory } from "creeps/roles";
 import { Manager } from "./manager";
 import { RoomData } from "data/room/room";
 import { displayBase } from "../layout/layout";
-import { isOwnedRoom } from "../utils/RoomCalc";
+import { isOwnedRoom, OwnedRooms } from "../utils/RoomCalc";
 import { packPosition } from "utils/RoomPositionPacker";
 
 declare global {
@@ -37,6 +37,11 @@ function HandleFlag(flag: Flag): void {
   } else {
     // Claim controller
     if (primaryColor === COLOR_RED && secondaryColor === COLOR_RED) {
+      if (OwnedRooms().length >= Game.gcl.level) {
+        // Chill with the flag until we actually can claim another room
+        return;
+      }
+
       const room = Game.rooms[flag.name];
       if (room !== undefined && isOwnedRoom(room)) {
         room.memory.spawnQueue.push({
