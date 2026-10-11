@@ -565,7 +565,9 @@ function BuildBuildings(room: Room): void {
     }
     return;
   }
-
+  for (const spawn of room.memory.genBuildings.spawns) {
+    BuildBuilding(spawn, STRUCTURE_SPAWN, room.name);
+  }
   for (const extension of room.memory.genBuildings.extensions) {
     BuildBuilding(extension, STRUCTURE_EXTENSION, room.name);
   }
@@ -577,9 +579,6 @@ function BuildBuildings(room: Room): void {
   }
   for (const link of room.memory.genBuildings.links) {
     BuildBuilding(link, STRUCTURE_LINK, room.name);
-  }
-  for (const spawn of room.memory.genBuildings.spawns) {
-    BuildBuilding(spawn, STRUCTURE_SPAWN, room.name);
   }
   for (const container of room.memory.genBuildings.containers) {
     BuildBuilding(container, STRUCTURE_CONTAINER, room.name);

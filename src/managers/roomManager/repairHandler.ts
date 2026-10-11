@@ -169,7 +169,8 @@ export function RepairHandler(room: OwnedRoom): void {
             if (
               !hasRepairs &&
               buildingPercentage < RAMPART_PERCENTAGE_MIN &&
-              room.memory.repair[buildingObject.id] === undefined
+              room.memory.repair[buildingObject.id] === undefined &&
+              room.memory.placedCS && room.memory.placedCS.length === 0
             ) {
               room.memory.repair[buildingObject.id] = {
                 id: buildingObject.id,
