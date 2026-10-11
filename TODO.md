@@ -11,6 +11,8 @@
 - Commodity refining
 - Support single source rooms
 - Haul energy to controller when we have links and a lot of upgraders
+- Better build priorities
+- Consider resources put into lab reactions at spent at once to avoid lots of purchases of resources
 
 ## Combat
 

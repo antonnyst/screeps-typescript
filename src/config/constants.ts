@@ -125,6 +125,7 @@ export const RESOURCE_LIMITS: Record<
       import: number;
       export: number;
       sell: number | null;
+      buy: number | null;
     };
   }
 > = {
@@ -136,7 +137,8 @@ export const RESOURCE_LIMITS: Record<
     room: {
       import: 250000,
       export: 400000,
-      sell: 700000
+      sell: 700000,
+      buy: null,
     }
   },
   power: {
@@ -147,7 +149,8 @@ export const RESOURCE_LIMITS: Record<
     room: {
       import: 0,
       export: 0,
-      sell: null
+      sell: null,
+      buy: null,
     }
   },
   mineral: {
@@ -158,7 +161,8 @@ export const RESOURCE_LIMITS: Record<
     room: {
       import: 10000,
       export: 20000,
-      sell: 25000
+      sell: 25000,
+      buy: 4000,
     }
   },
   raw_boost: {
@@ -169,7 +173,8 @@ export const RESOURCE_LIMITS: Record<
     room: {
       import: 2000,
       export: 7000,
-      sell: null
+      sell: null,
+      buy: null,
     }
   },
   boost: {
@@ -180,7 +185,8 @@ export const RESOURCE_LIMITS: Record<
     room: {
       import: 2000,
       export: 7000,
-      sell: null
+      sell: null,
+      buy: null,
     }
   },
   raw_commodity: {
@@ -191,7 +197,8 @@ export const RESOURCE_LIMITS: Record<
     room: {
       import: 2000,
       export: 7000,
-      sell: 24000
+      sell: 24000,
+      buy: null,
     }
   },
   commodity: {
@@ -202,7 +209,8 @@ export const RESOURCE_LIMITS: Record<
     room: {
       import: 0,
       export: 0,
-      sell: null
+      sell: null,
+      buy: null,
     }
   },
   compressed: {
@@ -213,7 +221,8 @@ export const RESOURCE_LIMITS: Record<
     room: {
       import: 0,
       export: 0,
-      sell: null
+      sell: null,
+      buy: null,
     }
   }
 };

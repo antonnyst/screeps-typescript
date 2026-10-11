@@ -6,6 +6,7 @@ import { Manager } from "./manager";
 import { RoomData } from "data/room/room";
 import { RunEvery } from "utils/RunEvery";
 import { findRoute } from "pathfinding/findRoute";
+import { Spawns } from "buildings";
 
 declare global {
   interface Memory {
@@ -58,7 +59,16 @@ export class HighwayManager implements Manager {
               continue;
             }
             // Check range to closest owned room
-            const rooms = OwnedRooms().filter(r => r.energyCapacityAvailable >= 3650);
+            const rooms = OwnedRooms().filter(r => {
+              const spawns = Spawns(r)
+              if (
+                r.energyCapacityAvailable >= 3650 && spawns && spawns.length >= 2 // TODO: Make this based on actual spawn availability and not hardcoded >=2
+              ) {
+                return true
+              } else {
+                return false
+              }
+            });
             const distances: [OwnedRoom, number][] = rooms.map(r => {
               const route = findRoute(r.name, position.roomName);
               if (route === ERR_NO_PATH) {

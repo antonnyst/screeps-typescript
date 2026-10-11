@@ -42,22 +42,25 @@ export class ResourceManager implements Manager {
           for (const resource of _.clone(RESOURCES_ALL).reverse()) {
             const resourceType = RESOURCE_TYPE[resource];
 
-            const needRooms: { roomName: string; amt: number }[] = [];
-            const haveRooms: { roomName: string; amt: number }[] = [];
+            const needRooms: { roomName: string; amt: number; total: number }[] = [];
+            const haveRooms: { roomName: string; amt: number; total: number }[] = [];
 
             for (const r of TerminalRooms) {
               const room = Game.rooms[r];
               if (isOwnedRoom(room)) {
                 const a = room.memory.resources!.delta[resource];
+                const total = room.memory.resources!.total[resource];
                 if (a < 0) {
                   needRooms.push({
                     roomName: r,
-                    amt: a
+                    amt: a,
+                    total
                   });
                 } else if (a > 0 && Game.rooms[r].terminal!.cooldown === 0 && !usedRooms.includes(r)) {
                   haveRooms.push({
                     roomName: r,
-                    amt: a
+                    amt: a,
+                    total
                   });
                 }
               }
@@ -126,6 +129,40 @@ export class ResourceManager implements Manager {
 
                     Game.market.deal(order.id, possibleAmount, hr.roomName);
                     usedRooms.push(hr.roomName);
+                  }
+                }
+              }
+            } else if (
+              haveRooms.length === 0 &&
+              needRooms.length > 0 &&
+              resourceType !== undefined &&
+              RESOURCE_LIMITS[resourceType].room.buy !== null
+            ) {
+              // We need this resource and have configured that we should buy it
+              for (const nr of needRooms) {
+                const amountToBuy = RESOURCE_LIMITS[resourceType].room.buy! - nr.total;
+                const terminalSpace = Game.rooms[nr.roomName].terminal?.store.getFreeCapacity();
+                if (terminalSpace !== undefined) {
+                  const amt = Math.min(amountToBuy, terminalSpace);
+                  let orders: Order[] = Game.market.getAllOrders({
+                    type: ORDER_SELL,
+                    resourceType: resource
+                  });
+                  if (orders.length > 0) {
+                    const order: Order = _.sortBy(orders, (o: Order) => o.price)[0];
+                    let affordedAmount = Game.market.credits / order.price;
+                    let possibleAmount = Math.min(amt, order.remainingAmount, affordedAmount);
+
+                    // TODO: Investigate if buying energy requires special calculations.
+                    // if (resource === RESOURCE_ENERGY) {
+                    //   // Special calculation due to energy fees
+                    //   const fee = Game.market.calcTransactionCost(1, order.roomName!, hr.roomName);
+                    //   const maxAmt = Math.floor(amt / (1 + fee));
+                    //   possibleAmount = Math.min(maxAmt, order.remainingAmount);
+                    // }
+
+                    Game.market.deal(order.id, possibleAmount, nr.roomName);
+                    usedRooms.push(nr.roomName);
                   }
                 }
               }

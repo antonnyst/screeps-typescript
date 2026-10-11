@@ -23,6 +23,26 @@ export function RepairHandler(room: OwnedRoom): void {
       room.memory.repair = {};
     }
 
+    // All buildings except road & ramparts
+    const buildings: BuildingData[] = room.memory.genBuildings.extensions.concat(
+      room.memory.genBuildings.towers,
+      room.memory.genBuildings.labs,
+      room.memory.genBuildings.links,
+      room.memory.genBuildings.spawns,
+      room.memory.genBuildings.storage,
+      room.memory.genBuildings.terminal,
+      room.memory.genBuildings.factory,
+      room.memory.genBuildings.powerspawn,
+      room.memory.genBuildings.nuker,
+      room.memory.genBuildings.observer,
+      room.memory.genBuildings.extractor,
+      room.memory.genBuildings.containers
+    );
+
+    // Panic repair any ramparts
+    const currentlyRepairingRamparts = false;
+    const allRampartsSortedByHits = false;
+
     // Check for low ramparts
     const lowRamparts = [];
     for (const rampart of room.memory.genBuildings.ramparts) {
@@ -31,7 +51,17 @@ export function RepairHandler(room: OwnedRoom): void {
         const buildingObject = Game.getObjectById(rampart.id);
         if (!(buildingObject instanceof ConstructionSite) && buildingObject !== null && buildingObject !== undefined) {
           if (buildingObject.hits < 5000) {
-            lowRamparts.push(rampart);
+            lowRamparts.push(rampart.id);
+          }
+        }
+      }
+    }
+    for (const building of buildings) {
+      if (building.active && building.rampart && building.rampart.id) {
+        const buildingObject = Game.getObjectById(building.rampart.id);
+        if (!(buildingObject instanceof ConstructionSite) && buildingObject !== null && buildingObject !== undefined) {
+          if (buildingObject.hits < 5000) {
+            lowRamparts.push(building.rampart.id);
           }
         }
       }
@@ -39,12 +69,14 @@ export function RepairHandler(room: OwnedRoom): void {
 
     if (lowRamparts.length > 0) {
       room.memory.repair = {};
-      for (const rampart of lowRamparts) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        room.memory.repair[rampart.id!] = {
-          id: rampart.id as Id<Structure<StructureConstant>>,
-          pos: rampart.pos
-        };
+      for (const id of lowRamparts) {
+        const rampartObject = Game.getObjectById(id);
+        if (!(rampartObject instanceof ConstructionSite) && rampartObject !== null && rampartObject !== undefined) {
+          room.memory.repair[rampartObject.id] = {
+            id: rampartObject.id,
+            pos: packPosition(rampartObject.pos)
+          };
+        }
       }
     } else {
       // Roads
@@ -86,20 +118,6 @@ export function RepairHandler(room: OwnedRoom): void {
       }
 
       // All except roads and ramparts
-      const buildings: BuildingData[] = room.memory.genBuildings.extensions.concat(
-        room.memory.genBuildings.towers,
-        room.memory.genBuildings.labs,
-        room.memory.genBuildings.links,
-        room.memory.genBuildings.spawns,
-        room.memory.genBuildings.storage,
-        room.memory.genBuildings.terminal,
-        room.memory.genBuildings.factory,
-        room.memory.genBuildings.powerspawn,
-        room.memory.genBuildings.nuker,
-        room.memory.genBuildings.observer,
-        room.memory.genBuildings.extractor,
-        room.memory.genBuildings.containers
-      );
       for (const building of buildings) {
         if (building.id !== undefined) {
           // The building exists
@@ -139,15 +157,27 @@ export function RepairHandler(room: OwnedRoom): void {
               // Check the buildings rampart
               const rampartObject = Game.getObjectById(building.rampart.id);
               if (rampartObject instanceof StructureRampart) {
-                const rampartPercentage = rampartObject.hits / rampartObject.hitsMax;
-                if (rampartPercentage < RAMPART_PERCENTAGE_MIN && room.memory.repair[rampartObject.id] === undefined) {
-                  room.memory.repair[rampartObject.id] = {
-                    id: rampartObject.id,
-                    pos: packPosition(rampartObject.pos)
-                  };
-                }
-                if (rampartPercentage > RAMPART_PERCENTAGE_MAX && room.memory.repair[rampartObject.id] !== undefined) {
-                  delete room.memory.repair[rampartObject.id];
+                if (room.memory.placedCS && room.memory.placedCS.length === 0) {
+                  const rampartPercentage = rampartObject.hits / rampartObject.hitsMax;
+                  if (rampartPercentage < RAMPART_PERCENTAGE_MIN && room.memory.repair[rampartObject.id] === undefined) {
+                    room.memory.repair[rampartObject.id] = {
+                      id: rampartObject.id,
+                      pos: packPosition(rampartObject.pos)
+                    };
+                  }
+                  if (rampartPercentage > RAMPART_PERCENTAGE_MAX && room.memory.repair[rampartObject.id] !== undefined) {
+                    delete room.memory.repair[rampartObject.id];
+                  }
+                } else {
+                  if (rampartObject.hits < 5000 && room.memory.repair[rampartObject.id] === undefined) {
+                    room.memory.repair[rampartObject.id] = {
+                      id: rampartObject.id,
+                      pos: packPosition(rampartObject.pos)
+                    };
+                  }
+                  if (rampartObject.hits > 5000 && room.memory.repair[rampartObject.id] !== undefined) {
+                    delete room.memory.repair[rampartObject.id];
+                  }
                 }
               }
             }
