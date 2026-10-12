@@ -23,6 +23,12 @@ export type ResourceType =
   | "mineral"
   | "raw_boost"
   | "boost"
+  | "economy_boost_1"
+  | "economy_boost_2"
+  | "economy_boost_3"
+  | "combat_boost_1"
+  | "combat_boost_2"
+  | "combat_boost_3"
   | "raw_commodity"
   | "commodity"
   | "compressed";
@@ -42,16 +48,16 @@ export const RESOURCE_TYPE: Record<ResourceConstant, ResourceType | undefined> =
   ZK: "raw_boost",
   UL: "raw_boost",
   G: "raw_boost",
-  UH: "boost",
-  UO: "boost",
-  KH: "boost",
-  KO: "boost",
-  LH: "boost",
-  LO: "boost",
-  ZH: "boost",
-  ZO: "boost",
-  GH: "boost",
-  GO: "boost",
+  UH: "combat_boost_1",
+  UO: "economy_boost_1",
+  KH: "economy_boost_1",
+  KO: "combat_boost_1",
+  LH: "economy_boost_1",
+  LO: "combat_boost_1",
+  ZH: "combat_boost_1",
+  ZO: "combat_boost_1",
+  GH: "economy_boost_1",
+  GO: "combat_boost_1",
   UH2O: "boost",
   UHO2: "boost",
   KH2O: "boost",
@@ -162,7 +168,7 @@ export const RESOURCE_LIMITS: Record<
       import: 10000,
       export: 20000,
       sell: 25000,
-      buy: 4000,
+      buy: 3000,
     }
   },
   raw_boost: {
@@ -178,6 +184,42 @@ export const RESOURCE_LIMITS: Record<
     }
   },
   boost: {
+    terminal: {
+      min: 3000,
+      max: 6000
+    },
+    room: {
+      import: 2000,
+      export: 7000,
+      sell: null,
+      buy: null,
+    }
+  },
+  combat_boost_1: {
+    terminal: {
+      min: 3000,
+      max: 6000
+    },
+    room: {
+      import: 2000,
+      export: 7000,
+      sell: null,
+      buy: null,
+    }
+  },
+  combat_boost_2: {
+    terminal: {
+      min: 3000,
+      max: 6000
+    },
+    room: {
+      import: 2000,
+      export: 7000,
+      sell: null,
+      buy: null,
+    }
+  },
+  combat_boost_3: {
     terminal: {
       min: 3000,
       max: 6000

@@ -148,7 +148,7 @@ export class ResourceManager implements Manager {
                     type: ORDER_SELL,
                     resourceType: resource
                   });
-                  if (orders.length > 0) {
+                  if (orders.length > 0 && amt > 0) {
                     const order: Order = _.sortBy(orders, (o: Order) => o.price)[0];
                     let affordedAmount = Game.market.credits / order.price;
                     let possibleAmount = Math.min(amt, order.remainingAmount, affordedAmount);
@@ -162,6 +162,7 @@ export class ResourceManager implements Manager {
                     // }
 
                     Game.market.deal(order.id, possibleAmount, nr.roomName);
+                    console.log("resourceMananger: " + nr.roomName + " buying " + resource + " amount " + possibleAmount)
                     usedRooms.push(nr.roomName);
                   }
                 }
